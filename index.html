@@ -286,6 +286,17 @@
     background:rgba(148,163,184,.06);
     display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; align-items:center;
   }
+
+  /* Small but useful: inline auth debug area */
+  .authMsg{
+    padding:0 16px 16px;
+    font-size:12px;
+    color:var(--muted);
+  }
+  .authMsg b{color:var(--ink)}
+  .authMsg .err{color:var(--bad); font-weight:800}
+  .authMsg .ok{color:var(--good); font-weight:800}
+  .authMsg .warn{color:var(--warn); font-weight:800}
 </style>
 </head>
 
@@ -303,7 +314,7 @@
       </div>
     </div>
     <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
-      <div class="pill dot" id="statusPill"><b>Status:</b> -</div>
+      <div class="pill dot" id="statusPill"><b>Status:</b> Loading…</div>
       <div class="pill dot good" id="savePill"><b>Data:</b> Saved locally</div>
     </div>
   </header>
@@ -373,7 +384,6 @@
         <div class="pill dot" id="dietPill"><b>Diet:</b> -</div>
       </div>
 
-      <!-- Cloud auth controls as a normal controls block (NOT nested) -->
       <div class="controls" style="padding-top:12px;">
         <div>
           <label>Cloud sync email</label>
@@ -392,7 +402,11 @@
           <button class="btn secondary" id="signOutBtn" type="button">Sign Out</button>
         </div>
       </div>
-      <div class="tiny" id="authMsg" style="margin-top:6px;color:#9fb3c8;"></div>
+
+      <div class="authMsg" id="authMsg">
+        <b>Cloud sync:</b> <span class="warn">Not signed in.</span>
+        <span class="tiny">If sign-in fails, check DevTools Console for details.</span>
+      </div>
 
       <div class="controls">
         <div>
@@ -468,14 +482,14 @@
       </div>
 
       <div class="btnRow">
-        <button class="btn secondary" id="importCaloriesBtn">Import Calories CSV</button>
-        <button class="btn secondary" id="exportBtn">Export JSON</button>
-        <button class="btn secondary" id="importBtn">Import JSON</button>
-        <button class="btn danger" id="resetBtn">Reset All Data</button>
+        <button class="btn secondary" id="importCaloriesBtn" type="button">Import Calories CSV</button>
+        <button class="btn secondary" id="exportBtn" type="button">Export JSON</button>
+        <button class="btn secondary" id="importBtn" type="button">Import JSON</button>
+        <button class="btn danger" id="resetBtn" type="button">Reset All Data</button>
       </div>
       <div style="padding:0 16px 16px;">
         <div class="tiny">
-          Dynamic calories already account for BMR drop as weight decreases (kcal per lb).
+          Dynamic calories account for BMR drop as weight decreases (kcal per lb).
           Reverse diet overrides targets from Apr 20 to May 14 to ramp up to 2700.
         </div>
       </div>
@@ -506,7 +520,7 @@
       <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
         <div class="pill dot" id="tagPill"><b>Target:</b> -</div>
         <div class="pill dot warn" id="saveIndicator"><b>Saved:</b> -</div>
-        <button class="btn secondary" id="closeBtn">Close</button>
+        <button class="btn secondary" id="closeBtn" type="button">Close</button>
       </div>
     </div>
 
@@ -584,12 +598,12 @@
 
     <div class="panelFoot">
       <div class="tiny">Autosave is on.</div>
-      <button class="btn secondary" id="clearDayBtn">Clear this day</button>
+      <button class="btn secondary" id="clearDayBtn" type="button">Clear this day</button>
     </div>
   </div>
 </div>
 
-<!-- Correct Supabase JS library -->
+<!-- Supabase JS must load before app JS -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
@@ -610,19 +624,16 @@
   }
   function weekdayName(d){ return ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][d.getDay()]; }
 
-  const STORAGE_KEY = "diet_15wk_body_transformation_v5";
+  const STORAGE_KEY = "diet_15wk_body_transformation_v6";
   const LOCAL_CACHE_KEY = "diet_15wk_cache_v1";
 
-  // Fast window: Jan 2 to Jan 3 only (Jan 4 is normal)
   const FAST_START = "2026-01-02";
   const FAST_END   = "2026-01-03";
 
-  // Reverse diet window: last 2 weeks of April + first 2 weeks of May
   const REVERSE_START = "2026-04-20";
   const REVERSE_END   = "2026-05-14";
   const REVERSE_TARGET = 2700;
 
-  // No special targets
   const SPECIAL_TARGETS = {};
 
   const THU_WEEK_RANGES = [
@@ -646,88 +657,111 @@
   function isFastDay(ds){ return ds>=FAST_START && ds<=FAST_END; }
   function inReverseWindow(ds){ return ds>=REVERSE_START && ds<=REVERSE_END; }
 
-  // Supabase (optional cloud sync)
-  // IMPORTANT: SUPABASE_ANON_KEY must be your full "anon public" key (a long JWT that usually starts with "eyJ..."),
-  // from Supabase Project Settings -> API.
+  // ===== Supabase config =====
+  // NOTE: This must be your "anon public" key from Supabase Project Settings -> API.
   const SUPABASE_URL = "https://dklnhdjxplpqnrjziqkq.supabase.co";
-  const SUPABASE_ANON_KEY = "PASTE_YOUR_SUPABASE_ANON_PUBLIC_KEY_HERE";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRrbG5oZGp4cGxwcW5yanppcWtxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc1MzkxNjAsImV4cCI6MjA4MzExNTE2MH0.qp0eOggU4nrhgjj-yrUmhvHNRz1uL8TSp9xrDsAq5Sg";
   let supabase = null;
 
   const authMsgEl = document.getElementById("authMsg");
-  function setAuthMsg(type, text){
-    if(!authMsgEl) return;
-    const c = type==="ok" ? "#8ef0b5" : (type==="warn" ? "#ffd38a" : "#ff8a8a");
-    authMsgEl.style.color = c;
-    authMsgEl.textContent = text;
+
+  function setAuthMsg(type, html){
+    const cls = type === "ok" ? "ok" : (type === "err" ? "err" : "warn");
+    authMsgEl.innerHTML = `<b>Cloud sync:</b> <span class="${cls}">${html}</span>`;
   }
 
-  try{
-    if(window.supabase && typeof window.supabase.createClient === "function" &&
-       SUPABASE_ANON_KEY && SUPABASE_ANON_KEY.startsWith("eyJ")){
-      supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-      setAuthMsg("warn","Cloud sync: Not signed in.");
-    } else {
-      setAuthMsg("warn","Cloud sync: Disabled until you paste your Supabase anon key (eyJ...). Local save still works.");
+  function ensureSupabase(){
+    try{
+      if(!window.supabase || !window.supabase.createClient){
+        setAuthMsg("err", "Supabase library did not load. Check CDN/network.");
+        return null;
+      }
+      if(!supabase){
+        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      }
+      return supabase;
+    }catch(e){
+      console.error("Supabase init error:", e);
+      setAuthMsg("err", "Supabase init failed. Open console.");
+      return null;
     }
-  } catch(e){
-    console.warn("Supabase init failed:", e);
-    setAuthMsg("err","Cloud sync: Disabled (Supabase init error). Local save still works.");
-    supabase = null;
   }
 
-async function getUser() {
-    
-    if(!supabase) return null;
-const { data } = await supabase.auth.getUser();
-    return data.user || null;
+  async function getUserSafe() {
+    const sb = ensureSupabase();
+    if(!sb) return null;
+    try{
+      const { data, error } = await sb.auth.getUser();
+      if(error){
+        console.warn("getUser error:", error);
+        return null;
+      }
+      return data.user || null;
+    }catch(e){
+      console.warn("getUser exception:", e);
+      return null;
+    }
   }
 
   async function cloudLoadState() {
-    
-    if(!supabase) return null;
-const user = await getUser();
+    const sb = ensureSupabase();
+    if(!sb) return null;
+    const user = await getUserSafe();
     if (!user) return null;
 
-    const { data, error } = await supabase
-      .from("tracker_states")
-      .select("state")
-      .eq("user_id", user.id)
-      .single();
+    try{
+      const { data, error } = await sb
+        .from("tracker_states")
+        .select("state")
+        .eq("user_id", user.id)
+        .single();
 
-    if (error && error.code !== "PGRST116") {
-      console.error("cloudLoadState error:", error);
+      if (error && error.code !== "PGRST116") {
+        console.error("cloudLoadState error:", error);
+        setAuthMsg("err", `Cloud read blocked: ${error.message}`);
+        return null;
+      }
+      return data?.state || null;
+    }catch(e){
+      console.error("cloudLoadState exception:", e);
+      setAuthMsg("err", "Cloud read failed. Open console.");
       return null;
     }
-    return data?.state || null;
   }
 
   async function cloudSaveState(newState) {
-    
-    if(!supabase) return false;
-const user = await getUser();
+    const sb = ensureSupabase();
+    if(!sb) return false;
+    const user = await getUserSafe();
     if (!user) return false;
 
-    const payload = {
-      user_id: user.id,
-      state: newState,
-      updated_at: new Date().toISOString()
-    };
+    try{
+      const payload = {
+        user_id: user.id,
+        state: newState,
+        updated_at: new Date().toISOString()
+      };
 
-    const { error } = await supabase
-      .from("tracker_states")
-      .upsert(payload, { onConflict: "user_id" });
+      const { error } = await sb
+        .from("tracker_states")
+        .upsert(payload, { onConflict: "user_id" });
 
-    if (error) {
-      console.error("cloudSaveState error:", error);
+      if (error) {
+        console.error("cloudSaveState error:", error);
+        setAuthMsg("err", `Cloud write blocked: ${error.message}`);
+        return false;
+      }
+      return true;
+    }catch(e){
+      console.error("cloudSaveState exception:", e);
+      setAuthMsg("err", "Cloud write failed. Open console.");
       return false;
     }
-    return true;
   }
 
   function cacheStateLocally(newState) {
     try { localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify(newState)); } catch {}
   }
-
   function loadLocalCache() {
     try {
       const raw = localStorage.getItem(LOCAL_CACHE_KEY);
@@ -735,34 +769,10 @@ const user = await getUser();
     } catch { return null; }
   }
 
-  function loadState(){
-    try{
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if(!raw) return {
-        days:{},
-        settings:{
-          startDate:"2026-01-05",
-          startWeight:221.6,
-          startBf:25.0,
-          targetCal:2200,
-          highCal:2400,
-          highStartWeek:3,
-          secondHighStartWeek:10,
-          primaryHighDow:0,
-          secondHighDow:3,
-          adhWindow:150,
-          kcalPerLb:10,
-          minCal:1700
-        },
-        ui:{ activeMonthKey:"2026-0" }
-      };
-
-      const s = JSON.parse(raw);
-      if(!s.days) s.days = {};
-      if(!s.settings) s.settings = {};
-      if(!s.ui) s.ui = {};
-
-      const defSettings = {
+  function defaultState(){
+    return {
+      days:{},
+      settings:{
         startDate:"2026-01-05",
         startWeight:221.6,
         startBf:25.0,
@@ -775,57 +785,72 @@ const user = await getUser();
         adhWindow:150,
         kcalPerLb:10,
         minCal:1700
-      };
+      },
+      ui:{ activeMonthKey:"2026-0" }
+    };
+  }
+
+  function loadState(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw) return defaultState();
+
+      const s = JSON.parse(raw);
+      if(!s.days) s.days = {};
+      if(!s.settings) s.settings = {};
+      if(!s.ui) s.ui = {};
+
+      const defSettings = defaultState().settings;
       s.settings = {...defSettings, ...s.settings};
 
-      const defUi = { activeMonthKey:"2026-0" };
+      const defUi = defaultState().ui;
       s.ui = {...defUi, ...s.ui};
 
       return s;
     }catch(e){
-      return {
-        days:{},
-        settings:{
-          startDate:"2026-01-05",
-          startWeight:221.6,
-          startBf:25.0,
-          targetCal:2200,
-          highCal:2400,
-          highStartWeek:3,
-          secondHighStartWeek:10,
-          primaryHighDow:0,
-          secondHighDow:3,
-          adhWindow:150,
-          kcalPerLb:10,
-          minCal:1700
-        },
-        ui:{ activeMonthKey:"2026-0" }
-      };
+      return defaultState();
     }
   }
 
-  let state = loadState(); // local fallback
+  let state = loadState();
 
   const savePill = document.getElementById("savePill");
-  function pulseSaved(){
-    savePill.innerHTML = "<b>Data:</b> Saved locally";
-    savePill.classList.remove("good","warn","bad");
-    savePill.classList.add("good");
+  function pulseSaved(localOnly=true){
+    if(localOnly){
+      savePill.innerHTML = "<b>Data:</b> Saved locally";
+      savePill.classList.remove("good","warn","bad");
+      savePill.classList.add("good");
+    }else{
+      savePill.innerHTML = "<b>Data:</b> Cloud synced";
+      savePill.classList.remove("good","warn","bad");
+      savePill.classList.add("good");
+    }
     savePill.style.transform="scale(1.01)";
     setTimeout(()=>{ savePill.style.transform=""; }, 140);
   }
 
-  function saveState(){
+  async function saveState(){
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     cacheStateLocally(state);
-    try { cloudSaveState(state); } catch {}
-    pulseSaved();
+
+    const user = await getUserSafe();
+    if(user){
+      const ok = await cloudSaveState(state);
+      if(ok){
+        pulseSaved(false);
+        setAuthMsg("ok", "Signed in. Cloud sync active.");
+      }else{
+        pulseSaved(true);
+      }
+    }else{
+      pulseSaved(true);
+    }
   }
 
   // Settings elements
   const startDateEl = document.getElementById("startDate");
   const startWeightEl = document.getElementById("startWeight");
-  const startBfEl = document.getElementById("startBf");
+  const startBfEl = document.getElementById("startBf");up
   const targetCalEl   = document.getElementById("targetCal");
   const highCalEl     = document.getElementById("highCal");
   const highStartWeekEl = document.getElementById("highStartWeek");
@@ -851,76 +876,7 @@ const user = await getUser();
     secondHighDowEl.value  = String(state.settings.secondHighDow);
   }
 
-  // Auth button wiring
-  document.getElementById("signInBtn").addEventListener("click", async () => {
-    try{
-      if(!supabase){
-        setAuthMsg("warn","Cloud sync is disabled. Paste your Supabase anon key (eyJ...) first. Local save is still on.");
-        return;
-      }
-      const email = document.getElementById("authEmail").value.trim();
-      const pass  = document.getElementById("authPass").value;
-      if(!email || !pass){
-        setAuthMsg("warn","Enter email + password, then sign in.");
-        return;
-      }
-
-      setAuthMsg("warn","Signing in...");
-      const { error } = await supabase.auth.signInWithPassword({ email, password: pass });
-      if (error) {
-        setAuthMsg("err", error.message || "Sign-in failed.");
-        return;
-      }
-
-      const cloud = await cloudLoadState();
-      if (cloud) state = cloud;
-
-      cacheStateLocally(state);
-      syncSettingsToUI();
-      renderAll();
-      setAuthMsg("ok","Signed in. Cloud sync active.");
-    } catch(e){
-      console.error(e);
-      setAuthMsg("err","JavaScript error occurred. Open DevTools Console for details.");
-    }
-  });
-
-
-  document.getElementById("signOutBtn").addEventListener("click", async () => {
-    try{
-      if(!supabase){
-        setAuthMsg("warn","Cloud sync is disabled. Local save is still on.");
-        return;
-      }
-      await supabase.auth.signOut();
-      setAuthMsg("warn","Signed out. Cloud sync idle.");
-    } catch(e){
-      console.error(e);
-      setAuthMsg("err","Sign-out failed. Check DevTools Console.");
-    }
-  });
-
-
-// App init (single render path)
-  async function initApp() {
-    const cached = loadLocalCache();
-    if (cached) state = cached;
-
-    try {
-      const user = await getUser();
-      if (user) {
-        const cloud = await cloudLoadState();
-        if (cloud) state = cloud;
-      }
-    } catch (e) {
-      console.warn("Cloud init skipped:", e);
-    }
-
-    cacheStateLocally(state);
-    syncSettingsToUI();
-    renderAll();
-  }
-
+  // ===== App logic =====
   function clamp(n, lo, hi){
     if(n < lo) return lo;
     if(hi !== null && n > hi) return hi;
@@ -1015,7 +971,6 @@ const user = await getUser();
     const s = state.settings;
     const primaryActive = wi >= Number(s.highStartWeek) && d.getDay() === Number(s.primaryHighDow);
     const secondaryActive = wi >= Number(s.secondHighStartWeek) && d.getDay() === Number(s.secondHighDow);
-
     return primaryActive || secondaryActive;
   }
 
@@ -1109,7 +1064,7 @@ const user = await getUser();
       btn.innerHTML = `<span>${spec.name.split(" ")[0]}</span><span class="count">${logs[key]||0}</span>`;
       btn.addEventListener("click", ()=>{
         state.ui.activeMonthKey = key;
-        saveState();
+        saveState(); // async but fine
         renderActiveMonth();
         buildTabs();
       });
@@ -1378,7 +1333,7 @@ const user = await getUser();
     if(!activeDate) return;
     if(_timer) clearTimeout(_timer);
     setSaveIndicator("Saving...", "warn");
-    _timer = setTimeout(()=>{
+    _timer = setTimeout(async ()=>{
       const rec = {
         calories: calories.value==="" ? null : Number(calories.value),
         workout: workout.value || "",
@@ -1387,7 +1342,7 @@ const user = await getUser();
         notes: notes.value.trim()
       };
       state.days[activeDate] = rec;
-      saveState();
+      await saveState();
       setSaveIndicator("Saved", "good");
       renderAll();
     }, 260);
@@ -1406,10 +1361,10 @@ const user = await getUser();
   closeBtn.addEventListener("click", closeModal);
   modal.addEventListener("click", (e)=>{ if(e.target===modal) closeModal(); });
 
-  clearDayBtn.addEventListener("click", ()=>{
+  clearDayBtn.addEventListener("click", async ()=>{
     if(!activeDate) return;
     delete state.days[activeDate];
-    saveState();
+    await saveState();
     closeModal();
   });
 
@@ -1428,7 +1383,7 @@ const user = await getUser();
       const file=inp.files && inp.files[0];
       if(!file) return;
       const r=new FileReader();
-      r.onload = ()=>{
+      r.onload = async ()=>{
         try{
           const data=JSON.parse(String(r.result||"{}"));
           if(!data.days) data.days={};
@@ -1441,7 +1396,7 @@ const user = await getUser();
           data.ui = {...defUi, ...data.ui};
 
           state=data;
-          saveState();
+          await saveState();
           syncSettingsToUI();
           renderAll();
         }catch(e){ alert("Import failed. Choose a valid export file."); }
@@ -1455,7 +1410,7 @@ const user = await getUser();
     if(!confirm("Reset ALL saved data? This cannot be undone.")) return;
     localStorage.removeItem(STORAGE_KEY);
     localStorage.removeItem(LOCAL_CACHE_KEY);
-    state = loadState();
+    state = defaultState();
     syncSettingsToUI();
     renderAll();
   });
@@ -1487,14 +1442,15 @@ const user = await getUser();
       const file=inp.files && inp.files[0];
       if(!file) return;
       const r=new FileReader();
-      r.onload = ()=>{
+      r.onload = async ()=>{
         const items = parseCSV(String(r.result||""));
         if(!items.length){ alert("No rows found. CSV should be: date,calories (YYYY-MM-DD)."); return; }
         for(const it of items){
           if(!state.days[it.date]) state.days[it.date] = {calories:null, workout:"", weight:null, bf:null, notes:""};
           state.days[it.date].calories = it.calories;
         }
-        saveState(); renderAll();
+        await saveState();
+        renderAll();
         alert(`Imported calories for ${items.length} day(s).`);
       };
       r.readAsText(file);
@@ -1507,7 +1463,7 @@ const user = await getUser();
     kcalPerLbEl, minCalEl, adhWindowEl, primaryHighDowEl, secondHighDowEl
   ];
   settingsEls.forEach(el=>{
-    el.addEventListener("input", ()=>{
+    el.addEventListener("input", async ()=>{
       state.settings.startDate = startDateEl.value || "2026-01-05";
       state.settings.startWeight = Number(startWeightEl.value||221.6);
       state.settings.startBf = Number(startBfEl.value||25.0);
@@ -1520,37 +1476,16 @@ const user = await getUser();
       state.settings.adhWindow = Number(adhWindowEl.value||150);
       state.settings.primaryHighDow = Number(primaryHighDowEl.value||0);
       state.settings.secondHighDow = Number(secondHighDowEl.value||3);
-      saveState(); renderAll();
+      await saveState();
+      renderAll();
     });
-    el.addEventListener("change", ()=>{
+    el.addEventListener("change", async ()=>{
       state.settings.primaryHighDow = Number(primaryHighDowEl.value||0);
       state.settings.secondHighDow = Number(secondHighDowEl.value||3);
-      saveState(); renderAll();
+      await saveState();
+      renderAll();
     });
   });
-
-  function getWeighIns(){
-    const out=[];
-    for(const ds in state.days){
-      const rec = state.days[ds];
-      if(rec && rec.weight!==null && rec.weight!==undefined){
-        out.push({ ds, d: parseYMD(ds), w: Number(rec.weight) });
-      }
-    }
-    out.sort((a,b)=>a.d-b.d);
-    return out;
-  }
-  function getBfIns(){
-    const out=[];
-    for(const ds in state.days){
-      const rec = state.days[ds];
-      if(rec && rec.bf!==null && rec.bf!==undefined){
-        out.push({ ds, d: parseYMD(ds), bf: Number(rec.bf) });
-      }
-    }
-    out.sort((a,b)=>a.d-b.d);
-    return out;
-  }
 
   function lastNDays(anchor, n){
     const a = parseYMD(anchor);
@@ -1589,11 +1524,27 @@ const user = await getUser();
   }
 
   function renderKpis(){
-    const ws = getWeighIns();
+    const ws = [];
+    for(const ds in state.days){
+      const rec = state.days[ds];
+      if(rec && rec.weight!==null && rec.weight!==undefined){
+        ws.push({ ds, d: parseYMD(ds), w: Number(rec.weight) });
+      }
+    }
+    ws.sort((a,b)=>a.d-b.d);
+
     const current = ws.length ? ws[ws.length-1] : null;
     document.getElementById("kpiCurrent").textContent = current ? `${current.w.toFixed(1)} lbs` : "-";
 
-    const bfs = getBfIns();
+    const bfs = [];
+    for(const ds in state.days){
+      const rec = state.days[ds];
+      if(rec && rec.bf!==null && rec.bf!==undefined){
+        bfs.push({ ds, d: parseYMD(ds), bf: Number(rec.bf) });
+      }
+    }
+    bfs.sort((a,b)=>a.d-b.d);
+
     const currentBf = bfs.length ? bfs[bfs.length-1] : null;
     document.getElementById("kpiCurrentBf").textContent = currentBf ? `${currentBf.bf.toFixed(1)}%` : "-";
 
@@ -1667,7 +1618,112 @@ const user = await getUser();
 
   window.addEventListener("resize", ()=>{ renderActiveMonth(); });
 
-  // IMPORTANT: do not call renderAll() here. initApp is the single entry point.
+  // ===== Auth buttons (with visible feedback) =====
+  document.getElementById("signInBtn").addEventListener("click", async (e) => {
+    e.preventDefault();
+    console.log("[CloudSync] Sign-in clicked");
+
+    const sb = ensureSupabase();
+    if(!sb){
+      alert("Supabase is not initialized. Check the console.");
+      return;
+    }
+
+    const email = document.getElementById("authEmail").value.trim();
+    const pass = document.getElementById("authPass").value;
+
+    if(!email || !pass){
+      setAuthMsg("warn", "Enter email + password, then sign in.");
+      return;
+    }
+
+    setAuthMsg("warn", "Signing in…");
+
+    try{
+      const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+      if (error) {
+        console.error("[CloudSync] signIn error:", error);
+        setAuthMsg("err", `Sign-in failed: ${error.message}`);
+        alert(error.message);
+        return;
+      }
+
+      console.log("[CloudSync] signed in user:", data?.user?.id);
+      setAuthMsg("ok", "Signed in. Loading cloud data…");
+
+      const cloud = await cloudLoadState();
+      if (cloud) {
+        state = cloud;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        cacheStateLocally(state);
+        syncSettingsToUI();
+        renderAll();
+        setAuthMsg("ok", "Signed in. Cloud data loaded.");
+        pulseSaved(false);
+      } else {
+        // no cloud yet, keep local but confirm sync is active
+        setAuthMsg("ok", "Signed in. No cloud state found yet. Start logging and it will sync.");
+        pulseSaved(false);
+      }
+    }catch(ex){
+      console.error("[CloudSync] signIn exception:", ex);
+      setAuthMsg("err", "Sign-in crashed. Open console.");
+      alert("Sign-in crashed. Open console.");
+    }
+  });
+
+  document.getElementById("signOutBtn").addEventListener("click", async (e) => {
+    e.preventDefault();
+    const sb = ensureSupabase();
+    if(!sb){
+      setAuthMsg("warn", "Not initialized.");
+      return;
+    }
+    await sb.auth.signOut();
+    setAuthMsg("warn", "Signed out. Local-only storage active.");
+  });
+
+  // ===== Init: ALWAYS render months immediately =====
+  async async function initApp() {
+    // 1) Always show UI first (fixes "months gone")
+    syncSettingsToUI();
+    renderAll();
+    setPill("statusPill", null, "<b>Status:</b> Ready");
+
+    // 2) Prefer cached local (fast)
+    const cached = loadLocalCache();
+    if (cached) {
+      state = cached;
+      syncSettingsToUI();
+      renderAll();
+    }
+
+    // 3) If already signed in, pull cloud
+    try {
+      const user = await getUserSafe();
+      if (user) {
+        setAuthMsg("ok", "Signed in. Checking cloud state…");
+        const cloud = await cloudLoadState();
+        if (cloud) {
+          state = cloud;
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+          cacheStateLocally(state);
+          syncSettingsToUI();
+          renderAll();
+          pulseSaved(false);
+          setAuthMsg("ok", "Cloud state loaded.");
+        } else {
+          setAuthMsg("ok", "Signed in. No cloud state yet (first sync will create it).");
+        }
+      } else {
+        setAuthMsg("warn", "Not signed in. Local-only storage active.");
+      }
+    } catch (e) {
+      console.warn("Cloud init skipped:", e);
+      setAuthMsg("warn", "Cloud init skipped. Local-only for now.");
+    }
+  }
+
   initApp();
 </script>
 </body>
