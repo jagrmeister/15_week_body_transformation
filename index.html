@@ -373,32 +373,28 @@
         <div class="pill dot" id="dietPill"><b>Diet:</b> -</div>
       </div>
 
+      <!-- Cloud auth controls as a normal controls block (NOT nested) -->
+      <div class="controls" style="padding-top:12px;">
+        <div>
+          <label>Cloud sync email</label>
+          <input id="authEmail" type="email" placeholder="you@email.com"/>
+        </div>
+        <div>
+          <label>Cloud sync password</label>
+          <input id="authPass" type="password" placeholder="password"/>
+        </div>
+        <div>
+          <label>&nbsp;</label>
+          <button class="btn secondary" id="signInBtn" type="button">Sign In (Enable Sync)</button>
+        </div>
+        <div>
+          <label>&nbsp;</label>
+          <button class="btn secondary" id="signOutBtn" type="button">Sign Out</button>
+        </div>
+      </div>
+
       <div class="controls">
         <div>
-<div class="controls" style="padding-top:0;">
-  <div>
-    <label>Cloud sync email</label>
-    <input id="authEmail" type="email" placeholder="you@email.com"/>
-  </div>
-  <div>
-    <label>Cloud sync password</label>
-    <input id="authPass" type="password" placeholder="password"/>
-  </div>
-  <div>
-    <label>&nbsp;</label>
-    <button class="btn secondary" id="signInBtn" type="button">
-      Sign In (Enable Sync)
-    </button>
-  </div>
-  <div>
-    <label>&nbsp;</label>
-    <button class="btn secondary" id="signOutBtn" type="button">
-      Sign Out
-    </button>
-  </div>
-</div>
-
-          
           <label>Official start weigh-in date (Mon)</label>
           <input type="date" id="startDate" value="2026-01-05"/>
         </div>
@@ -591,7 +587,9 @@
     </div>
   </div>
 </div>
-<script src="https://dklnhdjxplpqnrjziqkq.supabase.co"></script>
+
+<!-- Correct Supabase JS library -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
   function ymd(d){
@@ -612,8 +610,9 @@
   function weekdayName(d){ return ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][d.getDay()]; }
 
   const STORAGE_KEY = "diet_15wk_body_transformation_v5";
+  const LOCAL_CACHE_KEY = "diet_15wk_cache_v1";
 
-  // Fast window (ended early): Jan 2 to Jan 3 only (Jan 4 is normal)
+  // Fast window: Jan 2 to Jan 3 only (Jan 4 is normal)
   const FAST_START = "2026-01-02";
   const FAST_END   = "2026-01-03";
 
@@ -646,67 +645,65 @@
   function isFastDay(ds){ return ds>=FAST_START && ds<=FAST_END; }
   function inReverseWindow(ds){ return ds>=REVERSE_START && ds<=REVERSE_END; }
 
-const SUPABASE_URL = "https://dklnhdjxplpqnrjziqkq.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_IMLHiJEMCfXAQqGIdhBAHQ_I1OCnlst";
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  // Supabase
+  const SUPABASE_URL = "https://dklnhdjxplpqnrjziqkq.supabase.co";
+  const SUPABASE_ANON_KEY = "sb_publishable_IMLHiJEMCfXAQqGIdhBAHQ_I1OCnlst";
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-async function getUser() {
-  const { data } = await supabase.auth.getUser();
-  return data.user || null;
-}
-
-async function cloudLoadState() {
-  const user = await getUser();
-  if (!user) return null;
-
-  const { data, error } = await supabase
-    .from("tracker_states")
-    .select("state")
-    .eq("user_id", user.id)
-    .single();
-
-  // "no rows" is fine (first run)
-  if (error && error.code !== "PGRST116") {
-    console.error("cloudLoadState error:", error);
-    return null;
+  async function getUser() {
+    const { data } = await supabase.auth.getUser();
+    return data.user || null;
   }
-  return data?.state || null;
-}
 
-async function cloudSaveState(newState) {
-  const user = await getUser();
-  if (!user) return false;
+  async function cloudLoadState() {
+    const user = await getUser();
+    if (!user) return null;
 
-  const payload = {
-    user_id: user.id,
-    state: newState,
-    updated_at: new Date().toISOString()
-  };
+    const { data, error } = await supabase
+      .from("tracker_states")
+      .select("state")
+      .eq("user_id", user.id)
+      .single();
 
-  const { error } = await supabase
-    .from("tracker_states")
-    .upsert(payload, { onConflict: "user_id" });
-
-  if (error) {
-    console.error("cloudSaveState error:", error);
-    return false;
+    if (error && error.code !== "PGRST116") {
+      console.error("cloudLoadState error:", error);
+      return null;
+    }
+    return data?.state || null;
   }
-  return true;
-}
 
-function cacheStateLocally(newState) {
-  try { localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify(newState)); } catch {}
-}
+  async function cloudSaveState(newState) {
+    const user = await getUser();
+    if (!user) return false;
 
-function loadLocalCache() {
-  try {
-    const raw = localStorage.getItem(LOCAL_CACHE_KEY);
-    return raw ? JSON.parse(raw) : null;
-  } catch { return null; }
-}
-  
+    const payload = {
+      user_id: user.id,
+      state: newState,
+      updated_at: new Date().toISOString()
+    };
 
-const LOCAL_CACHE_KEY = "diet_15wk_cache_v1";
+    const { error } = await supabase
+      .from("tracker_states")
+      .upsert(payload, { onConflict: "user_id" });
+
+    if (error) {
+      console.error("cloudSaveState error:", error);
+      return false;
+    }
+    return true;
+  }
+
+  function cacheStateLocally(newState) {
+    try { localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify(newState)); } catch {}
+  }
+
+  function loadLocalCache() {
+    try {
+      const raw = localStorage.getItem(LOCAL_CACHE_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch { return null; }
+  }
+
   function loadState(){
     try{
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -775,14 +772,8 @@ const LOCAL_CACHE_KEY = "diet_15wk_cache_v1";
       };
     }
   }
-function saveState(){
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  cacheStateLocally(state);
-  cloudSaveState(state);
-  pulseSaved();
-}
 
-let state = loadState(); // local fallback
+  let state = loadState(); // local fallback
 
   const savePill = document.getElementById("savePill");
   function pulseSaved(){
@@ -793,6 +784,14 @@ let state = loadState(); // local fallback
     setTimeout(()=>{ savePill.style.transform=""; }, 140);
   }
 
+  function saveState(){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    cacheStateLocally(state);
+    try { cloudSaveState(state); } catch {}
+    pulseSaved();
+  }
+
+  // Settings elements
   const startDateEl = document.getElementById("startDate");
   const startWeightEl = document.getElementById("startWeight");
   const startBfEl = document.getElementById("startBf");
@@ -821,30 +820,47 @@ let state = loadState(); // local fallback
     secondHighDowEl.value  = String(state.settings.secondHighDow);
   }
 
+  // Auth button wiring
+  document.getElementById("signInBtn").addEventListener("click", async () => {
+    const email = document.getElementById("authEmail").value.trim();
+    const pass = document.getElementById("authPass").value;
+
+    const { error } = await supabase.auth.signInWithPassword({ email, password: pass });
+    if (error) { alert(error.message); return; }
+
+    const cloud = await cloudLoadState();
+    if (cloud) state = cloud;
+
+    cacheStateLocally(state);
+    syncSettingsToUI();
+    renderAll();
+    alert("Signed in. Cloud sync active.");
+  });
+
+  document.getElementById("signOutBtn").addEventListener("click", async () => {
+    await supabase.auth.signOut();
+    alert("Signed out.");
+  });
+
+  // App init (single render path)
   async function initApp() {
-  // 1) Quick local cache (optional, but keeps app snappy/offline)
-  const cached = loadLocalCache?.() ? loadLocalCache() : null;
-  if (cached) state = cached;
+    const cached = loadLocalCache();
+    if (cached) state = cached;
 
-  // 2) If signed in, cloud wins
-  try {
-    const user = await getUser();
-    if (user) {
-      const cloud = await cloudLoadState();
-      if (cloud) state = cloud;
+    try {
+      const user = await getUser();
+      if (user) {
+        const cloud = await cloudLoadState();
+        if (cloud) state = cloud;
+      }
+    } catch (e) {
+      console.warn("Cloud init skipped:", e);
     }
-  } catch (e) {
-    console.warn("Cloud init skipped:", e);
+
+    cacheStateLocally(state);
+    syncSettingsToUI();
+    renderAll();
   }
-
-  // 3) Sync UI and render once
-  cacheStateLocally?.(state);
-  syncSettingsToUI();
-  renderAll();
-}
-
-initApp();
-
 
   function clamp(n, lo, hi){
     if(n < lo) return lo;
@@ -944,8 +960,6 @@ initApp();
     return primaryActive || secondaryActive;
   }
 
-  // Reverse diet ramp:
-  // Linearly ramps from the day before reverse start's normal target to 2700 by reverse end.
   function reverseTarget(ds){
     const start = parseYMD(REVERSE_START);
     const end = parseYMD(REVERSE_END);
@@ -958,7 +972,6 @@ initApp();
     return Math.round(startCutTarget + (REVERSE_TARGET - startCutTarget) * t);
   }
 
-  // Cut targets only (ignores reverse window)
   function targetForCutOnly(ds){
     if(SPECIAL_TARGETS[ds] !== undefined) return SPECIAL_TARGETS[ds];
     if(isFastDay(ds)) return 0;
@@ -972,7 +985,6 @@ initApp();
     return isHighCarbDay(ds) ? highAdj : baseAdj;
   }
 
-  // Final target logic (includes reverse override)
   function targetFor(ds){
     if(inReverseWindow(ds)) return reverseTarget(ds);
     return targetForCutOnly(ds);
@@ -998,7 +1010,6 @@ initApp();
     return `${b.low.toFixed(1)}% to ${b.high.toFixed(1)}%`;
   }
 
-  // Month tabs include May (for reverse dieting visibility)
   const monthsSpec = [
     {y:2026, m:0, name:"January 2026"},
     {y:2026, m:1, name:"February 2026"},
@@ -1089,7 +1100,6 @@ initApp();
       cell.className = "day" + (inMonth ? "" : " muted");
       if(ds===todayStr) cell.classList.add("today");
 
-      // IMPORTANT: Jan 4 is not fast. Fast applies only to Jan 2-3 via isFastDay.
       if(isFastDay(ds)) cell.classList.add("fast");
 
       const isReverse = inReverseWindow(ds) && !isFastDay(ds);
@@ -1149,8 +1159,8 @@ initApp();
 
       const bfLine=document.createElement("div");
       bfLine.className="line";
-      const bf = (rec.bf===null || rec.bf===undefined) ? "-" : Number(rec.bf).toFixed(1) + "%";
-      bfLine.innerHTML = `BF%: <b>${bf}</b>`;
+      const bfVal = (rec.bf===null || rec.bf===undefined) ? "-" : Number(rec.bf).toFixed(1) + "%";
+      bfLine.innerHTML = `BF%: <b>${bfVal}</b>`;
       cell.appendChild(bfLine);
 
       const exp = expectedRange(ds);
@@ -1319,7 +1329,6 @@ initApp();
       };
       state.days[activeDate] = rec;
       saveState();
-      pulseSaved();
       setSaveIndicator("Saved", "good");
       renderAll();
     }, 260);
@@ -1342,7 +1351,6 @@ initApp();
     if(!activeDate) return;
     delete state.days[activeDate];
     saveState();
-    pulseSaved();
     closeModal();
   });
 
@@ -1376,7 +1384,6 @@ initApp();
           state=data;
           saveState();
           syncSettingsToUI();
-          pulseSaved();
           renderAll();
         }catch(e){ alert("Import failed. Choose a valid export file."); }
       };
@@ -1388,6 +1395,7 @@ initApp();
   document.getElementById("resetBtn").addEventListener("click", ()=>{
     if(!confirm("Reset ALL saved data? This cannot be undone.")) return;
     localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(LOCAL_CACHE_KEY);
     state = loadState();
     syncSettingsToUI();
     renderAll();
@@ -1427,7 +1435,7 @@ initApp();
           if(!state.days[it.date]) state.days[it.date] = {calories:null, workout:"", weight:null, bf:null, notes:""};
           state.days[it.date].calories = it.calories;
         }
-        saveState(); pulseSaved(); renderAll();
+        saveState(); renderAll();
         alert(`Imported calories for ${items.length} day(s).`);
       };
       r.readAsText(file);
@@ -1453,12 +1461,12 @@ initApp();
       state.settings.adhWindow = Number(adhWindowEl.value||150);
       state.settings.primaryHighDow = Number(primaryHighDowEl.value||0);
       state.settings.secondHighDow = Number(secondHighDowEl.value||3);
-      saveState(); pulseSaved(); renderAll();
+      saveState(); renderAll();
     });
     el.addEventListener("change", ()=>{
       state.settings.primaryHighDow = Number(primaryHighDowEl.value||0);
       state.settings.secondHighDow = Number(secondHighDowEl.value||3);
-      saveState(); pulseSaved(); renderAll();
+      saveState(); renderAll();
     });
   });
 
@@ -1600,7 +1608,8 @@ initApp();
 
   window.addEventListener("resize", ()=>{ renderActiveMonth(); });
 
-  renderAll();
+  // IMPORTANT: do not call renderAll() here. initApp is the single entry point.
+  initApp();
 </script>
 </body>
 </html>
