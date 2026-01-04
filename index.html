@@ -326,6 +326,38 @@
     </div>
   </header>
 
+  <section class="card" id="cloudCard" style="margin-bottom:18px;">
+    <div class="head">
+      <div class="t">Cloud Sync</div>
+      <div class="pill dot" id="cloudPill"><b>Cloud:</b> Not signed in</div>
+    </div>
+    <div class="tiny" style="padding:0 16px 10px;">
+      Use this to sync your tracker across devices. Calendar rendering does not depend on cloud sync.
+    </div>
+    <div class="controls" style="padding-top:0;">
+      <div>
+        <label>Cloud sync email</label>
+        <input id="authEmail" type="email" placeholder="you@email.com"/>
+      </div>
+      <div>
+        <label>Cloud sync password</label>
+        <input id="authPass" type="password" placeholder="password"/>
+      </div>
+      <div>
+        <label>&nbsp;</label>
+        <button class="btn secondary" id="signInBtn" type="button">Sign In (Enable Sync)</button>
+      </div>
+      <div>
+        <label>&nbsp;</label>
+        <button class="btn secondary" id="signOutBtn" type="button">Sign Out</button>
+      </div>
+    </div>
+    <div class="tiny" id="authHint" style="padding:0 16px 16px; opacity:.8;">
+      Tip: Create the user in Supabase Authentication → Users. Disable email confirmation while testing.
+    </div>
+  </section>
+
+
   <section class="card" style="margin-bottom:18px;">
     <div class="head">
       <div class="t">Coach Suggestions</div>
@@ -355,63 +387,62 @@
     </div>
   </section>
 
-  <div class="row">
-    <section class="card">
-      <div class="head">
-        <div class="t">Snapshot</div>
+  
+  <section class="card" style="margin-bottom:18px;">
+    <div class="head">
+      <div class="t">Snapshot</div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+        <div class="pill dot" id="dietPill"><b>Diet:</b> -</div>
         <div class="pill dot" id="onTrackPill"><b>On track:</b> -</div>
       </div>
-      <div class="kpis">
-        <div class="kpi">
-          <div class="k">Current weight (latest)</div>
-          <div class="v" id="kpiCurrent">-</div>
-          <div class="s">Latest logged weigh-in</div>
-        </div>
-        <div class="kpi">
-          <div class="k">Current BF% (latest)</div>
-          <div class="v" id="kpiCurrentBf">-</div>
-          <div class="s">From your Fitdays entries</div>
-        </div>
-        <div class="kpi">
-          <div class="k">7-day avg calories</div>
-          <div class="v" id="kpiAvgCal">-</div>
-          <div class="s">From logged calories</div>
-        </div>
-        <div class="kpi">
-          <div class="k">7-day adherence</div>
-          <div class="v" id="kpiAdh">-</div>
-          <div class="s">Within ± window</div>
-        </div>
+    </div>
+    <div class="kpis">
+      <div class="kpi">
+        <div class="k">Start weight (official)</div>
+        <div class="v" id="kpiStartW">-</div>
+        <div class="s">Baseline for deltas</div>
       </div>
-    </section>
-
-    <section class="card">
-      <div class="head">
-        <div class="t">Settings</div>
-        <div class="pill dot" id="dietPill"><b>Diet:</b> -</div>
+      <div class="kpi">
+        <div class="k">Start BF% (official)</div>
+        <div class="v" id="kpiStartBf">-</div>
+        <div class="s">Baseline for deltas</div>
       </div>
-
-      <!-- Cloud auth controls as a normal controls block (NOT nested) -->
-      <div class="controls" style="padding-top:12px;">
-        <div>
-          <label>Cloud sync email</label>
-          <input id="authEmail" type="email" placeholder="you@email.com"/>
-        </div>
-        <div>
-          <label>Cloud sync password</label>
-          <input id="authPass" type="password" placeholder="password"/>
-        </div>
-        <div>
-          <label>&nbsp;</label>
-          <button class="btn secondary" id="signInBtn" type="button">Sign In (Enable Sync)</button>
-        </div>
-        <div>
-          <label>&nbsp;</label>
-          <button class="btn secondary" id="signOutBtn" type="button">Sign Out</button>
-        </div>
+      <div class="kpi">
+        <div class="k">Current weight (latest)</div>
+        <div class="v" id="kpiCurrent">-</div>
+        <div class="s" id="kpiDeltaW">Change since start: -</div>
       </div>
+      <div class="kpi">
+        <div class="k">Current BF% (latest)</div>
+        <div class="v" id="kpiCurrentBf">-</div>
+        <div class="s" id="kpiDeltaBf">Change since start: -</div>
+      </div>
+      <div class="kpi">
+        <div class="k">7-day avg calories</div>
+        <div class="v" id="kpiAvgCal">-</div>
+        <div class="s">From logged calories</div>
+      </div>
+      <div class="kpi">
+        <div class="k">7-day adherence</div>
+        <div class="v" id="kpiAdh">-</div>
+        <div class="s">Within ± window</div>
+      </div>
+    </div>
+  </section>
 
-      <div class="controls">
+  <section class="card" style="margin-bottom:18px;">
+    <div class="head">
+      <div class="t">Advanced Settings</div>
+      <div class="pill dot warn" id="advancedPill"><b>Advanced:</b> Hidden</div>
+    </div>
+
+    <details id="advancedDetails" style="padding:0 16px 16px;">
+      <summary style="cursor:pointer; user-select:none; padding:10px 0; font-weight:700;">
+        Show advanced controls
+        <span class="tiny" style="font-weight:500; opacity:.75;">(mostly read-only)</span>
+      </summary>
+
+      <div class="controls" style="padding-top:10px;">
         <div>
           <label>Official start weigh-in date (Mon)</label>
           <input type="date" id="startDate" value="2026-01-05"/>
@@ -426,41 +457,41 @@
         </div>
         <div>
           <label>Base target calories (normal)</label>
-          <input type="number" id="targetCal" step="10" value="2200"/>
+          <input type="number" id="targetCal" step="10" value="2200" disabled/>
         </div>
       </div>
 
       <div class="controls" style="padding-top:0;">
         <div>
           <label>High-carb day calories</label>
-          <input type="number" id="highCal" step="10" value="2400"/>
+          <input type="number" id="highCal" step="10" value="2400" disabled/>
         </div>
         <div>
           <label>High-carb starts (week #)</label>
-          <input type="number" id="highStartWeek" min="1" step="1" value="3"/>
+          <input type="number" id="highStartWeek" min="1" step="1" value="3" disabled/>
         </div>
         <div>
           <label>Second high-carb starts (week #)</label>
-          <input type="number" id="secondHighStartWeek" min="1" step="1" value="10"/>
+          <input type="number" id="secondHighStartWeek" min="1" step="1" value="10" disabled/>
         </div>
         <div>
           <label>BMR adjust (kcal per lb change)</label>
-          <input type="number" id="kcalPerLb" min="0" step="1" value="10"/>
+          <input type="number" id="kcalPerLb" min="0" step="1" value="10" disabled/>
         </div>
       </div>
 
       <div class="controls" style="padding-top:0;">
         <div>
           <label>Minimum calories floor</label>
-          <input type="number" id="minCal" min="0" step="10" value="1700"/>
+          <input type="number" id="minCal" min="0" step="10" value="1700" disabled/>
         </div>
         <div>
           <label>Adherence window (kcal)</label>
-          <input type="number" id="adhWindow" step="10" value="150"/>
+          <input type="number" id="adhWindow" step="10" value="150" disabled/>
         </div>
         <div>
           <label>Primary high-carb day</label>
-          <select id="primaryHighDow">
+          <select id="primaryHighDow" disabled>
             <option value="0" selected>Sunday</option>
             <option value="1">Monday</option>
             <option value="2">Tuesday</option>
@@ -472,7 +503,7 @@
         </div>
         <div>
           <label>Second high-carb day (week 10+)</label>
-          <select id="secondHighDow">
+          <select id="secondHighDow" disabled>
             <option value="0">Sunday</option>
             <option value="1">Monday</option>
             <option value="2">Tuesday</option>
@@ -484,22 +515,22 @@
         </div>
       </div>
 
-      <div class="btnRow">
-        <button class="btn secondary" id="importCaloriesBtn">Import Calories CSV</button>
-        <button class="btn secondary" id="exportBtn">Export JSON</button>
-        <button class="btn secondary" id="importBtn">Import JSON</button>
-        <button class="btn danger" id="resetBtn">Reset All Data</button>
+      <div class="btnRow" style="justify-content:flex-end;">
+        <button class="btn danger" id="resetBtn" type="button">Reset All Data</button>
       </div>
-      <div style="padding:0 16px 16px;">
-        <div class="tiny">
-          Dynamic calories already account for BMR drop as weight decreases (kcal per lb).
-          Reverse diet overrides targets from Apr 20 to May 14 to ramp up to 2700.
-        </div>
+      <div class="tiny" style="opacity:.85; padding-bottom:8px;">
+        Reset is intentionally tucked away. Consider signing in first so you can restore from cloud if needed.
       </div>
-    </section>
-  </div>
+
+      <!-- Keep these hidden IDs to avoid JS null errors -->
+      <button class="btn secondary" id="importCaloriesBtn" style="display:none" type="button">Import Calories CSV</button>
+      <button class="btn secondary" id="exportBtn" style="display:none" type="button">Export JSON</button>
+      <button class="btn secondary" id="importBtn" style="display:none" type="button">Import JSON</button>
+    </details>
+  </section>
 
   <div class="tabsWrap">
+
     <div class="tabs" id="monthTabs"></div>
     <div class="pill dot" id="activeMonthPill"><b>Month:</b> -</div>
   </div>
@@ -853,6 +884,26 @@
   const primaryHighDowEl = document.getElementById("primaryHighDow");
   const secondHighDowEl  = document.getElementById("secondHighDow");
 
+  // Advanced settings toggle pill
+  const advancedDetailsEl = document.getElementById("advancedDetails");
+  const advancedPillEl = document.getElementById("advancedPill");
+  if(advancedDetailsEl && advancedPillEl){
+    const syncAdvPill = ()=>{
+      if(advancedDetailsEl.open){
+        advancedPillEl.classList.remove("warn");
+        advancedPillEl.classList.add("good");
+        advancedPillEl.innerHTML = "<b>Advanced:</b> Visible";
+      }else{
+        advancedPillEl.classList.remove("good");
+        advancedPillEl.classList.add("warn");
+        advancedPillEl.innerHTML = "<b>Advanced:</b> Hidden";
+      }
+    };
+    advancedDetailsEl.addEventListener("toggle", syncAdvPill);
+    syncAdvPill();
+  }
+
+
   function syncSettingsToUI(){
     startDateEl.value  = state.settings.startDate;
     startWeightEl.value= state.settings.startWeight;
@@ -882,12 +933,22 @@
     cacheStateLocally(state);
     syncSettingsToUI();
     renderAll();
-    alert("Signed in. Cloud sync active.");
+    const cloudPillEl = document.getElementById("cloudPill");
+    if(cloudPillEl){
+      cloudPillEl.classList.remove("warn","bad");
+      cloudPillEl.classList.add("good");
+      cloudPillEl.innerHTML = `<b>Cloud:</b> Signed in (${email})`;
+    }
   });
 
   document.getElementById("signOutBtn").addEventListener("click", async () => {
     await supabase.auth.signOut();
-    alert("Signed out.");
+    const cloudPillEl = document.getElementById("cloudPill");
+    if(cloudPillEl){
+      cloudPillEl.classList.remove("good","bad");
+      cloudPillEl.classList.add("warn");
+      cloudPillEl.innerHTML = "<b>Cloud:</b> Not signed in";
+    }
   });
 
   // App init (single render path)
@@ -1440,13 +1501,34 @@
     inp.click();
   });
 
-  document.getElementById("resetBtn").addEventListener("click", ()=>{
-    if(!confirm("Reset ALL saved data? This cannot be undone.")) return;
-    localStorage.removeItem(STORAGE_KEY);
-    localStorage.removeItem(LOCAL_CACHE_KEY);
-    state = loadState();
-    syncSettingsToUI();
-    renderAll();
+  document.getElementById("resetBtn").addEventListener("click", async ()=>{
+    try{
+      if(!supabase){
+        alert("Cloud sync is not configured in this build.");
+        return;
+      }
+      const { data, error } = await supabase.auth.getUser();
+      if(error){
+        alert(error.message || "Unable to verify sign-in.");
+        return;
+      }
+      if(!data || !data.user){
+        alert("Please sign in before resetting data.");
+        return;
+      }
+      const phrase = prompt('Type RESET to confirm deleting all saved data.');
+      if(phrase !== "RESET") return;
+
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(LOCAL_CACHE_KEY);
+      state = loadState();
+      syncSettingsToUI();
+      renderAll();
+      alert("Local data reset. If cloud sync is enabled, refresh to pull cloud data.");
+    }catch(e){
+      console.error(e);
+      alert("Reset failed. Check DevTools Console for details.");
+    }
   });
 
   function parseCSV(text){
@@ -1585,6 +1667,39 @@
     const bfs = getBfIns();
     const currentBf = bfs.length ? bfs[bfs.length-1] : null;
     document.getElementById("kpiCurrentBf").textContent = currentBf ? `${currentBf.bf.toFixed(1)}%` : "-";
+
+    // Start baselines + deltas (if elements exist)
+    const startW = Number(state.settings.startWeight || 0);
+    const startBf = Number(state.settings.startBf || 0);
+
+    const elStartW = document.getElementById("kpiStartW");
+    if(elStartW) elStartW.textContent = startW ? `${startW.toFixed(1)} lbs` : "-";
+
+    const elStartBf = document.getElementById("kpiStartBf");
+    if(elStartBf) elStartBf.textContent = startBf ? `${startBf.toFixed(1)}%` : "-";
+
+    const elDeltaW = document.getElementById("kpiDeltaW");
+    if(elDeltaW){
+      if(current && startW){
+        const dw = current.w - startW;
+        const sign = dw >= 0 ? "+" : "";
+        elDeltaW.textContent = `Change since start: ${sign}${dw.toFixed(1)} lbs`;
+      }else{
+        elDeltaW.textContent = "Change since start: -";
+      }
+    }
+
+    const elDeltaBf = document.getElementById("kpiDeltaBf");
+    if(elDeltaBf){
+      if(currentBf && startBf){
+        const db = currentBf.bf - startBf;
+        const sign = db >= 0 ? "+" : "";
+        elDeltaBf.textContent = `Change since start: ${sign}${db.toFixed(1)}%`;
+      }else{
+        elDeltaBf.textContent = "Change since start: -";
+      }
+    }
+
 
     const d7 = compute7Day();
     document.getElementById("kpiAvgCal").textContent = (d7.avgCal===null) ? "-" : `${Math.round(d7.avgCal)} kcal`;
