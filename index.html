@@ -1,869 +1,831 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>15 Week Body Transformation (Jan to May 2026)</title>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>15_Week_Body_Transformation</title>
+<style>
+  :root{
+    --bg:#0b0f14;
+    --bg2:#0a1220;
+    --card:#101826;
+    --card2:#0f1724;
+    --tile:#121c2c;
+    --tile2:#0f1826;
 
-  <script>
-  // Global error trap (helps when something silently breaks)
-  window.addEventListener("error", (ev) => {
-    try{
-      console.error("App error:", ev.error || ev.message);
-      const el = document.getElementById("authMsg");
-      if(el){
-        el.innerHTML = '<b>Cloud sync:</b> <span class="err">JavaScript error occurred. Open DevTools Console for details.</span>';
-      }
-    }catch(_){}
-  });
-  </script>
+    --ink:#e9f0f7;
+    --muted:#a9b6c6;
 
-  <style>
+    --line:rgba(148,163,184,.18);
+    --shadow:0 18px 40px rgba(0,0,0,.35);
+    --shadow2:0 10px 24px rgba(0,0,0,.28);
+
+    --accent:#3b82f6;
+    --good:#22c55e;
+    --warn:#f59e0b;
+    --bad:#ef4444;
+
+    --fast:rgba(245,158,11,.12);
+    --today:rgba(59,130,246,.14);
+    --high:rgba(34,197,94,.12);
+
+    --radius:18px;
+
+    --tileBorder:rgba(148,163,184,.16);
+    --tileBorderHover:rgba(59,130,246,.32);
+
+    --tileMinH: 220px;
+  }
+
+  @media (prefers-color-scheme: light){
     :root{
-      --bg0:#04070c;
-      --bg1:#070d18;
-      --bg2:#0b1424;
-      --card:#0b1424cc;
-      --card2:#0b1424aa;
-      --line:#18304e;
-      --line2:#1c3758;
-      --text:#d9e6ff;
-      --muted:#9db4d6;
-      --muted2:#7f97bd;
-      --pill:#0f223a;
-      --pill2:#102a4a;
-      --good:#2dd4bf;
-      --warn:#f59e0b;
-      --bad:#fb7185;
-      --accent:#60a5fa;
-      --accent2:#93c5fd;
-      --shadow: 0 18px 40px rgba(0,0,0,.55);
-      --r:18px;
-    }
+      --bg:#f6f8fb;
+      --bg2:#eef2ff;
+      --card:#ffffff;
+      --card2:#ffffff;
+      --tile:#ffffff;
+      --tile2:#f8fafc;
 
-    *{ box-sizing:border-box; }
-    html,body{ height:100%; }
-    body{
-      margin:0;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Liberation Sans", sans-serif;
-      color:var(--text);
-      background:
-        radial-gradient(1400px 900px at 20% 12%, rgba(96,165,250,.25), transparent 55%),
-        radial-gradient(1200px 800px at 80% 25%, rgba(45,212,191,.18), transparent 55%),
-        radial-gradient(1200px 900px at 50% 100%, rgba(59,130,246,.18), transparent 50%),
-        linear-gradient(180deg, var(--bg0), var(--bg1) 35%, var(--bg0));
-      overflow-x:hidden;
-    }
+      --ink:#0b1e39;
+      --muted:#64748b;
 
-    a{ color:var(--accent2); }
+      --line:rgba(15,23,42,.12);
+      --shadow:0 14px 28px rgba(2,8,23,.08);
+      --shadow2:0 10px 20px rgba(2,8,23,.06);
 
-    .wrap{
-      max-width: 1340px;
-      margin: 26px auto 42px;
-      padding: 0 18px 30px;
-    }
+      --fast:#fff7ed;
+      --today:#eff6ff;
+      --high:#f0fdf4;
 
-    .topbar{
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:16px;
-      margin-bottom:14px;
+      --tileBorder:rgba(15,23,42,.12);
+      --tileBorderHover:rgba(37,99,235,.30);
     }
+  }
 
-    h1{
-      margin:0;
-      font-weight:800;
-      letter-spacing:.2px;
-      font-size: 22px;
-      line-height:1.15;
-      text-shadow: 0 2px 12px rgba(0,0,0,.45);
-    }
-    .sub{
-      margin-top:6px;
-      color:var(--muted);
-      font-size:12.5px;
-      line-height:1.35;
-      max-width: 920px;
-    }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+    color:var(--ink);
+    background:
+      radial-gradient(1200px 600px at 18% 0%, rgba(59,130,246,.18), transparent 60%),
+      radial-gradient(1000px 560px at 92% 10%, rgba(34,197,94,.12), transparent 60%),
+      linear-gradient(180deg, var(--bg2), var(--bg));
+  }
 
-    .pills{
-      display:flex;
-      gap:10px;
-      align-items:center;
-      flex-wrap:wrap;
-      justify-content:flex-end;
-      padding-top:2px;
-    }
-    .pill{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding:8px 10px;
-      border-radius: 999px;
-      background: linear-gradient(180deg, rgba(16,42,74,.75), rgba(10,22,38,.65));
-      border:1px solid rgba(96,165,250,.22);
-      box-shadow: 0 10px 30px rgba(0,0,0,.25);
-      color:var(--text);
-      font-size:12px;
-      white-space:nowrap;
-      user-select:none;
-    }
-    .dot{
-      width:8px;height:8px;border-radius:999px;background:var(--accent);
-      box-shadow: 0 0 0 3px rgba(96,165,250,.18);
-    }
-    .dot.good{ background:var(--good); box-shadow:0 0 0 3px rgba(45,212,191,.16); }
-    .dot.warn{ background:var(--warn); box-shadow:0 0 0 3px rgba(245,158,11,.16); }
-    .dot.bad{ background:var(--bad); box-shadow:0 0 0 3px rgba(251,113,133,.16); }
+  .container{max-width:1560px; margin:0 auto; padding:22px;}
 
-    .grid2{
-      display:grid;
-      grid-template-columns: 1.15fr .85fr;
-      gap:14px;
-      margin-top:14px;
-    }
+  header{
+    display:flex; justify-content:space-between; gap:14px; flex-wrap:wrap;
+    align-items:flex-start; margin-bottom:14px;
+  }
+  h1{margin:0; font-size:20px; font-weight:950;}
+  .sub{margin-top:6px; color:var(--muted); font-size:13px; line-height:1.35; max-width:1180px;}
 
-    .card{
-      background: linear-gradient(180deg, rgba(12,26,46,.92), rgba(7,15,28,.78));
-      border:1px solid rgba(96,165,250,.16);
-      border-top:1px solid rgba(147,197,253,.18);
-      border-radius: var(--r);
-      box-shadow: var(--shadow);
-      overflow:hidden;
-    }
+  .pill{
+    display:inline-flex; gap:8px; align-items:center;
+    padding:8px 12px; border-radius:999px;
+    border:1px solid var(--line);
+    background:rgba(148,163,184,.10);
+    color:var(--muted); font-size:12px;
+  }
+  .pill b{color:var(--ink)}
+  .dot::before{content:""; width:8px; height:8px; border-radius:999px; background:var(--accent); display:inline-block;}
+  .pill.good.dot::before{background:var(--good)}
+  .pill.warn.dot::before{background:var(--warn)}
+  .pill.bad.dot::before{background:var(--bad)}
 
-    .head{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      padding:12px 14px;
-      border-bottom: 1px solid rgba(96,165,250,.12);
-      background: linear-gradient(180deg, rgba(9,18,33,.62), rgba(9,18,33,.20));
-    }
-    .head .t{
-      font-weight:700;
-      font-size:13.5px;
-      letter-spacing:.2px;
-    }
-    .head .pill{
-      padding:6px 9px;
-      font-size:11.5px;
-    }
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    overflow:hidden;
+  }
+  .head{
+    padding:14px 16px; border-bottom:1px solid var(--line);
+    display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; align-items:center;
+    background:linear-gradient(180deg, rgba(148,163,184,.06), transparent 70%);
+  }
+  .head .t{font-weight:950; font-size:14px;}
 
-    .body{
-      padding:14px;
-    }
+  .row{display:grid; grid-template-columns: 1.25fr .95fr; gap:16px; margin-bottom:18px;}
+  @media(max-width:1150px){ .row{grid-template-columns:1fr;} }
 
-    .coach{
-      display:grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap:10px;
-    }
-    .coach .mini{
-      border-radius: 14px;
-      border:1px solid rgba(96,165,250,.14);
-      background: linear-gradient(180deg, rgba(10,20,38,.65), rgba(7,14,26,.42));
-      padding:10px 10px 9px;
-      min-height: 72px;
-    }
-    .mini .k{
-      font-size:11px;
-      color:var(--muted);
-      margin-bottom:6px;
-    }
-    .mini .v{
-      font-size:13px;
-      font-weight:700;
-      margin-bottom:6px;
-    }
-    .mini .s{
-      font-size:11.5px;
-      color:var(--muted2);
-    }
+  .kpis{display:grid; grid-template-columns: repeat(4, 1fr); gap:12px; padding:16px;}
+  @media(max-width:1100px){ .kpis{grid-template-columns: repeat(2,1fr);} }
+  @media(max-width:620px){ .kpis{grid-template-columns: 1fr;} }
 
-    .snapGrid{
-      display:grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap:10px;
-    }
+  .kpi{
+    border:1px solid var(--line);
+    border-radius:16px; padding:14px;
+    background:linear-gradient(180deg, rgba(148,163,184,.08), transparent 75%);
+    box-shadow:var(--shadow2);
+  }
+  .kpi .k{font-size:12px; color:var(--muted);}
+  .kpi .v{margin-top:6px; font-size:20px; font-weight:950;}
+  .kpi .s{margin-top:6px; font-size:12px; color:var(--muted);}
 
-    .kpi{
-      border-radius: 14px;
-      border:1px solid rgba(96,165,250,.14);
-      background: linear-gradient(180deg, rgba(10,20,38,.65), rgba(7,14,26,.42));
-      padding:12px 12px 10px;
-      min-height: 78px;
-    }
-    .kpi .k{ font-size:11px; color:var(--muted); margin-bottom:7px; }
-    .kpi .v{ font-size:16px; font-weight:800; letter-spacing:.3px; margin-bottom:6px;}
-    .kpi .s{ font-size:11.5px; color:var(--muted2); }
+  .controls{display:grid; grid-template-columns: repeat(4,1fr); gap:10px; padding:12px 16px 16px;}
+  @media(max-width:1100px){ .controls{grid-template-columns: repeat(2,1fr);} }
+  @media(max-width:620px){ .controls{grid-template-columns: 1fr;} }
 
-    .settingsGrid{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:10px;
-      align-items:end;
-    }
+  label{display:block; font-size:12px; color:var(--muted); margin:0 0 4px;}
+  input, select, textarea{
+    width:100%; padding:10px; border-radius:12px; border:1px solid var(--line);
+    background:rgba(148,163,184,.10); color:var(--ink); font-size:13px; outline:none;
+  }
+  select{background-color:rgba(148,163,184,.10); color:var(--ink);}
+  option{background-color:var(--card); color:var(--ink);}
+  textarea{min-height: 110px; resize:vertical;}
 
-    label{
-      display:block;
-      font-size:11px;
-      color:var(--muted);
-      margin:0 0 6px;
-    }
-    input, select{
-      width:100%;
-      height:34px;
-      border-radius: 11px;
-      border:1px solid rgba(96,165,250,.18);
-      background: rgba(11,20,36,.70);
-      color:var(--text);
-      padding: 0 10px;
-      outline:none;
-    }
-    input:focus, select:focus{
-      border-color: rgba(147,197,253,.34);
-      box-shadow: 0 0 0 3px rgba(96,165,250,.12);
-    }
+  .btnRow{display:flex; gap:10px; flex-wrap:wrap; padding:0 16px 16px;}
+  .btn{
+    padding:10px 14px; border-radius:12px; border:1px solid var(--line);
+    cursor:pointer; font-size:13px; box-shadow:var(--shadow2);
+    background:linear-gradient(180deg, rgba(59,130,246,.18), rgba(59,130,246,.06));
+    color:var(--ink);
+  }
+  .btn.secondary{background:linear-gradient(180deg, rgba(148,163,184,.16), rgba(148,163,184,.05));}
+  .btn.danger{background:linear-gradient(180deg, rgba(239,68,68,.16), rgba(239,68,68,.05));}
+  .tiny{font-size:12px; color:var(--muted);}
 
-    .btnRow{
-      display:flex;
-      gap:10px;
-      justify-content:flex-end;
-      align-items:center;
-      flex-wrap:wrap;
-      margin-top:10px;
-    }
+  .tabsWrap{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    margin: 10px 0 14px;
+  }
+  .tabs{
+    display:flex; gap:10px; flex-wrap:wrap;
+    padding:10px;
+    border-radius:18px;
+    border:1px solid var(--line);
+    background:linear-gradient(180deg, rgba(148,163,184,.10), rgba(148,163,184,.04));
+    box-shadow:var(--shadow2);
+  }
+  .tab{
+    display:inline-flex; align-items:center; gap:10px;
+    padding:10px 12px;
+    border-radius:14px;
+    border:1px solid rgba(148,163,184,.22);
+    background:linear-gradient(180deg, rgba(148,163,184,.10), rgba(148,163,184,.04));
+    color:var(--ink);
+    cursor:pointer;
+    user-select:none;
+    font-weight:850;
+    font-size:13px;
+    transition: transform .12s ease, border-color .12s ease, background .12s ease;
+  }
+  .tab:hover{transform: translateY(-1px); border-color: rgba(59,130,246,.38);}
+  .tab.active{
+    border-color: rgba(59,130,246,.55);
+    background:linear-gradient(180deg, rgba(59,130,246,.26), rgba(59,130,246,.10));
+  }
+  .tab .count{
+    display:inline-flex; align-items:center; justify-content:center;
+    min-width:26px;
+    padding:4px 8px;
+    border-radius:999px;
+    border:1px solid rgba(148,163,184,.22);
+    color:var(--muted);
+    font-weight:900;
+    font-size:12px;
+    background:rgba(148,163,184,.08);
+  }
+  .tab.active .count{border-color: rgba(59,130,246,.45); color: var(--ink);}
 
-    .btn{
-      border:1px solid rgba(96,165,250,.22);
-      background: linear-gradient(180deg, rgba(16,42,74,.75), rgba(10,22,38,.60));
-      color:var(--text);
-      padding:8px 10px;
-      border-radius: 12px;
-      cursor:pointer;
-      font-weight:700;
-      font-size:12px;
-      user-select:none;
-    }
-    .btn:hover{ border-color: rgba(147,197,253,.35); }
-    .btn.danger{ border-color: rgba(251,113,133,.35); }
-    .btn.danger:hover{ border-color: rgba(251,113,133,.55); }
-    .btn:active{ transform: translateY(1px); }
+  .monthTitle{
+    padding:14px 16px; border-bottom:1px solid var(--line);
+    display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; align-items:center;
+    background:linear-gradient(180deg, rgba(148,163,184,.08), transparent 75%);
+    font-weight:950;
+  }
+  .calendar{
+    padding:18px;
+    display:grid;
+    grid-template-columns: repeat(7,1fr);
+    gap:14px;
+  }
+  @media(max-width:1100px){ .calendar{gap:12px;} }
+  @media(max-width:860px){ .calendar{grid-template-columns: repeat(2,1fr);} }
+  @media(max-width:520px){ .calendar{grid-template-columns: 1fr;} }
 
-    .authRow{
-      display:grid;
-      grid-template-columns: 1fr 1fr auto auto;
-      gap:10px;
-      align-items:end;
-      margin-bottom:8px;
-    }
-    .authMsg{
-      margin-top:6px;
-      font-size:11.5px;
-      color:var(--muted2);
-    }
-    .authMsg .ok{ color:rgba(45,212,191,.95); font-weight:700;}
-    .authMsg .warn{ color:rgba(245,158,11,.98); font-weight:700;}
-    .authMsg .err{ color:rgba(251,113,133,.95); font-weight:800;}
+  .dow{font-size:13px; font-weight:800; color:var(--muted); padding-left:8px;}
+  @media(max-width:860px){ .dow{display:none;} }
 
-    .monthCard{
-      margin-top:14px;
-    }
+  .day{
+    min-height: var(--tileMinH);
+    padding:14px;
+    border:1px solid var(--tileBorder);
+    border-radius:16px;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02)),
+      linear-gradient(180deg, var(--tile), var(--tile2));
+    box-shadow:0 10px 18px rgba(2,8,23,.22);
+    cursor:pointer;
+    display:flex; flex-direction:column; gap:8px;
+    overflow:hidden;
+    transition: transform .12s ease, border-color .12s ease, filter .12s ease;
+  }
+  .day:hover{transform:translateY(-2px); border-color: var(--tileBorderHover); filter:saturate(1.02);}
 
-    .monthTabs{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      align-items:center;
-      padding:12px 14px;
-      border-bottom:1px solid rgba(96,165,250,.12);
-      background: linear-gradient(180deg, rgba(9,18,33,.62), rgba(9,18,33,.20));
-    }
-    .tab{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding:9px 12px;
-      border-radius: 14px;
-      border:1px solid rgba(96,165,250,.18);
-      background: rgba(11,20,36,.55);
-      cursor:pointer;
-      user-select:none;
-      font-weight:800;
-      font-size:12px;
-      color:var(--text);
-    }
-    .tab small{
-      font-weight:900;
-      color:rgba(157,180,214,.85);
-      background: rgba(16,42,74,.55);
-      border:1px solid rgba(96,165,250,.18);
-      padding:3px 7px;
-      border-radius: 999px;
-    }
-    .tab.active{
-      border-color: rgba(147,197,253,.40);
-      box-shadow: 0 0 0 3px rgba(96,165,250,.10);
-      background: rgba(16,42,74,.55);
-    }
+  .day.muted{
+    opacity:.35; background:transparent; box-shadow:none; cursor:default;
+    border-color: rgba(148,163,184,.10);
+  }
+  .day.fast{
+    background:
+      linear-gradient(180deg, rgba(245,158,11,.16), rgba(245,158,11,.05)),
+      linear-gradient(180deg, var(--tile), var(--tile2));
+  }
+  .day.refeed{
+    background:
+      linear-gradient(180deg, rgba(34,197,94,.16), rgba(34,197,94,.05)),
+      linear-gradient(180deg, var(--tile), var(--tile2));
+  }
+  .day.reverse{
+    background:
+      linear-gradient(180deg, rgba(59,130,246,.18), rgba(34,197,94,.06)),
+      linear-gradient(180deg, var(--tile), var(--tile2));
+  }
+  .day.today{
+    background:
+      linear-gradient(180deg, rgba(59,130,246,.18), rgba(59,130,246,.06)),
+      linear-gradient(180deg, var(--tile), var(--tile2));
+  }
 
-    .calWrap{ padding:14px; }
+  .topline{display:flex; justify-content:space-between; gap:8px; align-items:flex-start;}
+  .num{font-weight:950; font-size:16px;}
+  .badges{display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end;}
+  .badge{
+    font-size:12px; padding:4px 10px; border-radius:999px;
+    border:1px solid rgba(148,163,184,.22);
+    color:var(--muted);
+    background:rgba(148,163,184,.10);
+    white-space:nowrap;
+  }
+  .badge.good{color:var(--good); border-color: rgba(34,197,94,.35); background: rgba(34,197,94,.10);}
+  .badge.warn{color:var(--warn); border-color: rgba(245,158,11,.35); background: rgba(245,158,11,.10);}
+  .badge.bad{color:var(--bad); border-color: rgba(239,68,68,.35); background: rgba(239,68,68,.10);}
 
-    .dow{
-      display:grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap:10px;
-      margin-bottom:10px;
-    }
-    .dow div{
-      color:var(--muted);
-      font-size:11px;
-      padding-left:2px;
-    }
+  .line{font-size:14px; color:var(--muted); line-height:1.25;}
+  .line b{color:var(--ink); font-weight:900;}
+  .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;}
 
-    .grid{
-      display:grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap:10px;
-    }
-
-    .day{
-      border-radius: 16px;
-      border:1px solid rgba(96,165,250,.14);
-      background: linear-gradient(180deg, rgba(10,20,38,.60), rgba(7,14,26,.40));
-      min-height: 124px;
-      padding:10px 10px 10px;
-      position:relative;
-      overflow:hidden;
-    }
-
-    .day .num{
-      font-weight:900;
-      font-size:14px;
-      letter-spacing:.2px;
-    }
-
-    .badges{
-      position:absolute;
-      top:8px;
-      right:8px;
-      display:flex;
-      gap:6px;
-      flex-wrap:wrap;
-      justify-content:flex-end;
-      max-width: 74%;
-    }
-    .badge{
-      font-size:10px;
-      font-weight:900;
-      padding:4px 8px;
-      border-radius: 999px;
-      border:1px solid rgba(96,165,250,.18);
-      background: rgba(16,42,74,.55);
-      color:rgba(217,230,255,.92);
-    }
-    .badge.fast{ border-color: rgba(245,158,11,.35); background: rgba(245,158,11,.12); color: rgba(255,215,160,.95); }
-    .badge.walk{ border-color: rgba(45,212,191,.35); background: rgba(45,212,191,.10); color: rgba(182,255,245,.95); }
-    .badge.high{ border-color: rgba(96,165,250,.40); background: rgba(96,165,250,.12); color: rgba(210,230,255,.98); }
-    .badge.break{ border-color: rgba(251,113,133,.45); background: rgba(251,113,133,.10); color: rgba(255,205,214,.98); }
-
-    .line{
-      margin-top:9px;
-      font-size:11.5px;
-      color:var(--muted);
-    }
-    .val{
-      margin-top:4px;
-      font-weight:800;
-      color:rgba(217,230,255,.95);
-      font-size:12.5px;
-    }
-    .note{
-      margin-top:8px;
-      font-size:11.5px;
-      color:rgba(157,180,214,.9);
-      line-height:1.25;
-    }
-
-    .day.empty{
-      opacity:.35;
-      filter:saturate(.8);
-    }
-
-    .day.ontrack{
-      border-color: rgba(45,212,191,.32);
-      box-shadow: inset 0 0 0 1px rgba(45,212,191,.10);
-    }
-    .day.warn{
-      border-color: rgba(245,158,11,.35);
-      box-shadow: inset 0 0 0 1px rgba(245,158,11,.10);
-    }
-    .day.off{
-      border-color: rgba(251,113,133,.42);
-      box-shadow: inset 0 0 0 1px rgba(251,113,133,.12);
-    }
-
-    .editRow{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:10px;
-      margin-top:10px;
-    }
-
-    .editRow textarea{
-      width:100%;
-      min-height: 72px;
-      resize:vertical;
-      border-radius: 12px;
-      border:1px solid rgba(96,165,250,.18);
-      background: rgba(11,20,36,.70);
-      color:var(--text);
-      padding:10px;
-      outline:none;
-      font-family: inherit;
-      font-size:12px;
-      line-height:1.25;
-    }
-
-    .footerRow{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:10px;
-      flex-wrap:wrap;
-      padding: 12px 14px;
-      border-top:1px solid rgba(96,165,250,.12);
-      background: linear-gradient(180deg, rgba(9,18,33,.20), rgba(9,18,33,.45));
-    }
-    .small{
-      font-size:11.5px;
-      color:var(--muted2);
-      line-height:1.25;
-    }
-
-    @media (max-width: 1100px){
-      .grid2{ grid-template-columns: 1fr; }
-      .coach{ grid-template-columns: repeat(2, 1fr); }
-      .snapGrid{ grid-template-columns: repeat(2, 1fr); }
-    }
-    @media (max-width: 720px){
-      .coach{ grid-template-columns: 1fr; }
-      .snapGrid{ grid-template-columns: 1fr; }
-      .settingsGrid{ grid-template-columns: 1fr; }
-      .authRow{ grid-template-columns: 1fr 1fr; }
-      .btnRow{ justify-content:flex-start; }
-      .grid{ grid-template-columns: repeat(2, 1fr); }
-      .dow{ display:none; }
-    }
-  </style>
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  .modal{position:fixed; inset:0; background:rgba(2,6,23,.62); display:none; align-items:center; justify-content:center; padding:24px; z-index:50;}
+  .modal.open{display:flex;}
+  .panel{width:min(980px,100%); background:var(--card); border:1px solid var(--line); border-radius:20px; box-shadow:var(--shadow); overflow:hidden;}
+  .panelHead{padding:14px 16px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; align-items:flex-start;}
+  .panelHead .t1{font-weight:950; font-size:14px;}
+  .panelHead .t2{margin-top:4px; color:var(--muted); font-size:12px;}
+  .panelBody{padding:16px; display:grid; grid-template-columns: 1fr 1fr; gap:14px;}
+  @media(max-width:900px){ .panelBody{grid-template-columns:1fr;} }
+  .box{border:1px solid var(--line); border-radius:18px; padding:14px; background:linear-gradient(180deg, rgba(148,163,184,.08), rgba(148,163,184,.03));}
+  .box h3{margin:0 0 10px; font-size:13px; font-weight:950;}
+  .panelFoot{
+    padding:12px 16px; border-top:1px solid var(--line);
+    background:rgba(148,163,184,.06);
+    display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; align-items:center;
+  }
+</style>
 </head>
 
 <body>
-  <div class="wrap">
-
-    <div class="topbar">
-      <div>
-        <h1>15 Week Body Transformation (Jan to May 2026)</h1>
-        <div class="sub">
-          Fast highlighted: <b>2026-01-02</b> to <b>2026-01-03</b> only. Jan 4 is a standard day (not fasting).
-          High-carb schedule: <b>Week 3+</b> Sundays, and <b>Week 10+</b> Sundays + Wednesdays.
-          Dynamic calories adjust automatically as your weight drops (BMR adjustment). Reverse diet is built in for <b>Apr 20</b> through <b>May 14</b> to ramp toward <b>2700</b>.
-        </div>
-      </div>
-
-      <div class="pills">
-        <div class="pill"><span class="dot" id="statusDot"></span> <b>Status:</b> <span id="statusText">Ready</span></div>
-        <div class="pill"><span class="dot good" id="saveDot"></span> <b>Data:</b> <span id="saveText">Saved locally</span></div>
+<div class="container">
+  <header>
+    <div>
+      <h1>15_Week_Body_Transformation (Jan to May 2026)</h1>
+      <div class="sub">
+        Fast highlighted: <span class="mono">2026-01-02</span> to <span class="mono">2026-01-03</span> only.
+        <b>Jan 4 is a standard day</b> (not fasting).
+        High-carb schedule: <b>Week 3+</b> Sundays, and <b>Week 10+</b> Sundays + Wednesdays.
+        Dynamic calories adjust automatically as your weight drops (BMR adjustment).
+        Reverse diet is built in for <b>Apr 20 through May 14</b> to ramp toward <b>2700</b>.
       </div>
     </div>
+    <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+      <div class="pill dot" id="statusPill"><b>Status:</b> -</div>
+      <div class="pill dot good" id="savePill"><b>Data:</b> Saved locally</div>
+    </div>
+  </header>
+
+  <section class="card" style="margin-bottom:18px;">
+    <div class="head">
+      <div class="t">Coach Suggestions</div>
+      <div class="pill dot" id="coachPill"><b>Guidance:</b> -</div>
+    </div>
+    <div class="kpis">
+      <div class="kpi">
+        <div class="k">Primary action</div>
+        <div class="v" id="coachPrimary">-</div>
+        <div class="s">Based on adherence and weigh-in trend</div>
+      </div>
+      <div class="kpi">
+        <div class="k">Next weigh-in target</div>
+        <div class="v" id="coachNextTarget">-</div>
+        <div class="s">Shown on upcoming Mon or Thu</div>
+      </div>
+      <div class="kpi">
+        <div class="k">Week 15 Thursday target</div>
+        <div class="v" id="coachWeek15">-</div>
+        <div class="s">End-of-block expectation</div>
+      </div>
+      <div class="kpi">
+        <div class="k">Dynamic calorie logic</div>
+        <div class="v" id="coachDyn">-</div>
+        <div class="s">Uses your latest logged weight</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="row">
+    <section class="card">
+      <div class="head">
+        <div class="t">Snapshot</div>
+        <div class="pill dot" id="onTrackPill"><b>On track:</b> -</div>
+      </div>
+      <div class="kpis">
+        <div class="kpi">
+          <div class="k">Current weight (latest)</div>
+          <div class="v" id="kpiCurrent">-</div>
+          <div class="s">Latest logged weigh-in</div>
+        </div>
+        <div class="kpi">
+          <div class="k">Current BF% (latest)</div>
+          <div class="v" id="kpiCurrentBf">-</div>
+          <div class="s">From your Fitdays entries</div>
+        </div>
+        <div class="kpi">
+          <div class="k">7-day avg calories</div>
+          <div class="v" id="kpiAvgCal">-</div>
+          <div class="s">From logged calories</div>
+        </div>
+        <div class="kpi">
+          <div class="k">7-day adherence</div>
+          <div class="v" id="kpiAdh">-</div>
+          <div class="s">Within ± window</div>
+        </div>
+      </div>
+    </section>
 
     <section class="card">
       <div class="head">
-        <div class="t">Coach Suggestions</div>
-        <div class="pill"><span class="dot" style="background:rgba(147,197,253,.9)"></span> <b>Guidance:</b> <span id="coachMode">-</span></div>
-      </div>
-      <div class="body">
-        <div class="coach">
-          <div class="mini">
-            <div class="k">Primary action</div>
-            <div class="v" id="coachAction">-</div>
-            <div class="s">Based on adherence and weigh-in trend</div>
-          </div>
-          <div class="mini">
-            <div class="k">Next weigh-in target</div>
-            <div class="v" id="coachTarget">-</div>
-            <div class="s">Shown on upcoming Mon or Thu</div>
-          </div>
-          <div class="mini">
-            <div class="k">Week 15 Thursday target</div>
-            <div class="v" id="coachW15">-</div>
-            <div class="s">End-of-block expectation</div>
-          </div>
-          <div class="mini">
-            <div class="k">Dynamic calorie logic</div>
-            <div class="v" id="coachDyn">-</div>
-            <div class="s">Uses your latest logged weight</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <div class="grid2">
-
-      <section class="card">
-        <div class="head">
-          <div class="t">Snapshot</div>
-          <div class="pill"><span class="dot" id="trackDot"></span> <b>On track:</b> <span id="trackText">-</span></div>
-        </div>
-
-        <div class="body">
-          <div class="snapGrid">
-            <div class="kpi">
-              <div class="k">Current weight (latest)</div>
-              <div class="v" id="kpiWeight">-</div>
-              <div class="s">Latest logged weigh-in</div>
-            </div>
-            <div class="kpi">
-              <div class="k">Current BF% (latest)</div>
-              <div class="v" id="kpiBf">-</div>
-              <div class="s">From your Fitdays entries</div>
-            </div>
-            <div class="kpi">
-              <div class="k">7-day avg calories</div>
-              <div class="v" id="kpiCals">-</div>
-              <div class="s">From logged calories</div>
-            </div>
-            <div class="kpi">
-              <div class="k">7-day adherence</div>
-              <div class="v" id="kpiAdh">-</div>
-              <div class="s">Within ± window</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="card">
-        <div class="head">
-          <div class="t">Settings</div>
-          <div class="pill"><span class="dot" style="background:rgba(147,197,253,.9)"></span> <b>Diet:</b> <span id="dietPill"><b>Diet:</b> -</span></div>
-        </div>
-
-        <div class="body">
-          <div class="authRow">
-            <div>
-              <label>Cloud sync email</label>
-              <input id="cloudEmail" type="email" placeholder="you@email.com"/>
-            </div>
-            <div>
-              <label>Cloud sync password</label>
-              <input id="cloudPass" type="password" placeholder="password"/>
-            </div>
-            <button class="btn" id="signInBtn">Sign In (Enable Sync)</button>
-            <button class="btn" id="signOutBtn">Sign Out</button>
-          </div>
-          <div class="authMsg" id="authMsg">
-            <b>Cloud sync:</b> <span class="warn">Not signed in.</span> If sign-in fails, check DevTools Console for details.
-          </div>
-
-          <div class="settingsGrid" style="margin-top:10px;">
-            <div>
-              <label>Official start weigh-in date (Mon)</label>
-              <input type="date" id="startDate" value="2026-01-05"/>
-            </div>
-            <div>
-              <label>Official start weight (lbs)</label>
-              <input type="number" id="startWeight" step="0.1" value="221.6"/>
-            </div>
-            <div>
-              <label>Official start body fat (%)</label>
-              <input type="number" id="startBf" step="0.1" value="25.0"/>
-            </div>
-            <div>
-              <label>Base target calories (normal)</label>
-              <input type="number" id="targetCal" step="10" value="2200"/>
-            </div>
-          </div>
-
-          <div class="settingsGrid" style="margin-top:10px;">
-            <div>
-              <label>High-carb day calories</label>
-              <input type="number" id="highCal" step="10" value="2400"/>
-            </div>
-            <div>
-              <label>High-carb starts (week #)</label>
-              <input type="number" id="highStartWeek" min="1" step="1" value="3"/>
-            </div>
-            <div>
-              <label>Second high-carb starts (week #)</label>
-              <input type="number" id="secondHighStartWeek" min="1" step="1" value="10"/>
-            </div>
-            <div>
-              <label>BMR adjust (kcal per lb change)</label>
-              <input type="number" id="kcalPerLb" min="0" step="1" value="10"/>
-            </div>
-          </div>
-
-          <div class="settingsGrid" style="margin-top:10px;">
-            <div>
-              <label>Minimum calories floor</label>
-              <input type="number" id="minCal" step="10" value="1700"/>
-            </div>
-            <div>
-              <label>Adherence window (kcal)</label>
-              <input type="number" id="adhWindow" step="10" value="150"/>
-            </div>
-            <div>
-              <label>Primary high-carb day</label>
-              <select id="primaryHighDow">
-                <option value="0">Sunday</option>
-                <option value="1">Monday</option>
-                <option value="2">Tuesday</option>
-                <option value="3">Wednesday</option>
-                <option value="4">Thursday</option>
-                <option value="5">Friday</option>
-                <option value="6">Saturday</option>
-              </select>
-            </div>
-            <div>
-              <label>Second high-carb day (week 10+)</label>
-              <select id="secondHighDow">
-                <option value="0">Sunday</option>
-                <option value="1">Monday</option>
-                <option value="2">Tuesday</option>
-                <option value="3" selected>Wednesday</option>
-                <option value="4">Thursday</option>
-                <option value="5">Friday</option>
-                <option value="6">Saturday</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="btnRow">
-            <button class="btn" id="importCsvBtn">Import Calories CSV</button>
-            <button class="btn" id="exportBtn">Export JSON</button>
-            <button class="btn" id="importBtn">Import JSON</button>
-            <button class="btn danger" id="resetBtn">Reset All Data</button>
-          </div>
-
-          <div class="small" style="margin-top:10px;">
-            Dynamic calories already account for BMR drop as weight decreases (kcal per lb).
-            Reverse diet overrides targets from Apr 20 to May 14 to ramp up to 2700.
-          </div>
-        </div>
-      </section>
-
-    </div>
-
-    <section class="card monthCard">
-      <div class="monthTabs" id="monthTabs"></div>
-      <div class="calWrap">
-        <div class="dow">
-          <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
-        </div>
-        <div class="grid" id="calGrid"></div>
+        <div class="t">Settings</div>
+        <div class="pill dot" id="dietPill"><b>Diet:</b> -</div>
       </div>
 
-      <div class="footerRow">
-        <div class="pill"><span class="dot" style="background:rgba(147,197,253,.9)"></span> <b>Month:</b> <span id="activeMonthName">-</span></div>
-        <div class="pill"><span class="dot" style="background:rgba(45,212,191,.9)"></span> <b>Logged days:</b> <span id="loggedDays">-</span></div>
+      <!-- Cloud auth controls as a normal controls block (NOT nested) -->
+      <div class="controls" style="padding-top:12px;">
+        <div>
+          <label>Cloud sync email</label>
+          <input id="authEmail" type="email" placeholder="you@email.com"/>
+        </div>
+        <div>
+          <label>Cloud sync password</label>
+          <input id="authPass" type="password" placeholder="password"/>
+        </div>
+        <div>
+          <label>&nbsp;</label>
+          <button class="btn secondary" id="signInBtn" type="button">Sign In (Enable Sync)</button>
+        </div>
+        <div>
+          <label>&nbsp;</label>
+          <button class="btn secondary" id="signOutBtn" type="button">Sign Out</button>
+        </div>
+      </div>
+      <div class="tiny" id="authMsg" style="margin-top:6px;color:#9fb3c8;"></div>
+
+      <div class="controls">
+        <div>
+          <label>Official start weigh-in date (Mon)</label>
+          <input type="date" id="startDate" value="2026-01-05"/>
+        </div>
+        <div>
+          <label>Official start weight (lbs)</label>
+          <input type="number" id="startWeight" step="0.1" value="221.6"/>
+        </div>
+        <div>
+          <label>Official start body fat (%)</label>
+          <input type="number" id="startBf" step="0.1" value="25.0"/>
+        </div>
+        <div>
+          <label>Base target calories (normal)</label>
+          <input type="number" id="targetCal" step="10" value="2200"/>
+        </div>
+      </div>
+
+      <div class="controls" style="padding-top:0;">
+        <div>
+          <label>High-carb day calories</label>
+          <input type="number" id="highCal" step="10" value="2400"/>
+        </div>
+        <div>
+          <label>High-carb starts (week #)</label>
+          <input type="number" id="highStartWeek" min="1" step="1" value="3"/>
+        </div>
+        <div>
+          <label>Second high-carb starts (week #)</label>
+          <input type="number" id="secondHighStartWeek" min="1" step="1" value="10"/>
+        </div>
+        <div>
+          <label>BMR adjust (kcal per lb change)</label>
+          <input type="number" id="kcalPerLb" min="0" step="1" value="10"/>
+        </div>
+      </div>
+
+      <div class="controls" style="padding-top:0;">
+        <div>
+          <label>Minimum calories floor</label>
+          <input type="number" id="minCal" min="0" step="10" value="1700"/>
+        </div>
+        <div>
+          <label>Adherence window (kcal)</label>
+          <input type="number" id="adhWindow" step="10" value="150"/>
+        </div>
+        <div>
+          <label>Primary high-carb day</label>
+          <select id="primaryHighDow">
+            <option value="0" selected>Sunday</option>
+            <option value="1">Monday</option>
+            <option value="2">Tuesday</option>
+            <option value="3">Wednesday</option>
+            <option value="4">Thursday</option>
+            <option value="5">Friday</option>
+            <option value="6">Saturday</option>
+          </select>
+        </div>
+        <div>
+          <label>Second high-carb day (week 10+)</label>
+          <select id="secondHighDow">
+            <option value="0">Sunday</option>
+            <option value="1">Monday</option>
+            <option value="2">Tuesday</option>
+            <option value="3" selected>Wednesday</option>
+            <option value="4">Thursday</option>
+            <option value="5">Friday</option>
+            <option value="6">Saturday</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="btnRow">
+        <button class="btn secondary" id="importCaloriesBtn">Import Calories CSV</button>
+        <button class="btn secondary" id="exportBtn">Export JSON</button>
+        <button class="btn secondary" id="importBtn">Import JSON</button>
+        <button class="btn danger" id="resetBtn">Reset All Data</button>
+      </div>
+      <div style="padding:0 16px 16px;">
+        <div class="tiny">
+          Dynamic calories already account for BMR drop as weight decreases (kcal per lb).
+          Reverse diet overrides targets from Apr 20 to May 14 to ramp up to 2700.
+        </div>
       </div>
     </section>
-
   </div>
 
-  <input id="filePicker" type="file" accept=".json,.csv" style="display:none"/>
+  <div class="tabsWrap">
+    <div class="tabs" id="monthTabs"></div>
+    <div class="pill dot" id="activeMonthPill"><b>Month:</b> -</div>
+  </div>
+
+  <section class="card" id="monthCard">
+    <div class="monthTitle">
+      <div id="monthTitleText">-</div>
+      <div class="pill dot" id="monthLoggedPill"><b>Logged days:</b> -</div>
+    </div>
+    <div class="calendar" id="monthGrid"></div>
+  </section>
+</div>
+
+<div class="modal" id="modal">
+  <div class="panel">
+    <div class="panelHead">
+      <div>
+        <div class="t1" id="modalTitle">Day</div>
+        <div class="t2" id="modalSub">Calories + workout + weigh-in (Mon/Thu)</div>
+      </div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+        <div class="pill dot" id="tagPill"><b>Target:</b> -</div>
+        <div class="pill dot warn" id="saveIndicator"><b>Saved:</b> -</div>
+        <button class="btn secondary" id="closeBtn">Close</button>
+      </div>
+    </div>
+
+    <div class="panelBody">
+      <div class="box">
+        <h3>Plan</h3>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+          <div>
+            <label>Target calories for this day</label>
+            <input id="dayTarget" type="number" disabled/>
+          </div>
+          <div>
+            <label>Expected weight (if weigh-in day)</label>
+            <input id="expectedWeight" type="text" disabled placeholder="-"/>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;">
+          <div>
+            <label>Expected BF% range (if weigh-in day)</label>
+            <input id="expectedBf" type="text" disabled placeholder="-"/>
+          </div>
+          <div>
+            <label>Lean mass baseline (est.)</label>
+            <input id="lbmBase" type="text" disabled placeholder="-"/>
+          </div>
+        </div>
+
+        <div class="tiny" style="margin-top:10px;">
+          Targets include dynamic BMR adjustment based on latest logged weight before this date.
+          Reverse diet targets override the cut targets in the reverse window.
+        </div>
+      </div>
+
+      <div class="box">
+        <h3>Actuals</h3>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+          <div>
+            <label>Calories eaten</label>
+            <input id="calories" type="number" step="10" placeholder="e.g., 2200"/>
+          </div>
+          <div>
+            <label>Workout</label>
+            <select id="workout">
+              <option value="">Not logged</option>
+              <option value="strength">Strength Training</option>
+              <option value="hiit">HIIT</option>
+              <option value="walk">Walk</option>
+              <option value="rest">Rest Day</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;">
+          <div>
+            <label>Scale weight (lbs)</label>
+            <input id="weight" type="number" step="0.1" placeholder="Mon/Thu"/>
+          </div>
+          <div>
+            <label>Body fat % (Fitdays)</label>
+            <input id="bf" type="number" step="0.1" placeholder="Mon/Thu optional"/>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr; gap:10px; margin-top:10px;">
+          <div>
+            <label>Notes</label>
+            <textarea id="notes" placeholder="Sleep, stress, sodium, alcohol, steps, etc."></textarea>
+          </div>
+        </div>
+
+        <div class="tiny" id="vsExpectedNote" style="margin-top:10px;">-</div>
+      </div>
+    </div>
+
+    <div class="panelFoot">
+      <div class="tiny">Autosave is on.</div>
+      <button class="btn secondary" id="clearDayBtn">Clear this day</button>
+    </div>
+  </div>
+</div>
+
+<!-- Correct Supabase JS library -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
-/* ============================
-   15 Week Body Transformation
-   ============================ */
+  function ymd(d){
+    const y=d.getFullYear();
+    const m=String(d.getMonth()+1).padStart(2,'0');
+    const da=String(d.getDate()).padStart(2,'0');
+    return `${y}-${m}-${da}`;
+  }
+  function parseYMD(s){
+    const [y,m,d]=s.split('-').map(Number);
+    return new Date(y, m-1, d);
+  }
+  function addDays(d, n){
+    const x=new Date(d);
+    x.setDate(x.getDate()+n);
+    return x;
+  }
+  function weekdayName(d){ return ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][d.getDay()]; }
 
-  // ======= Core dates =======
+  const STORAGE_KEY = "diet_15wk_body_transformation_v5";
+  const LOCAL_CACHE_KEY = "diet_15wk_cache_v1";
+
+  // Fast window: Jan 2 to Jan 3 only (Jan 4 is normal)
   const FAST_START = "2026-01-02";
   const FAST_END   = "2026-01-03";
 
+  // Reverse diet window: last 2 weeks of April + first 2 weeks of May
   const REVERSE_START = "2026-04-20";
   const REVERSE_END   = "2026-05-14";
   const REVERSE_TARGET = 2700;
 
-  // Month tab list (Jan -> May)
-  const MONTHS = [
-    {y:2026, m:0, name:"January 2026"},
-    {y:2026, m:1, name:"February 2026"},
-    {y:2026, m:2, name:"March 2026"},
-    {y:2026, m:3, name:"April 2026"},
-    {y:2026, m:4, name:"May 2026"},
+  // No special targets
+  const SPECIAL_TARGETS = {};
+
+  const THU_WEEK_RANGES = [
+    {low:219.7, high:220.7},
+    {low:218.0, high:219.0},
+    {low:216.8, high:217.8},
+    {low:215.6, high:216.6},
+    {low:214.4, high:215.4},
+    {low:213.2, high:214.2},
+    {low:212.0, high:213.0},
+    {low:210.7, high:211.7},
+    {low:212.2, high:214.2},
+    {low:209.1, high:210.6},
+    {low:207.9, high:209.4},
+    {low:206.7, high:208.2},
+    {low:205.6, high:207.1},
+    {low:204.4, high:205.9},
+    {low:203.3, high:204.8}
   ];
-  function mkey(y,m){ return `${y}-${m}`; }
 
-  // ======= Storage =======
-  const STORAGE_KEY = "bt15w_state_v1";
-  function loadState(){
-    try{
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if(!raw) return null;
-      return JSON.parse(raw);
-    }catch(e){
-      console.warn("loadState failed:", e);
-      return null;
-    }
-  }
-  function cacheStateLocally(s){
-    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); }catch(e){}
-  }
+  function isFastDay(ds){ return ds>=FAST_START && ds<=FAST_END; }
+  function inReverseWindow(ds){ return ds>=REVERSE_START && ds<=REVERSE_END; }
 
-  // ======= Supabase config =======
-  // NOTE: This must be your "anon public" key from Supabase Project Settings -> API.
+  // Supabase (optional cloud sync)
+  // IMPORTANT: SUPABASE_ANON_KEY must be your full "anon public" key (a long JWT that usually starts with "eyJ..."),
+  // from Supabase Project Settings -> API.
   const SUPABASE_URL = "https://dklnhdjxplpqnrjziqkq.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRrbG5oZGp4cGxwcW5yanppcWtxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzYxNjIxNjEsImV4cCI6MjA1MTczODIxNjF9.RrbG5OZ6P4cGwcWc5yan";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRrbG5oZGp4cGxwcW5yanppcWtxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc1MzkxNjAsImV4cCI6MjA4MzExNTE2MH0.qp0eOggU4nrhgjj-yrUmhvHNRz1uL8TSp9xrDsAq5Sg";
   let supabase = null;
 
   const authMsgEl = document.getElementById("authMsg");
-
-  function setAuthMsg(type, html){
-    const cls = type === "ok" ? "ok" : (type === "err" ? "err" : "warn");
-    authMsgEl.innerHTML = `<b>Cloud sync:</b> <span class="${cls}">${html}</span>`;
+  function setAuthMsg(type, text){
+    if(!authMsgEl) return;
+    const c = type==="ok" ? "#8ef0b5" : (type==="warn" ? "#ffd38a" : "#ff8a8a");
+    authMsgEl.style.color = c;
+    authMsgEl.textContent = text;
   }
 
-  function ensureSupabase(){
-    try{
-      if(!window.supabase || !window.supabase.createClient){
-        setAuthMsg("err", "Supabase library did not load. Check CDN/network.");
-        return null;
-      }
-      if(!supabase){
-        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-      }
-      return supabase;
-    }catch(e){
-      console.error("Supabase init error:", e);
-      setAuthMsg("err", "Supabase init failed. Open console.");
-      return null;
+  try{
+    if(window.supabase && typeof window.supabase.createClient === "function" &&
+       SUPABASE_ANON_KEY && SUPABASE_ANON_KEY.startsWith("eyJ")){
+      supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      setAuthMsg("warn","Cloud sync: Not signed in.");
+    } else {
+      setAuthMsg("warn","Cloud sync: Disabled until you paste your Supabase anon key (eyJ...). Local save still works.");
     }
+  } catch(e){
+    console.warn("Supabase init failed:", e);
+    setAuthMsg("err","Cloud sync: Disabled (Supabase init error). Local save still works.");
+    supabase = null;
   }
 
-  async function getUserSafe(){
-    const sb = ensureSupabase();
-    if(!sb) return null;
-    try{
-      const { data, error } = await sb.auth.getUser();
-      if(error){ console.warn("getUser error:", error); return null; }
-      return data.user || null;
-    }catch(e){
-      console.warn("getUser exception:", e);
-      return null;
-    }
+async function getUser() {
+    
+    if(!supabase) return null;
+const { data } = await supabase.auth.getUser();
+    return data.user || null;
   }
 
   async function cloudLoadState() {
-    const sb = ensureSupabase();
-    if(!sb) return null;
-    const user = await getUserSafe();
+    
+    if(!supabase) return null;
+const user = await getUser();
     if (!user) return null;
 
-    try{
-      const { data, error } = await sb
-        .from("tracker_states")
-        .select("state")
-        .eq("user_id", user.id)
-        .single();
+    const { data, error } = await supabase
+      .from("tracker_states")
+      .select("state")
+      .eq("user_id", user.id)
+      .single();
 
-      if (error) {
-        // no row yet is normal; treat as empty
-        console.warn("cloudLoadState:", error);
-        return null;
-      }
-      return data?.state || null;
-    }catch(e){
-      console.error("cloudLoadState exception:", e);
+    if (error && error.code !== "PGRST116") {
+      console.error("cloudLoadState error:", error);
       return null;
     }
+    return data?.state || null;
   }
 
-  async function cloudSaveState(s) {
-    const sb = ensureSupabase();
-    if(!sb) return false;
-    const user = await getUserSafe();
+  async function cloudSaveState(newState) {
+    
+    if(!supabase) return false;
+const user = await getUser();
     if (!user) return false;
 
-    try{
-      const payload = { user_id: user.id, state: s, updated_at: new Date().toISOString() };
-      const { error } = await sb
-        .from("tracker_states")
-        .upsert(payload, { onConflict: "user_id" });
+    const payload = {
+      user_id: user.id,
+      state: newState,
+      updated_at: new Date().toISOString()
+    };
 
-      if (error) {
-        console.error("cloudSaveState error:", error);
-        setAuthMsg("err", `Save failed: ${error.message || error}`);
-        return false;
-      }
-      return true;
-    }catch(e){
-      console.error("cloudSaveState exception:", e);
-      setAuthMsg("err", "Save failed (exception). Open console.");
+    const { error } = await supabase
+      .from("tracker_states")
+      .upsert(payload, { onConflict: "user_id" });
+
+    if (error) {
+      console.error("cloudSaveState error:", error);
       return false;
+    }
+    return true;
+  }
+
+  function cacheStateLocally(newState) {
+    try { localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify(newState)); } catch {}
+  }
+
+  function loadLocalCache() {
+    try {
+      const raw = localStorage.getItem(LOCAL_CACHE_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch { return null; }
+  }
+
+  function loadState(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw) return {
+        days:{},
+        settings:{
+          startDate:"2026-01-05",
+          startWeight:221.6,
+          startBf:25.0,
+          targetCal:2200,
+          highCal:2400,
+          highStartWeek:3,
+          secondHighStartWeek:10,
+          primaryHighDow:0,
+          secondHighDow:3,
+          adhWindow:150,
+          kcalPerLb:10,
+          minCal:1700
+        },
+        ui:{ activeMonthKey:"2026-0" }
+      };
+
+      const s = JSON.parse(raw);
+      if(!s.days) s.days = {};
+      if(!s.settings) s.settings = {};
+      if(!s.ui) s.ui = {};
+
+      const defSettings = {
+        startDate:"2026-01-05",
+        startWeight:221.6,
+        startBf:25.0,
+        targetCal:2200,
+        highCal:2400,
+        highStartWeek:3,
+        secondHighStartWeek:10,
+        primaryHighDow:0,
+        secondHighDow:3,
+        adhWindow:150,
+        kcalPerLb:10,
+        minCal:1700
+      };
+      s.settings = {...defSettings, ...s.settings};
+
+      const defUi = { activeMonthKey:"2026-0" };
+      s.ui = {...defUi, ...s.ui};
+
+      return s;
+    }catch(e){
+      return {
+        days:{},
+        settings:{
+          startDate:"2026-01-05",
+          startWeight:221.6,
+          startBf:25.0,
+          targetCal:2200,
+          highCal:2400,
+          highStartWeek:3,
+          secondHighStartWeek:10,
+          primaryHighDow:0,
+          secondHighDow:3,
+          adhWindow:150,
+          kcalPerLb:10,
+          minCal:1700
+        },
+        ui:{ activeMonthKey:"2026-0" }
+      };
     }
   }
 
-  // ======= App state =======
-  const defaultState = {
-    settings: {
-      startDate: "2026-01-05",
-      startWeight: 221.6,
-      startBf: 25.0,
-      targetCal: 2200,
-      highCal: 2400,
-      highStartWeek: 3,
-      secondHighStartWeek: 10,
-      kcalPerLb: 10,
-      minCal: 1700,
-      adhWindow: 150,
-      primaryHighDow: 0,  // Sunday
-      secondHighDow: 3    // Wednesday
-    },
-    logs: {
-      // "YYYY-MM-DD": { cals: number|null, wt:number|null, bf:number|null, note:string, tags:[] }
-    },
-    ui: {
-      activeMonthKey: mkey(2026,0)
-    },
-    cloud: {
-      enabled: false
-    }
-  };
+  let state = loadState(); // local fallback
 
-  function deepClone(o){ return JSON.parse(JSON.stringify(o)); }
+  const savePill = document.getElementById("savePill");
+  function pulseSaved(){
+    savePill.innerHTML = "<b>Data:</b> Saved locally";
+    savePill.classList.remove("good","warn","bad");
+    savePill.classList.add("good");
+    savePill.style.transform="scale(1.01)";
+    setTimeout(()=>{ savePill.style.transform=""; }, 140);
+  }
 
-  let state = loadState() || deepClone(defaultState);
+  function saveState(){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    cacheStateLocally(state);
+    try { cloudSaveState(state); } catch {}
+    pulseSaved();
+  }
 
-  // ======= UI refs =======
-  const statusDot = document.getElementById("statusDot");
-  const statusText = document.getElementById("statusText");
-  const saveDot = document.getElementById("saveDot");
-  const saveText = document.getElementById("saveText");
-
-  const coachModeEl = document.getElementById("coachMode");
-  const coachActionEl = document.getElementById("coachAction");
-  const coachTargetEl = document.getElementById("coachTarget");
-  const coachW15El = document.getElementById("coachW15");
-  const coachDynEl = document.getElementById("coachDyn");
-
-  const trackDot = document.getElementById("trackDot");
-  const trackText = document.getElementById("trackText");
-
-  const kpiWeight = document.getElementById("kpiWeight");
-  const kpiBf = document.getElementById("kpiBf");
-  const kpiCals = document.getElementById("kpiCals");
-  const kpiAdh = document.getElementById("kpiAdh");
-
+  // Settings elements
   const startDateEl = document.getElementById("startDate");
   const startWeightEl = document.getElementById("startWeight");
-  const startBfEl = document.getElementById("startBf"); /* FIXED */
+  const startBfEl = document.getElementById("startBf");
   const targetCalEl   = document.getElementById("targetCal");
   const highCalEl     = document.getElementById("highCal");
   const highStartWeekEl = document.getElementById("highStartWeek");
@@ -874,575 +836,850 @@
   const primaryHighDowEl = document.getElementById("primaryHighDow");
   const secondHighDowEl  = document.getElementById("secondHighDow");
 
-  const monthTabsEl = document.getElementById("monthTabs");
-  const calGridEl = document.getElementById("calGrid");
-  const activeMonthNameEl = document.getElementById("activeMonthName");
-  const loggedDaysEl = document.getElementById("loggedDays");
+  function syncSettingsToUI(){
+    startDateEl.value  = state.settings.startDate;
+    startWeightEl.value= state.settings.startWeight;
+    startBfEl.value    = state.settings.startBf;
+    targetCalEl.value  = state.settings.targetCal;
+    highCalEl.value    = state.settings.highCal;
+    highStartWeekEl.value = state.settings.highStartWeek;
+    secondHighStartWeekEl.value = state.settings.secondHighStartWeek;
+    kcalPerLbEl.value  = state.settings.kcalPerLb;
+    minCalEl.value     = state.settings.minCal;
+    adhWindowEl.value  = state.settings.adhWindow;
+    primaryHighDowEl.value = String(state.settings.primaryHighDow);
+    secondHighDowEl.value  = String(state.settings.secondHighDow);
+  }
 
-  const cloudEmailEl = document.getElementById("cloudEmail");
-  const cloudPassEl  = document.getElementById("cloudPass");
+  // Auth button wiring
+  document.getElementById("signInBtn").addEventListener("click", async () => {
+    try{
+      if(!supabase){
+        setAuthMsg("warn","Cloud sync is disabled. Paste your Supabase anon key (eyJ...) first. Local save is still on.");
+        return;
+      }
+      const email = document.getElementById("authEmail").value.trim();
+      const pass  = document.getElementById("authPass").value;
+      if(!email || !pass){
+        setAuthMsg("warn","Enter email + password, then sign in.");
+        return;
+      }
 
-  // ======= Helpers =======
-  function fmt(n, d=1){
-    if(n===null || n===undefined || Number.isNaN(n)) return "-";
-    return Number(n).toFixed(d);
+      setAuthMsg("warn","Signing in...");
+      const { error } = await supabase.auth.signInWithPassword({ email, password: pass });
+      if (error) {
+        setAuthMsg("err", error.message || "Sign-in failed.");
+        return;
+      }
+
+      const cloud = await cloudLoadState();
+      if (cloud) state = cloud;
+
+      cacheStateLocally(state);
+      syncSettingsToUI();
+      renderAll();
+      setAuthMsg("ok","Signed in. Cloud sync active.");
+    } catch(e){
+      console.error(e);
+      setAuthMsg("err","JavaScript error occurred. Open DevTools Console for details.");
+    }
+  });
+
+
+if (error) { alert(error.message); return; }
+
+    const cloud = await cloudLoadState();
+    if (cloud) state = cloud;
+
+    cacheStateLocally(state);
+    syncSettingsToUI();
+    renderAll();
+    alert("Signed in. Cloud sync active.");
+  });
+
+  document.getElementById("signOutBtn").addEventListener("click", async () => {
+    try{
+      if(!supabase){
+        setAuthMsg("warn","Cloud sync is disabled. Local save is still on.");
+        return;
+      }
+      await supabase.auth.signOut();
+      setAuthMsg("warn","Signed out. Cloud sync idle.");
+    } catch(e){
+      console.error(e);
+      setAuthMsg("err","Sign-out failed. Check DevTools Console.");
+    }
+  });
+
+
+// App init (single render path)
+  async function initApp() {
+    const cached = loadLocalCache();
+    if (cached) state = cached;
+
+    try {
+      const user = await getUser();
+      if (user) {
+        const cloud = await cloudLoadState();
+        if (cloud) state = cloud;
+      }
+    } catch (e) {
+      console.warn("Cloud init skipped:", e);
+    }
+
+    cacheStateLocally(state);
+    syncSettingsToUI();
+    renderAll();
   }
-  function pad2(x){ return String(x).padStart(2,"0"); }
-  function toDS(y,m,d){ return `${y}-${pad2(m+1)}-${pad2(d)}`; }
-  function dsToDate(ds){
-    const [y,mo,da]=ds.split("-").map(Number);
-    return new Date(y, mo-1, da);
-  }
-  function todayDS(){
-    const t=new Date();
-    return toDS(t.getFullYear(), t.getMonth(), t.getDate());
-  }
+
   function clamp(n, lo, hi){
     if(n < lo) return lo;
     if(hi !== null && n > hi) return hi;
     return n;
   }
-  function isFastDay(ds){ return ds>=FAST_START && ds<=FAST_END; }
-  function inReverseWindow(ds){ return ds>=REVERSE_START && ds<=REVERSE_END; }
-
-  function weekIndexFromStart(ds){
-    const sd = state.settings.startDate;
-    const a = dsToDate(sd);
-    const b = dsToDate(ds);
-    const diffDays = Math.floor((b - a) / (1000*60*60*24));
-    return Math.floor(diffDays/7) + 1; // week # (1-based)
+  function isWeighDay(d){
+    const dow = d.getDay();
+    return dow===1 || dow===4;
+  }
+  function weekIndexForDate(ds){
+    const start = parseYMD(state.settings.startDate);
+    const d = parseYMD(ds);
+    const diffDays = Math.floor((d - start) / (1000*60*60*24));
+    if(diffDays < 0) return null;
+    return Math.floor(diffDays / 7) + 1;
+  }
+  function isThursdayOfWeek(ds){
+    const wi = weekIndexForDate(ds);
+    if(!wi || wi<1 || wi>15) return false;
+    const start = parseYMD(state.settings.startDate);
+    const thu = addDays(start, (wi-1)*7 + 3);
+    return ymd(thu) === ds;
   }
 
-  function isWeighDay(ds){
-    const d = dsToDate(ds).getDay(); // Sun 0
-    return (d===1 || d===4); // Mon + Thu
+  function expectedRange(ds){
+    const d = parseYMD(ds);
+    if(!isWeighDay(d)) return null;
+
+    const startDate = state.settings.startDate;
+    if(ds === startDate){
+      const sw = Number(state.settings.startWeight);
+      return {low: sw-0.5, high: sw+0.5, kind:"baseline"};
+    }
+
+    const wi = weekIndexForDate(ds);
+    if(!wi || wi<1 || wi>15) return null;
+
+    if(isThursdayOfWeek(ds)){
+      const r = THU_WEEK_RANGES[wi-1];
+      return {low:r.low, high:r.high, kind:"thu"};
+    }
+
+    if(d.getDay() === 1){
+      if(wi === 1) return null;
+      const prev = THU_WEEK_RANGES[wi-2];
+      const next = THU_WEEK_RANGES[wi-1];
+      const t = 4/7;
+      return {
+        low:  prev.low  + (next.low  - prev.low)  * t,
+        high: prev.high + (next.high - prev.high) * t,
+        kind:"mon"
+      };
+    }
+    return null;
   }
 
-  function getLatestWeightBefore(ds){
-    const keys = Object.keys(state.logs).sort();
+  function fmtRange(r){
+    if(!r) return "";
+    return `${r.low.toFixed(1)} to ${r.high.toFixed(1)}`;
+  }
+
+  function getWeightBefore(ds){
+    const target = parseYMD(ds);
     let best = null;
-    for(const k of keys){
-      if(k<=ds && state.logs[k] && typeof state.logs[k].wt === "number"){
-        best = state.logs[k].wt;
+    for(const k in state.days){
+      const rec = state.days[k];
+      if(rec && rec.weight!==null && rec.weight!==undefined){
+        const kd = parseYMD(k);
+        if(kd <= target){
+          if(!best || kd > best.d) best = {d: kd, w: Number(rec.weight)};
+        }
       }
     }
-    return best;
+    if(best) return best.w;
+    return Number(state.settings.startWeight);
   }
 
-  function bmrAdjustedTarget(ds){
-    const s = state.settings;
-    let base = Number(s.targetCal) || 0;
-
-    // reverse diet override
-    if(inReverseWindow(ds)){
-      const start = dsToDate(REVERSE_START);
-      const end = dsToDate(REVERSE_END);
-      const cur = dsToDate(ds);
-      const span = Math.max(1, Math.round((end - start)/(1000*60*60*24)));
-      const step = Math.round((cur - start)/(1000*60*60*24));
-      const t = clamp(step/span, 0, 1);
-      return Math.round(base + (REVERSE_TARGET - base)*t);
-    }
-
-    // BMR drop logic: adjust calories downward by (startWeight - latestWeight)*kcalPerLb
-    const w0 = Number(s.startWeight) || 0;
-    const w = getLatestWeightBefore(ds);
-    const latest = (typeof w === "number") ? w : w0;
-    const delta = (w0 - latest);
-    const adj = Math.round(delta * (Number(s.kcalPerLb)||0));
-    const target = base - adj;
-    return Math.max(Number(s.minCal)||0, Math.round(target));
+  function bmrAdjustedCalories(base, ds){
+    const w0 = Number(state.settings.startWeight);
+    const w  = getWeightBefore(ds);
+    const kcalPerLb = Number(state.settings.kcalPerLb);
+    const minCal = Number(state.settings.minCal);
+    const adj = (w - w0) * kcalPerLb;
+    return clamp(Math.round(base + adj), minCal, null);
   }
 
   function isHighCarbDay(ds){
+    const d = parseYMD(ds);
+    const wi = weekIndexForDate(ds);
+    if(!wi) return false;
+
     const s = state.settings;
-    const wk = weekIndexFromStart(ds);
-    const dow = dsToDate(ds).getDay();
+    const primaryActive = wi >= Number(s.highStartWeek) && d.getDay() === Number(s.primaryHighDow);
+    const secondaryActive = wi >= Number(s.secondHighStartWeek) && d.getDay() === Number(s.secondHighDow);
 
-    if(wk < Number(s.highStartWeek)) return false;
-    if(dow === Number(s.primaryHighDow)) return true;
-    if(wk >= Number(s.secondHighStartWeek) && dow === Number(s.secondHighDow)) return true;
-    return false;
+    return primaryActive || secondaryActive;
   }
 
-  function expectedCalories(ds){
+  function reverseTarget(ds){
+    const start = parseYMD(REVERSE_START);
+    const end = parseYMD(REVERSE_END);
+    const cur = parseYMD(ds);
+    const total = Math.max(1, Math.round((end - start) / (1000*60*60*24)));
+    const t = clamp((cur - start) / (total * 24*60*60*1000), 0, 1);
+
+    const dayBefore = ymd(addDays(start, -1));
+    const startCutTarget = targetForCutOnly(dayBefore);
+    return Math.round(startCutTarget + (REVERSE_TARGET - startCutTarget) * t);
+  }
+
+  function targetForCutOnly(ds){
+    if(SPECIAL_TARGETS[ds] !== undefined) return SPECIAL_TARGETS[ds];
     if(isFastDay(ds)) return 0;
-    if(isHighCarbDay(ds)) return Number(state.settings.highCal) || 0;
-    return bmrAdjustedTarget(ds);
+
+    const base = Number(state.settings.targetCal);
+    const high = Number(state.settings.highCal);
+
+    const baseAdj = bmrAdjustedCalories(base, ds);
+    const highAdj = bmrAdjustedCalories(high, ds);
+
+    return isHighCarbDay(ds) ? highAdj : baseAdj;
   }
 
-  function expectedWeightRange(ds){
-    // Simple linear trend expectation from start weight down to ~202 by end of 15 weeks
-    const start = Number(state.settings.startWeight)||0;
-    const startD = dsToDate(state.settings.startDate);
-    const curD = dsToDate(ds);
-    const day = Math.max(0, Math.floor((curD - startD)/(1000*60*60*24)));
-    const total = 15*7;
-    const goal = 202;
-    const t = clamp(day/total, 0, 1);
-    const mid = start + (goal-start)*t;
-    return { lo: mid-0.5, hi: mid+0.5 };
+  function targetFor(ds){
+    if(inReverseWindow(ds)) return reverseTarget(ds);
+    return targetForCutOnly(ds);
   }
 
-  function expectedBf(ds){
-    const bf0 = Number(state.settings.startBf)||0;
-    const startD = dsToDate(state.settings.startDate);
-    const curD = dsToDate(ds);
-    const day = Math.max(0, Math.floor((curD - startD)/(1000*60*60*24)));
-    const total = 15*7;
-    const bfGoal = 18.0;
-    const t = clamp(day/total, 0, 1);
-    const mid = bf0 + (bfGoal-bf0)*t;
-    return { lo: mid-0.3, hi: mid+0.3 };
+  function lbmBaseline(){
+    const sw = Number(state.settings.startWeight);
+    const sbf = Number(state.settings.startBf) / 100;
+    return sw * (1 - sbf);
+  }
+  function expectedBfRange(ds){
+    const r = expectedRange(ds);
+    if(!r) return null;
+    const lbm = lbmBaseline();
+    const bfHigh = (1 - (lbm / r.high)) * 100;
+    const bfLow  = (1 - (lbm / r.low )) * 100;
+    const lo = Math.min(bfLow, bfHigh);
+    const hi = Math.max(bfLow, bfHigh);
+    return {low: lo, high: hi};
+  }
+  function fmtBfRange(b){
+    if(!b) return "";
+    return `${b.low.toFixed(1)}% to ${b.high.toFixed(1)}%`;
   }
 
-  // ======= Save mechanics =======
-  function pulseSaved(){
-    saveDot.classList.remove("good","warn","bad");
-    saveDot.classList.add("good");
-    saveText.textContent = state.cloud.enabled ? "Saved (local + cloud)" : "Saved locally";
-  }
+  const monthsSpec = [
+    {y:2026, m:0, name:"January 2026"},
+    {y:2026, m:1, name:"February 2026"},
+    {y:2026, m:2, name:"March 2026"},
+    {y:2026, m:3, name:"April 2026"},
+    {y:2026, m:4, name:"May 2026"}
+  ];
 
-  function saveState(){
-    cacheStateLocally(state);
-    if(state.cloud.enabled){
-      cloudSaveState(state).then(ok=>{
-        if(ok){
-          pulseSaved();
-          setAuthMsg("ok", "Signed in. Sync enabled.");
-        }
-      });
-    }else{
-      pulseSaved();
-    }
-  }
+  const monthTabsEl = document.getElementById("monthTabs");
+  const monthTitleText = document.getElementById("monthTitleText");
+  const monthLoggedPill = document.getElementById("monthLoggedPill");
+  const activeMonthPill = document.getElementById("activeMonthPill");
+  const monthGridEl = document.getElementById("monthGrid");
 
-  // ======= Render month tabs =======
+  function monthKey(y,m){ return `${y}-${m}`; }
+
   function computeMonthLogs(){
-    const y = Number(state.ui.activeMonthKey.split("-")[0]);
-    const m = Number(state.ui.activeMonthKey.split("-")[1]);
-    let count = 0;
-    for(const ds of Object.keys(state.logs)){
-      const d = dsToDate(ds);
-      if(d.getFullYear()===y && d.getMonth()===m){
-        const L = state.logs[ds]||{};
-        if(L.cals!=null || L.wt!=null || L.bf!=null || (L.note && L.note.trim().length)) count++;
-      }
+    const m = {};
+    for(const spec of monthsSpec){ m[monthKey(spec.y,spec.m)] = 0; }
+    for(const ds in state.days){
+      const rec = state.days[ds];
+      const hasAny = rec && (rec.calories!==null || rec.weight!==null || rec.bf!==null || (rec.workout && rec.workout !== "") || (rec.notes && rec.notes.trim().length));
+      if(!hasAny) continue;
+      const d = parseYMD(ds);
+      const key = monthKey(d.getFullYear(), d.getMonth());
+      if(m[key]!==undefined) m[key] += 1;
     }
-    return count;
+    return m;
   }
 
-  function renderMonthTabs(){
+  function buildTabs(){
     monthTabsEl.innerHTML = "";
-    for(const mm of MONTHS){
-      const key = mkey(mm.y, mm.m);
-      const tab = document.createElement("div");
-      tab.className = "tab" + (state.ui.activeMonthKey===key ? " active" : "");
-      tab.innerHTML = `${mm.name} <small id="cnt-${key}">0%</small>`;
-      tab.addEventListener("click", ()=>{
+    const logs = computeMonthLogs();
+    for(const spec of monthsSpec){
+      const key = monthKey(spec.y,spec.m);
+      const btn = document.createElement("div");
+      btn.className = "tab" + (state.ui.activeMonthKey===key ? " active" : "");
+      btn.innerHTML = `<span>${spec.name.split(" ")[0]}</span><span class="count">${logs[key]||0}</span>`;
+      btn.addEventListener("click", ()=>{
         state.ui.activeMonthKey = key;
         saveState();
-        renderAll();
+        renderActiveMonth();
+        buildTabs();
       });
-      monthTabsEl.appendChild(tab);
+      monthTabsEl.appendChild(btn);
     }
   }
 
-  // ======= Build calendar =======
-  function buildMonthGrid(y,m){
-    calGridEl.innerHTML = "";
-    activeMonthNameEl.textContent = MONTHS.find(x=>x.y===y && x.m===m)?.name || `${y}-${m+1}`;
-    const first = new Date(y,m,1);
-    const startDow = first.getDay();
-    const daysInMonth = new Date(y,m+1,0).getDate();
+  function workoutBadgeText(v){
+    if(v==="strength") return "ST";
+    if(v==="hiit") return "HIIT";
+    if(v==="walk") return "Walk";
+    if(v==="rest") return "Rest";
+    return null;
+  }
+  function workoutBadgeClass(v){
+    if(v==="strength" || v==="hiit" || v==="walk") return "good";
+    return "";
+  }
 
-    // leading blanks
-    for(let i=0;i<startDow;i++){
-      const e = document.createElement("div");
-      e.className="day empty";
-      calGridEl.appendChild(e);
+  function buildMonthGrid(year, monthIndex){
+    monthGridEl.innerHTML = "";
+
+    const wide = window.matchMedia("(max-width: 860px)").matches;
+    if(!wide){
+      const dows = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+      for(const d of dows){
+        const el=document.createElement("div");
+        el.className="dow";
+        el.textContent=d;
+        monthGridEl.appendChild(el);
+      }
     }
 
-    // days
-    for(let d=1; d<=daysInMonth; d++){
-      const ds = toDS(y,m,d);
-      const L = state.logs[ds] || {};
-      const expC = expectedCalories(ds);
-      const expW = expectedWeightRange(ds);
-      const expB = expectedBf(ds);
+    const start = new Date(year, monthIndex, 1);
+    const lead = start.getDay();
+    const first = addDays(start, -lead);
+    const todayStr = ymd(new Date());
 
-      const hasLog = (L.cals!=null || L.wt!=null || L.bf!=null || (L.note && L.note.trim().length));
-      let cls = "day";
-      if(hasLog && L.cals!=null){
-        const diff = Math.abs(Number(L.cals) - expC);
-        const win = Number(state.settings.adhWindow)||0;
-        if(diff<=win) cls += " ontrack";
-        else if(diff<=win*2) cls += " warn";
-        else cls += " off";
+    const loops = wide ? 35 : 42;
+
+    for(let i=0;i<loops;i++){
+      const day = addDays(first, i);
+      const ds = ymd(day);
+      const inMonth = day.getMonth() === monthIndex;
+
+      const cell = document.createElement("div");
+      cell.className = "day" + (inMonth ? "" : " muted");
+      if(ds===todayStr) cell.classList.add("today");
+
+      if(isFastDay(ds)) cell.classList.add("fast");
+
+      const isReverse = inReverseWindow(ds) && !isFastDay(ds);
+      if(isReverse) cell.classList.add("reverse");
+
+      const isHigh = isHighCarbDay(ds) && !isFastDay(ds) && !isReverse;
+      if(isHigh) cell.classList.add("refeed");
+
+      const rec = state.days[ds] || {};
+      const top = document.createElement("div");
+      top.className="topline";
+
+      const num=document.createElement("div");
+      num.className="num";
+      num.textContent=String(day.getDate());
+
+      const badges=document.createElement("div");
+      badges.className="badges";
+
+      if(isFastDay(ds)){
+        const b=document.createElement("span"); b.className="badge warn"; b.textContent="FAST"; badges.appendChild(b);
+      }
+      if(isReverse){
+        const b=document.createElement("span"); b.className="badge"; b.textContent="Reverse"; badges.appendChild(b);
+      }
+      if(isHigh){
+        const b=document.createElement("span"); b.className="badge good"; b.textContent="High-carb"; badges.appendChild(b);
+      }
+      if(isWeighDay(day)){
+        const b=document.createElement("span"); b.className="badge"; b.textContent="Weigh"; badges.appendChild(b);
       }
 
-      const day = document.createElement("div");
-      day.className = cls;
-      day.innerHTML = `
-        <div class="num">${d}</div>
-        <div class="badges" id="badges-${ds}"></div>
+      const wb = workoutBadgeText(rec.workout);
+      if(wb){
+        const b=document.createElement("span");
+        b.className="badge " + workoutBadgeClass(rec.workout);
+        b.textContent=wb;
+        badges.appendChild(b);
+      }
 
-        <div class="line">Calories: <span class="val" id="c-${ds}">${L.cals!=null ? L.cals : "-"}</span> / <span class="val" style="opacity:.85">${expC}</span></div>
-        <div class="line">Weight: <span class="val" id="w-${ds}">${L.wt!=null ? fmt(L.wt,1) : "-"}</span>
-          <span class="note" style="display:inline-block;margin-left:6px;opacity:.9">Expected: ${fmt(expW.lo,1)} to ${fmt(expW.hi,1)}</span>
-        </div>
-        <div class="line">BF%: <span class="val" id="b-${ds}">${L.bf!=null ? fmt(L.bf,1) : "-"}</span>
-          <span class="note" style="display:inline-block;margin-left:6px;opacity:.9">Expected: ${fmt(expB.lo,1)} to ${fmt(expB.hi,1)}</span>
-        </div>
+      top.appendChild(num); top.appendChild(badges);
+      cell.appendChild(top);
 
-        <div class="editRow">
-          <div>
-            <label style="margin-top:8px;">Log calories</label>
-            <input type="number" step="1" value="${L.cals!=null?L.cals:""}" placeholder="e.g., 2200" data-ds="${ds}" data-k="cals" class="logInput"/>
-          </div>
-          <div>
-            <label style="margin-top:8px;">Log weight</label>
-            <input type="number" step="0.1" value="${L.wt!=null?L.wt:""}" placeholder="e.g., 219.8" data-ds="${ds}" data-k="wt" class="logInput"/>
-          </div>
-          <div>
-            <label>Log BF%</label>
-            <input type="number" step="0.1" value="${L.bf!=null?L.bf:""}" placeholder="e.g., 24.6" data-ds="${ds}" data-k="bf" class="logInput"/>
-          </div>
-          <div>
-            <label>Notes</label>
-            <textarea data-ds="${ds}" data-k="note" class="logNote" placeholder="Optional...">${L.note||""}</textarea>
-          </div>
-        </div>
-      `;
+      const tgt = targetFor(ds);
 
-      calGridEl.appendChild(day);
+      const calLine=document.createElement("div");
+      calLine.className="line";
+      const cal = (rec.calories===null || rec.calories===undefined) ? "-" : rec.calories;
+      calLine.innerHTML = `Calories: <b>${cal}</b> <span class="mono">/ ${tgt}</span>`;
+      cell.appendChild(calLine);
 
-      // badges
-      const b = day.querySelector(`#badges-${ds}`);
-      if(isFastDay(ds)) b.insertAdjacentHTML("beforeend", `<span class="badge fast">FAST</span>`);
-      if(isHighCarbDay(ds)) b.insertAdjacentHTML("beforeend", `<span class="badge high">High-carb</span>`);
-      if(isWeighDay(ds)) b.insertAdjacentHTML("beforeend", `<span class="badge">Weigh</span>`);
+      const wtLine=document.createElement("div");
+      wtLine.className="line";
+      const wt = (rec.weight===null || rec.weight===undefined) ? "-" : Number(rec.weight).toFixed(1);
+      wtLine.innerHTML = `Weight: <b>${wt}</b>`;
+      cell.appendChild(wtLine);
+
+      const bfLine=document.createElement("div");
+      bfLine.className="line";
+      const bfVal = (rec.bf===null || rec.bf===undefined) ? "-" : Number(rec.bf).toFixed(1) + "%";
+      bfLine.innerHTML = `BF%: <b>${bfVal}</b>`;
+      cell.appendChild(bfLine);
+
+      const exp = expectedRange(ds);
+      if(exp){
+        const expLine=document.createElement("div");
+        expLine.className="line";
+        expLine.innerHTML = `Expected: <b>${fmtRange(exp)}</b>`;
+        cell.appendChild(expLine);
+
+        const eb = expectedBfRange(ds);
+        if(eb){
+          const ebLine=document.createElement("div");
+          ebLine.className="line";
+          ebLine.innerHTML = `Exp BF%: <b>${fmtBfRange(eb)}</b>`;
+          cell.appendChild(ebLine);
+        }
+      }
+
+      if(rec.notes && rec.notes.trim().length){
+        const note=document.createElement("div");
+        note.className="line";
+        const sn = rec.notes.trim().slice(0, 56);
+        const safe = rec.notes.replaceAll('"','&quot;');
+        note.innerHTML = `Note: <b title="${safe}">${sn}${rec.notes.length>56 ? "…" : ""}</b>`;
+        cell.appendChild(note);
+      }else{
+        const spacer=document.createElement("div");
+        spacer.style.flex="1";
+        cell.appendChild(spacer);
+      }
+
+      if(inMonth){
+        cell.addEventListener("click", ()=> openModal(ds));
+      }
+      monthGridEl.appendChild(cell);
     }
-
-    // wire inputs
-    document.querySelectorAll(".logInput").forEach(inp=>{
-      inp.addEventListener("change", (e)=>{
-        const ds = e.target.getAttribute("data-ds");
-        const k = e.target.getAttribute("data-k");
-        const v = e.target.value.trim();
-        if(!state.logs[ds]) state.logs[ds] = {};
-        state.logs[ds][k] = (v==="") ? null : Number(v);
-        saveState();
-        renderAll();
-      });
-    });
-
-    document.querySelectorAll(".logNote").forEach(t=>{
-      t.addEventListener("change", (e)=>{
-        const ds = e.target.getAttribute("data-ds");
-        const k = e.target.getAttribute("data-k");
-        const v = e.target.value;
-        if(!state.logs[ds]) state.logs[ds] = {};
-        state.logs[ds][k] = v;
-        saveState();
-        renderAll();
-      });
-    });
   }
 
   function renderActiveMonth(){
-    const parts = state.ui.activeMonthKey.split("-").map(Number);
-    const y=parts[0], m=parts[1];
-    buildMonthGrid(y,m);
+    const key = state.ui.activeMonthKey || "2026-0";
+    const parts = key.split("-").map(Number);
+    const yy = parts[0], mm = parts[1];
+    const spec = monthsSpec.find(x => x.y===yy && x.m===mm) || monthsSpec[0];
+
+    monthTitleText.textContent = spec.name;
+
+    const logs = computeMonthLogs();
+    monthLoggedPill.innerHTML = `<b>Logged days:</b> ${logs[monthKey(spec.y,spec.m)]||0}`;
+    activeMonthPill.innerHTML = `<b>Month:</b> ${spec.name}`;
+
+    buildMonthGrid(spec.y, spec.m);
   }
 
-  // ======= KPIs & coach =======
-  function updateKPIs(){
-    const keys = Object.keys(state.logs).sort();
-    let latestW=null, latestB=null;
-    for(const k of keys){
-      const L=state.logs[k]||{};
-      if(typeof L.wt==="number") latestW=L.wt;
-      if(typeof L.bf==="number") latestB=L.bf;
+  const modal = document.getElementById("modal");
+  const modalTitle = document.getElementById("modalTitle");
+  const modalSub = document.getElementById("modalSub");
+  const tagPill = document.getElementById("tagPill");
+  const saveIndicator = document.getElementById("saveIndicator");
+
+  const dayTarget = document.getElementById("dayTarget");
+  const expectedWeight = document.getElementById("expectedWeight");
+  const expectedBf = document.getElementById("expectedBf");
+  const lbmBase = document.getElementById("lbmBase");
+
+  const calories = document.getElementById("calories");
+  const workout = document.getElementById("workout");
+  const weight = document.getElementById("weight");
+  const bf = document.getElementById("bf");
+  const notes = document.getElementById("notes");
+  const vsExpectedNote = document.getElementById("vsExpectedNote");
+
+  const closeBtn = document.getElementById("closeBtn");
+  const clearDayBtn = document.getElementById("clearDayBtn");
+
+  let activeDate = null;
+  let _timer = null;
+
+  function setSaveIndicator(text, cls){
+    saveIndicator.classList.remove("good","warn","bad");
+    if(cls) saveIndicator.classList.add(cls);
+    saveIndicator.innerHTML = `<b>Saved:</b> ${text}`;
+  }
+
+  function updateVsExpected(ds){
+    const exp = expectedRange(ds);
+    const w = (weight.value==="" ? null : Number(weight.value));
+    const b = (bf.value==="" ? null : Number(bf.value));
+
+    if(!exp){
+      expectedWeight.value = "";
+      expectedBf.value = "";
+      vsExpectedNote.textContent = "No expected target for this day (not a weigh-in day).";
+      return null;
     }
 
-    kpiWeight.textContent = latestW!=null ? fmt(latestW,1) : "-";
-    kpiBf.textContent = latestB!=null ? fmt(latestB,1) : "-";
+    expectedWeight.value = fmtRange(exp);
+    const eb = expectedBfRange(ds);
+    expectedBf.value = eb ? fmtBfRange(eb) : "";
 
-    // 7-day avg calories and adherence
-    const now = dsToDate(todayDS());
-    const last7=[];
-    for(let i=0;i<7;i++){
-      const d=new Date(now.getFullYear(), now.getMonth(), now.getDate()-i);
-      const ds=toDS(d.getFullYear(), d.getMonth(), d.getDate());
-      const L=state.logs[ds]||{};
-      if(L.cals!=null) last7.push({ds, cals:Number(L.cals)});
-    }
-    if(last7.length){
-      const avg = last7.reduce((a,x)=>a+x.cals,0)/last7.length;
-      kpiCals.textContent = Math.round(avg);
-      const win = Number(state.settings.adhWindow)||0;
-      let ok=0;
-      for(const x of last7){
-        const exp=expectedCalories(x.ds);
-        if(Math.abs(x.cals-exp)<=win) ok++;
-      }
-      kpiAdh.textContent = `${ok}/${last7.length}`;
-    }else{
-      kpiCals.textContent = "-";
-      kpiAdh.textContent = "-";
+    let msgParts = [];
+    if(w===null || Number.isNaN(w)){
+      msgParts.push("Enter weight to compare against expected range.");
+    } else {
+      if(w < exp.low) msgParts.push(`Below expected by ${(exp.low - w).toFixed(1)} lb (fine).`);
+      else if(w > exp.high) msgParts.push(`Above expected by ${(w - exp.high).toFixed(1)} lb (likely water unless persistent).`);
+      else msgParts.push("Within expected weight range.");
     }
 
-    // track pill
-    const on = (kpiAdh.textContent.includes("/") && !kpiAdh.textContent.startsWith("0/"));
-    trackDot.className = "dot " + (on ? "good" : "warn");
-    trackText.textContent = on ? "Yes" : "—";
-  }
-
-  function updateCoach(){
-    coachModeEl.textContent = state.cloud.enabled ? "Cloud + local" : "Local only";
-
-    // next weigh-in target
-    const t = dsToDate(todayDS());
-    let next=null;
-    for(let i=0;i<14;i++){
-      const d=new Date(t.getFullYear(), t.getMonth(), t.getDate()+i);
-      const ds=toDS(d.getFullYear(), d.getMonth(), d.getDate());
-      if(isWeighDay(ds)){ next=ds; break; }
+    if(eb && b!==null && !Number.isNaN(b)){
+      if(b < eb.low) msgParts.push(`BF% is below expected range by ${(eb.low - b).toFixed(1)}%.`);
+      else if(b > eb.high) msgParts.push(`BF% is above expected range by ${(b - eb.high).toFixed(1)}%.`);
+      else msgParts.push("BF% is within expected range.");
+    } else if(eb) {
+      msgParts.push("BF% is optional. Enter it if you want a second anchor.");
     }
-    if(next){
-      const wr = expectedWeightRange(next);
-      coachTargetEl.textContent = `${fmt(wr.lo,1)}–${fmt(wr.hi,1)} lbs`;
-    }else coachTargetEl.textContent = "-";
 
-    // week 15 Thu target (approx)
-    const start = dsToDate(state.settings.startDate);
-    const w15Thu = new Date(start.getFullYear(), start.getMonth(), start.getDate() + (15*7) + 3);
-    const ds15 = toDS(w15Thu.getFullYear(), w15Thu.getMonth(), w15Thu.getDate());
-    const wr15 = expectedWeightRange(ds15);
-    coachW15El.textContent = `${fmt(wr15.lo,1)}–${fmt(wr15.hi,1)} lbs`;
-
-    coachDynEl.textContent = `Target = ${state.settings.targetCal} - (Δlbs × ${state.settings.kcalPerLb})`;
-    coachActionEl.textContent = "Hit calories within window and log weigh-ins Mon/Thu";
+    vsExpectedNote.textContent = msgParts.join(" ");
+    return {status:"good"};
   }
 
-  function updateStatus(){
-    statusDot.className="dot";
-    statusText.textContent = "Ready";
+  function openModal(ds){
+    activeDate = ds;
+    const d = parseYMD(ds);
+    modalTitle.textContent = `${weekdayName(d)} - ${ds}`;
+    modalSub.textContent = isWeighDay(d) ? "Weigh-in day (Mon/Thu). Log before food or water." : "Calories + workout + notes.";
+
+    const tgt = targetFor(ds);
+    dayTarget.value = tgt;
+
+    const exp = expectedRange(ds);
+    expectedWeight.value = exp ? fmtRange(exp) : "";
+    const eb = expectedBfRange(ds);
+    expectedBf.value = eb ? fmtBfRange(eb) : "";
+
+    const lbm = lbmBaseline();
+    lbmBase.value = `${lbm.toFixed(1)} lbs (est.)`;
+
+    const rec = state.days[ds] || {};
+    calories.value = (rec.calories===null || rec.calories===undefined) ? "" : rec.calories;
+    workout.value = rec.workout || "";
+    weight.value = (rec.weight===null || rec.weight===undefined) ? "" : rec.weight;
+    bf.value = (rec.bf===null || rec.bf===undefined) ? "" : rec.bf;
+    notes.value = rec.notes || "";
+
+    if(isFastDay(ds)) tagPill.innerHTML = "<b>Target:</b> FAST (0)";
+    else if(inReverseWindow(ds)) tagPill.innerHTML = `<b>Target:</b> Reverse (${tgt})`;
+    else if(isHighCarbDay(ds)) tagPill.innerHTML = `<b>Target:</b> High-carb (${tgt})`;
+    else tagPill.innerHTML = `<b>Target:</b> ${tgt}`;
+
+    updateVsExpected(ds);
+    setSaveIndicator("Saved", "good");
+    modal.classList.add("open");
   }
 
-  function updateLoggedDays(){
-    loggedDaysEl.textContent = computeMonthLogs();
-  }
-
-  function syncSettingsToUI(){
-    const s = state.settings;
-    startDateEl.value = s.startDate;
-    startWeightEl.value = s.startWeight;
-    startBfEl.value = s.startBf;
-    targetCalEl.value = s.targetCal;
-    highCalEl.value = s.highCal;
-    highStartWeekEl.value = s.highStartWeek;
-    secondHighStartWeekEl.value = s.secondHighStartWeek;
-    kcalPerLbEl.value = s.kcalPerLb;
-    minCalEl.value = s.minCal;
-    adhWindowEl.value = s.adhWindow;
-    primaryHighDowEl.value = String(s.primaryHighDow);
-    secondHighDowEl.value = String(s.secondHighDow);
-  }
-
-  function readSettingsFromUI(){
-    state.settings.startDate = startDateEl.value;
-    state.settings.startWeight = Number(startWeightEl.value);
-    state.settings.startBf = Number(startBfEl.value);
-    state.settings.targetCal = Number(targetCalEl.value);
-    state.settings.highCal = Number(highCalEl.value);
-    state.settings.highStartWeek = Number(highStartWeekEl.value);
-    state.settings.secondHighStartWeek = Number(secondHighStartWeekEl.value);
-    state.settings.kcalPerLb = Number(kcalPerLbEl.value);
-    state.settings.minCal = Number(minCalEl.value);
-    state.settings.adhWindow = Number(adhWindowEl.value);
-    state.settings.primaryHighDow = Number(primaryHighDowEl.value);
-    state.settings.secondHighDow = Number(secondHighDowEl.value);
-  }
-
-  function renderAll(){
-    renderMonthTabs();
-    renderActiveMonth();
-    updateLoggedDays();
-    updateKPIs();
-    updateCoach();
-    updateStatus();
-  }
-
-  // ======= Events: settings =======
-  [
-    startDateEl, startWeightEl, startBfEl, targetCalEl,
-    highCalEl, highStartWeekEl, secondHighStartWeekEl, kcalPerLbEl,
-    minCalEl, adhWindowEl, primaryHighDowEl, secondHighDowEl
-  ].forEach(el=>{
-    el.addEventListener("change", ()=>{
-      readSettingsFromUI();
+  function autosaveDebounced(){
+    if(!activeDate) return;
+    if(_timer) clearTimeout(_timer);
+    setSaveIndicator("Saving...", "warn");
+    _timer = setTimeout(()=>{
+      const rec = {
+        calories: calories.value==="" ? null : Number(calories.value),
+        workout: workout.value || "",
+        weight: weight.value==="" ? null : Number(weight.value),
+        bf: bf.value==="" ? null : Number(bf.value),
+        notes: notes.value.trim()
+      };
+      state.days[activeDate] = rec;
       saveState();
+      setSaveIndicator("Saved", "good");
       renderAll();
-    });
+    }, 260);
+  }
+
+  [calories, workout, weight, bf, notes].forEach(el=>{
+    el.addEventListener("input", ()=>{ if(activeDate) updateVsExpected(activeDate); autosaveDebounced(); });
+    el.addEventListener("change", ()=>{ if(activeDate) updateVsExpected(activeDate); autosaveDebounced(); });
   });
 
-  // ======= Export / Import =======
-  const filePicker = document.getElementById("filePicker");
+  function closeModal(){
+    modal.classList.remove("open");
+    activeDate = null;
+    renderAll();
+  }
+  closeBtn.addEventListener("click", closeModal);
+  modal.addEventListener("click", (e)=>{ if(e.target===modal) closeModal(); });
+
+  clearDayBtn.addEventListener("click", ()=>{
+    if(!activeDate) return;
+    delete state.days[activeDate];
+    saveState();
+    closeModal();
+  });
 
   document.getElementById("exportBtn").addEventListener("click", ()=>{
-    const blob = new Blob([JSON.stringify(state,null,2)], {type:"application/json"});
-    const a=document.createElement("a");
-    a.href=URL.createObjectURL(blob);
-    a.download="15_week_body_transformation_state.json";
-    a.click();
-    URL.revokeObjectURL(a.href);
+    const blob = new Blob([JSON.stringify(state, null, 2)], {type:"application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = "15_Week_Body_Transformation_export.json"; a.click();
+    URL.revokeObjectURL(url);
   });
 
   document.getElementById("importBtn").addEventListener("click", ()=>{
-    filePicker.accept=".json";
-    filePicker.onchange = async ()=>{
-      const f=filePicker.files[0]; if(!f) return;
-      const txt=await f.text();
-      try{
-        const obj=JSON.parse(txt);
-        state=obj;
-        cacheStateLocally(state);
-        setAuthMsg("warn","Imported state locally.");
-        syncSettingsToUI();
-        renderAll();
-      }catch(e){
-        alert("Import failed: invalid JSON");
-      }
-      filePicker.value="";
-    };
-    filePicker.click();
-  });
+    const inp=document.createElement("input");
+    inp.type="file"; inp.accept="application/json";
+    inp.onchange = ()=>{
+      const file=inp.files && inp.files[0];
+      if(!file) return;
+      const r=new FileReader();
+      r.onload = ()=>{
+        try{
+          const data=JSON.parse(String(r.result||"{}"));
+          if(!data.days) data.days={};
+          if(!data.settings) data.settings=state.settings;
+          if(!data.ui) data.ui=state.ui;
 
-  document.getElementById("importCsvBtn").addEventListener("click", ()=>{
-    filePicker.accept=".csv";
-    filePicker.onchange = async ()=>{
-      const f=filePicker.files[0]; if(!f) return;
-      const txt=await f.text();
-      // expected columns: date,calories (header optional)
-      const lines=txt.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
-      for(const line of lines){
-        if(line.toLowerCase().includes("date") && line.toLowerCase().includes("cal")) continue;
-        const parts=line.split(",");
-        if(parts.length<2) continue;
-        const ds=parts[0].trim();
-        const cals=Number(parts[1].trim());
-        if(!/^\d{4}-\d{2}-\d{2}$/.test(ds)) continue;
-        if(!state.logs[ds]) state.logs[ds]={};
-        if(!Number.isNaN(cals)) state.logs[ds].cals=cals;
-      }
-      saveState();
-      renderAll();
-      filePicker.value="";
+          const defSettings = {...state.settings};
+          data.settings = {...defSettings, ...data.settings};
+          const defUi = {...state.ui};
+          data.ui = {...defUi, ...data.ui};
+
+          state=data;
+          saveState();
+          syncSettingsToUI();
+          renderAll();
+        }catch(e){ alert("Import failed. Choose a valid export file."); }
+      };
+      r.readAsText(file);
     };
-    filePicker.click();
+    inp.click();
   });
 
   document.getElementById("resetBtn").addEventListener("click", ()=>{
-    if(!confirm("Reset all data? This clears local logs/settings.")) return;
-    state = deepClone(defaultState);
-    cacheStateLocally(state);
-    setAuthMsg("warn","Reset completed (local).");
+    if(!confirm("Reset ALL saved data? This cannot be undone.")) return;
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(LOCAL_CACHE_KEY);
+    state = loadState();
     syncSettingsToUI();
     renderAll();
   });
 
-  // ======= Cloud auth =======
-  document.getElementById("signInBtn").addEventListener("click", async (e)=>{
-    e.preventDefault();
-    const sb = ensureSupabase();
-    if(!sb){
-      setAuthMsg("err","Supabase not available. Check console.");
-      return;
+  function parseCSV(text){
+    const lines = text.replace(/\r/g,"").split("\n").filter(l=>l.trim().length);
+    if(!lines.length) return [];
+    const rows = lines.map(l=>l.split(/,|\t/).map(x=>x.trim()));
+    const first0 = rows[0][0] || "";
+    const looksLikeDate = /^\d{4}-\d{2}-\d{2}$/.test(first0);
+    const startIdx = looksLikeDate ? 0 : 1;
+    const out=[];
+    for(let i=startIdx;i<rows.length;i++){
+      const r=rows[i];
+      const date=r[0];
+      const cal=r[1];
+      if(!/^\d{4}-\d{2}-\d{2}$/.test(date)) continue;
+      const c = Number(String(cal||"").replace(/[^0-9.]/g,""));
+      if(!Number.isFinite(c)) continue;
+      out.push({date, calories: Math.round(c)});
     }
-
-    const email = (cloudEmailEl.value||"").trim();
-    const password = (cloudPassEl.value||"").trim();
-    if(!email || !password){
-      setAuthMsg("warn","Enter email + password.");
-      return;
-    }
-
-    setAuthMsg("warn","Signing in...");
-    try{
-      const { data, error } = await sb.auth.signInWithPassword({ email, password });
-      if(error){
-        console.error("signIn error:", error);
-        setAuthMsg("err", error.message || "Sign-in failed.");
-        return;
-      }
-
-      state.cloud.enabled = true;
-      setAuthMsg("ok","Signed in. Sync enabled.");
-      // try pull cloud state and merge
-      const cloud = await cloudLoadState();
-      if(cloud && typeof cloud === "object"){
-        state = cloud;
-        state.cloud = state.cloud || { enabled:true };
-        state.cloud.enabled = true;
-        cacheStateLocally(state);
-        syncSettingsToUI();
-      }else{
-        // no cloud state yet, push local
-        await cloudSaveState(state);
-      }
-      saveText.textContent = "Saved (local + cloud)";
-      renderAll();
-    }catch(ex){
-      console.error("signIn exception:", ex);
-      setAuthMsg("err","Sign-in exception. Open console.");
-    }
-  });
-
-  document.getElementById("signOutBtn").addEventListener("click", async ()=>{
-    const sb=ensureSupabase(); if(!sb) return;
-    try{
-      await sb.auth.signOut();
-      state.cloud.enabled = false;
-      cacheStateLocally(state);
-      setAuthMsg("warn","Signed out. Local-only mode.");
-      renderAll();
-    }catch(e){
-      console.error("signOut err:", e);
-      setAuthMsg("err","Sign out failed. Open console.");
-    }
-  });
-
-  // ======= Boot =======
-  async function boot(){
-    syncSettingsToUI();
-    renderAll();
-
-    // if already signed in from prior session, enable cloud automatically
-    const sb=ensureSupabase();
-    if(sb){
-      const user = await getUserSafe();
-      if(user){
-        state.cloud.enabled = true;
-        setAuthMsg("ok","Signed in. Sync enabled.");
-        const cloud = await cloudLoadState();
-        if(cloud && typeof cloud==="object"){
-          state = cloud;
-          state.cloud = state.cloud || {enabled:true};
-          state.cloud.enabled = true;
-          cacheStateLocally(state);
-          syncSettingsToUI();
-        }else{
-          await cloudSaveState(state);
-        }
-        renderAll();
-      }
-    }
+    return out;
   }
 
-  boot();
-</script>
+  document.getElementById("importCaloriesBtn").addEventListener("click", ()=>{
+    const inp=document.createElement("input");
+    inp.type="file"; inp.accept=".csv,text/csv,text/plain";
+    inp.onchange = ()=>{
+      const file=inp.files && inp.files[0];
+      if(!file) return;
+      const r=new FileReader();
+      r.onload = ()=>{
+        const items = parseCSV(String(r.result||""));
+        if(!items.length){ alert("No rows found. CSV should be: date,calories (YYYY-MM-DD)."); return; }
+        for(const it of items){
+          if(!state.days[it.date]) state.days[it.date] = {calories:null, workout:"", weight:null, bf:null, notes:""};
+          state.days[it.date].calories = it.calories;
+        }
+        saveState(); renderAll();
+        alert(`Imported calories for ${items.length} day(s).`);
+      };
+      r.readAsText(file);
+    };
+    inp.click();
+  });
 
+  const settingsEls = [
+    startDateEl, startWeightEl, startBfEl, targetCalEl, highCalEl, highStartWeekEl, secondHighStartWeekEl,
+    kcalPerLbEl, minCalEl, adhWindowEl, primaryHighDowEl, secondHighDowEl
+  ];
+  settingsEls.forEach(el=>{
+    el.addEventListener("input", ()=>{
+      state.settings.startDate = startDateEl.value || "2026-01-05";
+      state.settings.startWeight = Number(startWeightEl.value||221.6);
+      state.settings.startBf = Number(startBfEl.value||25.0);
+      state.settings.targetCal = Number(targetCalEl.value||2200);
+      state.settings.highCal = Number(highCalEl.value||2400);
+      state.settings.highStartWeek = Number(highStartWeekEl.value||3);
+      state.settings.secondHighStartWeek = Number(secondHighStartWeekEl.value||10);
+      state.settings.kcalPerLb = Number(kcalPerLbEl.value||10);
+      state.settings.minCal = Number(minCalEl.value||1700);
+      state.settings.adhWindow = Number(adhWindowEl.value||150);
+      state.settings.primaryHighDow = Number(primaryHighDowEl.value||0);
+      state.settings.secondHighDow = Number(secondHighDowEl.value||3);
+      saveState(); renderAll();
+    });
+    el.addEventListener("change", ()=>{
+      state.settings.primaryHighDow = Number(primaryHighDowEl.value||0);
+      state.settings.secondHighDow = Number(secondHighDowEl.value||3);
+      saveState(); renderAll();
+    });
+  });
+
+  function getWeighIns(){
+    const out=[];
+    for(const ds in state.days){
+      const rec = state.days[ds];
+      if(rec && rec.weight!==null && rec.weight!==undefined){
+        out.push({ ds, d: parseYMD(ds), w: Number(rec.weight) });
+      }
+    }
+    out.sort((a,b)=>a.d-b.d);
+    return out;
+  }
+  function getBfIns(){
+    const out=[];
+    for(const ds in state.days){
+      const rec = state.days[ds];
+      if(rec && rec.bf!==null && rec.bf!==undefined){
+        out.push({ ds, d: parseYMD(ds), bf: Number(rec.bf) });
+      }
+    }
+    out.sort((a,b)=>a.d-b.d);
+    return out;
+  }
+
+  function lastNDays(anchor, n){
+    const a = parseYMD(anchor);
+    const out=[];
+    const start = addDays(a, -(n-1));
+    for(let d=new Date(start); ymd(d)<=anchor; d=addDays(d,1)){
+      out.push(ymd(d));
+    }
+    return out;
+  }
+
+  function compute7Day(){
+    const anchor = ymd(new Date());
+    const days = lastNDays(anchor, 7);
+    const win = Number(state.settings.adhWindow || 150);
+
+    let calSum=0, calCount=0, on=0, logged=0;
+    for(const ds of days){
+      const rec = state.days[ds];
+      if(rec && rec.calories!==null && rec.calories!==undefined){
+        const c = Number(rec.calories);
+        calSum += c; calCount++;
+        logged++;
+        const tgt = targetFor(ds);
+        if(Math.abs(c - tgt) <= win) on++;
+      }
+    }
+    return { avgCal: calCount ? (calSum/calCount) : null, adh: logged ? (on/logged) : null, loggedDays: logged };
+  }
+
+  function setPill(id, cls, html){
+    const el = document.getElementById(id);
+    el.classList.remove("good","warn","bad");
+    if(cls) el.classList.add(cls);
+    el.innerHTML = html;
+  }
+
+  function renderKpis(){
+    const ws = getWeighIns();
+    const current = ws.length ? ws[ws.length-1] : null;
+    document.getElementById("kpiCurrent").textContent = current ? `${current.w.toFixed(1)} lbs` : "-";
+
+    const bfs = getBfIns();
+    const currentBf = bfs.length ? bfs[bfs.length-1] : null;
+    document.getElementById("kpiCurrentBf").textContent = currentBf ? `${currentBf.bf.toFixed(1)}%` : "-";
+
+    const d7 = compute7Day();
+    document.getElementById("kpiAvgCal").textContent = (d7.avgCal===null) ? "-" : `${Math.round(d7.avgCal)} kcal`;
+    document.getElementById("kpiAdh").textContent = (d7.adh===null) ? "-" : `${Math.round(d7.adh*100)}%`;
+
+    if(d7.adh===null){
+      setPill("dietPill","warn", "<b>Diet:</b> Log calories to score");
+    }else{
+      const pct = d7.adh*100;
+      if(pct>=75) setPill("dietPill","good", `<b>Diet:</b> ${Math.round(pct)}% on target`);
+      else if(pct>=50) setPill("dietPill","warn", `<b>Diet:</b> ${Math.round(pct)}% on target`);
+      else setPill("dietPill","bad", `<b>Diet:</b> ${Math.round(pct)}% on target`);
+    }
+
+    setPill("statusPill", null, "<b>Status:</b> Tracking live");
+  }
+
+  function nextWeighInTarget(){
+    const today = new Date();
+    for(let i=0;i<200;i++){
+      const d = addDays(today, i);
+      const ds = ymd(d);
+      if(isWeighDay(d)){
+        const exp = expectedRange(ds);
+        if(exp) return {ds, range: fmtRange(exp), bfRange: fmtBfRange(expectedBfRange(ds))};
+        return {ds, range:"Weigh-in", bfRange:""};
+      }
+    }
+    return null;
+  }
+
+  function renderCoach(){
+    const d7 = compute7Day();
+    const nxt = nextWeighInTarget();
+    document.getElementById("coachNextTarget").textContent = nxt ? `${nxt.ds}: ${nxt.range}${nxt.bfRange ? " | BF " + nxt.bfRange : ""}` : "-";
+
+    const start = parseYMD(state.settings.startDate);
+    const week15Thu = addDays(start, (15-1)*7 + 3);
+    document.getElementById("coachWeek15").textContent = `${ymd(week15Thu)}: ${fmtRange(THU_WEEK_RANGES[14])}`;
+
+    const w0 = Number(state.settings.startWeight);
+    const w  = getWeightBefore(ymd(new Date()));
+    const kcalPerLb = Number(state.settings.kcalPerLb);
+    const adj = Math.round((w - w0) * kcalPerLb);
+    document.getElementById("coachDyn").textContent = `${adj} kcal vs start`;
+
+    let primary="Log calories consistently";
+    let cls="warn";
+    let pillText="Log data";
+
+    if(d7.adh!==null){
+      const pct = d7.adh;
+      if(pct>=0.90){ primary="Stay the course"; cls="good"; pillText="On track"; }
+      else if(pct>=0.75){ primary="Tighten adherence"; cls="warn"; pillText="Adjust"; }
+      else { primary="Fix compliance first"; cls="bad"; pillText="Action needed"; }
+    }
+
+    document.getElementById("coachPrimary").textContent = primary;
+    setPill("coachPill", cls, `<b>Guidance:</b> ${pillText}`);
+    setPill("onTrackPill", cls, `<b>On track:</b> ${primary}`);
+  }
+
+  function renderAll(){
+    buildTabs();
+    renderActiveMonth();
+    renderKpis();
+    renderCoach();
+  }
+
+  window.addEventListener("resize", ()=>{ renderActiveMonth(); });
+
+  // IMPORTANT: do not call renderAll() here. initApp is the single entry point.
+  initApp();
+</script>
 </body>
 </html>
