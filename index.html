@@ -286,6 +286,24 @@
     background:rgba(148,163,184,.06);
     display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; align-items:center;
   }
+
+  /* Coach KPI formatting */
+  .coach-date{font-size:12px; color:var(--muted); margin-bottom:4px;}
+  .coach-metric{font-size:15px; line-height:1.35;}
+  .coach-metric .label{color:var(--muted); margin-right:6px; font-weight:650;}
+  .coach-metric strong{font-weight:950; font-size:18px;}
+  .coach-sub{font-size:12px; color:var(--muted); margin-top:2px;}
+
+  @media(max-width:620px){
+    .tabs{flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch;}
+    .tabs::-webkit-scrollbar{height:8px;}
+    .tab{flex:0 0 auto;}
+    .calendar{padding:12px; gap:10px;}
+    .day{padding:12px;}
+    .kpi .v{font-size:18px;}
+    h1{font-size:22px;}
+  }
+
 </style>
 </head>
 
@@ -625,6 +643,13 @@
     const [y,m,d]=s.split('-').map(Number);
     return new Date(y, m-1, d);
   }
+
+  function fmtUSDate(ymdStr){
+    // ymdStr format: YYYY-MM-DD
+    const d = parseYMD(ymdStr);
+    return d.toLocaleDateString("en-US",{month:"2-digit",day:"2-digit",year:"numeric"});
+  }
+
   function addDays(d, n){
     const x=new Date(d);
     x.setDate(x.getDate()+n);
@@ -1594,17 +1619,44 @@
   function renderCoach(){
     const d7 = compute7Day();
     const nxt = nextWeighInTarget();
-    document.getElementById("coachNextTarget").textContent = nxt ? `${nxt.ds}: ${nxt.range}${nxt.bfRange ? " | BF " + nxt.bfRange : ""}` : "-";
+
+    const nextEl = document.getElementById("coachNextTarget");
+    if(nxt){
+      // Expected ranges are like "221.1 to 222.1" (lbs)
+      const wt = (nxt.range || "").replace(" to ", "–") + " lb";
+      const bf = (nxt.bfRange || "").replace(" to ", "–");
+      nextEl.innerHTML = `
+        <div class="coach-date">${fmtUSDate(nxt.ds)}</div>
+        <div class="coach-metric"><span class="label">Weight:</span><strong>${wt}</strong></div>
+        ${bf ? `<div class="coach-metric"><span class="label">Body fat:</span><strong>${bf}%</strong></div>` : ``}
+      `;
+    } else {
+      nextEl.textContent = "-";
+    }
 
     const start = parseYMD(state.settings.startDate);
     const week15Thu = addDays(start, (15-1)*7 + 3);
-    document.getElementById("coachWeek15").textContent = `${ymd(week15Thu)}: ${fmtRange(THU_WEEK_RANGES[14])}`;
+    const week15Ds = ymd(week15Thu);
+    const week15Range = fmtRange(THU_WEEK_RANGES[14]).replace(" to ", "–") + " lb";
+    const w15El = document.getElementById("coachWeek15");
+    w15El.innerHTML = `
+      <div class="coach-date">${fmtUSDate(week15Ds)}</div>
+      <div class="coach-metric"><strong>${week15Range}</strong></div>
+    `;
 
     const w0 = Number(state.settings.startWeight);
     const w  = getWeightBefore(ymd(new Date()));
     const kcalPerLb = Number(state.settings.kcalPerLb);
     const adj = Math.round((w - w0) * kcalPerLb);
-    document.getElementById("coachDyn").textContent = `${adj} kcal vs start`;
+
+    const dynEl = document.getElementById("coachDyn");
+    if(!isFinite(adj)){
+      dynEl.textContent = "-";
+    } else if(adj === 0){
+      dynEl.textContent = "Calories unchanged from start";
+    } else {
+      dynEl.textContent = `${adj > 0 ? "+" : ""}${adj} kcal vs start`;
+    }
 
     let primary="Log calories consistently";
     let cls="warn";
