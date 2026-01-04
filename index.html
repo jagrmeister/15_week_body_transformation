@@ -375,6 +375,30 @@
 
       <div class="controls">
         <div>
+<div class="controls" style="padding-top:0;">
+  <div>
+    <label>Cloud sync email</label>
+    <input id="authEmail" type="email" placeholder="you@email.com"/>
+  </div>
+  <div>
+    <label>Cloud sync password</label>
+    <input id="authPass" type="password" placeholder="password"/>
+  </div>
+  <div>
+    <label>&nbsp;</label>
+    <button class="btn secondary" id="signInBtn" type="button">
+      Sign In (Enable Sync)
+    </button>
+  </div>
+  <div>
+    <label>&nbsp;</label>
+    <button class="btn secondary" id="signOutBtn" type="button">
+      Sign Out
+    </button>
+  </div>
+</div>
+
+          
           <label>Official start weigh-in date (Mon)</label>
           <input type="date" id="startDate" value="2026-01-05"/>
         </div>
@@ -567,6 +591,7 @@
     </div>
   </div>
 </div>
+<script src="https://dklnhdjxplpqnrjziqkq.supabase.co"></script>
 
 <script>
   function ymd(d){
@@ -621,6 +646,67 @@
   function isFastDay(ds){ return ds>=FAST_START && ds<=FAST_END; }
   function inReverseWindow(ds){ return ds>=REVERSE_START && ds<=REVERSE_END; }
 
+const SUPABASE_URL = "https://dklnhdjxplpqnrjziqkq.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_IMLHiJEMCfXAQqGIdhBAHQ_I1OCnlst";
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+async function getUser() {
+  const { data } = await supabase.auth.getUser();
+  return data.user || null;
+}
+
+async function cloudLoadState() {
+  const user = await getUser();
+  if (!user) return null;
+
+  const { data, error } = await supabase
+    .from("tracker_states")
+    .select("state")
+    .eq("user_id", user.id)
+    .single();
+
+  // "no rows" is fine (first run)
+  if (error && error.code !== "PGRST116") {
+    console.error("cloudLoadState error:", error);
+    return null;
+  }
+  return data?.state || null;
+}
+
+async function cloudSaveState(newState) {
+  const user = await getUser();
+  if (!user) return false;
+
+  const payload = {
+    user_id: user.id,
+    state: newState,
+    updated_at: new Date().toISOString()
+  };
+
+  const { error } = await supabase
+    .from("tracker_states")
+    .upsert(payload, { onConflict: "user_id" });
+
+  if (error) {
+    console.error("cloudSaveState error:", error);
+    return false;
+  }
+  return true;
+}
+
+function cacheStateLocally(newState) {
+  try { localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify(newState)); } catch {}
+}
+
+function loadLocalCache() {
+  try {
+    const raw = localStorage.getItem(LOCAL_CACHE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+}
+  
+
+const LOCAL_CACHE_KEY = "diet_15wk_cache_v1";
   function loadState(){
     try{
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -689,9 +775,14 @@
       };
     }
   }
-  function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+function saveState(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  cacheStateLocally(state);
+  cloudSaveState(state);
+  pulseSaved();
+}
 
-  let state = loadState();
+let state = loadState(); // local fallback
 
   const savePill = document.getElementById("savePill");
   function pulseSaved(){
@@ -729,7 +820,31 @@
     primaryHighDowEl.value = String(state.settings.primaryHighDow);
     secondHighDowEl.value  = String(state.settings.secondHighDow);
   }
+
+  async function initApp() {
+  // 1) Quick local cache (optional, but keeps app snappy/offline)
+  const cached = loadLocalCache?.() ? loadLocalCache() : null;
+  if (cached) state = cached;
+
+  // 2) If signed in, cloud wins
+  try {
+    const user = await getUser();
+    if (user) {
+      const cloud = await cloudLoadState();
+      if (cloud) state = cloud;
+    }
+  } catch (e) {
+    console.warn("Cloud init skipped:", e);
+  }
+
+  // 3) Sync UI and render once
+  cacheStateLocally?.(state);
   syncSettingsToUI();
+  renderAll();
+}
+
+initApp();
+
 
   function clamp(n, lo, hi){
     if(n < lo) return lo;
