@@ -650,7 +650,7 @@
   // IMPORTANT: SUPABASE_ANON_KEY must be your full "anon public" key (a long JWT that usually starts with "eyJ..."),
   // from Supabase Project Settings -> API.
   const SUPABASE_URL = "https://dklnhdjxplpqnrjziqkq.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRrbG5oZGp4cGxwcW5yanppcWtxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc1MzkxNjAsImV4cCI6MjA4MzExNTE2MH0.qp0eOggU4nrhgjj-yrUmhvHNRz1uL8TSp9xrDsAq5Sg";
+  const SUPABASE_ANON_KEY = "PASTE_YOUR_SUPABASE_ANON_PUBLIC_KEY_HERE";
   let supabase = null;
 
   const authMsgEl = document.getElementById("authMsg");
@@ -885,17 +885,6 @@ const user = await getUser();
     }
   });
 
-
-if (error) { alert(error.message); return; }
-
-    const cloud = await cloudLoadState();
-    if (cloud) state = cloud;
-
-    cacheStateLocally(state);
-    syncSettingsToUI();
-    renderAll();
-    alert("Signed in. Cloud sync active.");
-  });
 
   document.getElementById("signOutBtn").addEventListener("click", async () => {
     try{
