@@ -304,6 +304,39 @@
     h1{font-size:22px;}
   }
 
+
+  .spark{
+    margin-top:10px;
+    width:100%;
+    min-height:80px;
+    border-radius:12px;
+    background:rgba(15,23,42,.18);
+    border:1px solid var(--line);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow:hidden;
+  }
+  .spark svg{ width:100%; height:80px; display:block; }
+  .miniTable{
+    margin-top:10px;
+    border:1px solid var(--line);
+    border-radius:12px;
+    overflow:hidden;
+    background:rgba(15,23,42,.12);
+  }
+  .miniRow{
+    display:grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap:10px;
+    padding:8px 10px;
+    border-top:1px solid var(--line);
+    font-size:12px;
+    color:var(--muted);
+  }
+  .miniRow:first-child{ border-top:none; font-weight:800; color:var(--ink); background:rgba(255,255,255,.03); }
+  .miniRow b{ color:var(--ink); }
+
 </style>
 </head>
 
@@ -427,10 +460,61 @@
         <div class="v" id="kpiAdh">-</div>
         <div class="s">Within ± window</div>
       </div>
+      <div class="kpi">
+        <div class="k">7-day avg sleep</div>
+        <div class="v" id="kpiAvgSleep">-</div>
+        <div class="s">From logged sleep</div>
+      </div>
+      <div class="kpi">
+        <div class="k">7-day avg protein</div>
+        <div class="v" id="kpiAvgProtein">-</div>
+        <div class="s">From logged macros</div>
+      </div>
+      <div class="kpi">
+        <div class="k">7-day avg carbs</div>
+        <div class="v" id="kpiAvgCarbs">-</div>
+        <div class="s">From logged macros</div>
+      </div>
+      <div class="kpi">
+        <div class="k">7-day avg fat</div>
+        <div class="v" id="kpiAvgFat">-</div>
+        <div class="s">From logged macros</div>
+      </div>
+
     </div>
   </section>
 
+  
   <section class="card" style="margin-bottom:18px;">
+    <div class="head">
+      <div class="t">Trends & Insights</div>
+      <div class="pill dot" id="insightsPill"><b>Insights:</b> -</div>
+    </div>
+    <div class="kpis">
+      <div class="kpi">
+        <div class="k">Weight trend (21 days)</div>
+        <div class="spark" id="sparkWeight">-</div>
+        <div class="s" id="sparkWeightNote">-</div>
+      </div>
+      <div class="kpi">
+        <div class="k">Calories vs target (14 days)</div>
+        <div class="spark" id="sparkCalories">-</div>
+        <div class="s" id="sparkCaloriesNote">-</div>
+      </div>
+      <div class="kpi">
+        <div class="k">Sleep (14 days)</div>
+        <div class="spark" id="sparkSleep">-</div>
+        <div class="s" id="sparkSleepNote">-</div>
+      </div>
+      <div class="kpi">
+        <div class="k">Weekday consistency (8 weeks)</div>
+        <div class="miniTable" id="weekdayTable">-</div>
+        <div class="s">Best and worst weekdays update as you log more data.</div>
+      </div>
+    </div>
+  </section>
+
+<section class="card" style="margin-bottom:18px;">
     <div class="head">
       <div class="t">Advanced Settings</div>
       <div class="pill dot warn" id="advancedPill"><b>Advanced:</b> Hidden</div>
@@ -488,6 +572,23 @@
         <div>
           <label>Adherence window (kcal)</label>
           <input type="number" id="adhWindow" step="10" value="150" disabled/>
+        </div>
+        <div>
+          <label>Sleep target (hours)</label>
+          <input type="number" id="sleepTarget" step="0.1" min="0" value="7.0"/>
+        </div>
+        <div>
+          <label>Protein target (g)</label>
+          <input type="number" id="proteinTarget" step="1" min="0" value="220"/>
+        </div>
+        <div>
+          <label>Carb target (g)</label>
+          <input type="number" id="carbTarget" step="1" min="0" value="100"/>
+        </div>
+        <div>
+          <label>Fat target (g)</label>
+          <input type="number" id="fatTarget" step="1" min="0" value="90"/>
+
         </div>
         <div>
           <label>Primary high-carb day</label>
@@ -616,6 +717,29 @@
           <div>
             <label>Body fat % (Fitdays)</label>
             <input id="bf" type="number" step="0.1" placeholder="Mon/Thu optional"/>
+          </div>
+        </div>
+
+        
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;">
+          <div>
+            <label>Protein (g)</label>
+            <input id="protein" type="number" step="1" min="0" placeholder="e.g., 220"/>
+          </div>
+          <div>
+            <label>Carbs (g)</label>
+            <input id="carbs" type="number" step="1" min="0" placeholder="e.g., 90"/>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;">
+          <div>
+            <label>Fat (g)</label>
+            <input id="fat" type="number" step="1" min="0" placeholder="e.g., 85"/>
+          </div>
+          <div>
+            <label>Fiber (g) (optional)</label>
+            <input id="fiber" type="number" step="1" min="0" placeholder="e.g., 25"/>
           </div>
         </div>
 
@@ -852,7 +976,11 @@
         secondHighDow:3,
         adhWindow:150,
         kcalPerLb:10,
-        minCal:1700
+        minCal:1700,
+        sleepTarget:7.0,
+        proteinTarget:220,
+        carbTarget:100,
+        fatTarget:90
       };
       s.settings = {...defSettings, ...s.settings};
 
@@ -911,6 +1039,10 @@
   const kcalPerLbEl   = document.getElementById("kcalPerLb");
   const minCalEl      = document.getElementById("minCal");
   const adhWindowEl   = document.getElementById("adhWindow");
+  const sleepTargetEl = document.getElementById("sleepTarget");
+  const proteinTargetEl = document.getElementById("proteinTarget");
+  const carbTargetEl = document.getElementById("carbTarget");
+  const fatTargetEl = document.getElementById("fatTarget");
   const primaryHighDowEl = document.getElementById("primaryHighDow");
   const secondHighDowEl  = document.getElementById("secondHighDow");
 
@@ -945,8 +1077,65 @@
     kcalPerLbEl.value  = state.settings.kcalPerLb;
     minCalEl.value     = state.settings.minCal;
     adhWindowEl.value  = state.settings.adhWindow;
+    if(sleepTargetEl) sleepTargetEl.value = state.settings.sleepTarget;
+    if(proteinTargetEl) proteinTargetEl.value = state.settings.proteinTarget;
+    if(carbTargetEl) carbTargetEl.value = state.settings.carbTarget;
+    if(fatTargetEl) fatTargetEl.value = state.settings.fatTarget;
     primaryHighDowEl.value = String(state.settings.primaryHighDow);
     secondHighDowEl.value  = String(state.settings.secondHighDow);
+  }
+
+
+  function wireSettings(){
+    const pairs = [
+      [startDateEl, v=>String(v||"")],
+      [startWeightEl, v=>Number(v)],
+      [startBfEl, v=>Number(v)],
+      [targetCalEl, v=>Number(v)],
+      [highCalEl, v=>Number(v)],
+      [highStartWeekEl, v=>Number(v)],
+      [secondHighStartWeekEl, v=>Number(v)],
+      [kcalPerLbEl, v=>Number(v)],
+      [minCalEl, v=>Number(v)],
+      [adhWindowEl, v=>Number(v)],
+      [sleepTargetEl, v=>Number(v)],
+      [proteinTargetEl, v=>Number(v)],
+      [carbTargetEl, v=>Number(v)],
+      [fatTargetEl, v=>Number(v)],
+      [primaryHighDowEl, v=>Number(v)],
+      [secondHighDowEl, v=>Number(v)]
+    ];
+
+    const apply = ()=>{
+      // Some fields are intentionally disabled; ignore them.
+      try{
+        const s = state.settings;
+        if(startDateEl && startDateEl.value) s.startDate = startDateEl.value;
+        if(startWeightEl && startWeightEl.value!=="") s.startWeight = Number(startWeightEl.value);
+        if(startBfEl && startBfEl.value!=="") s.startBf = Number(startBfEl.value);
+
+        if(targetCalEl && !targetCalEl.disabled && targetCalEl.value!=="") s.targetCal = Number(targetCalEl.value);
+        if(highCalEl && !highCalEl.disabled && highCalEl.value!=="") s.highCal = Number(highCalEl.value);
+        if(highStartWeekEl && !highStartWeekEl.disabled && highStartWeekEl.value!=="") s.highStartWeek = Number(highStartWeekEl.value);
+        if(secondHighStartWeekEl && !secondHighStartWeekEl.disabled && secondHighStartWeekEl.value!=="") s.secondHighStartWeek = Number(secondHighStartWeekEl.value);
+        if(kcalPerLbEl && !kcalPerLbEl.disabled && kcalPerLbEl.value!=="") s.kcalPerLb = Number(kcalPerLbEl.value);
+
+        if(sleepTargetEl && sleepTargetEl.value!=="") s.sleepTarget = Math.max(0, Number(sleepTargetEl.value));
+        if(proteinTargetEl && proteinTargetEl.value!=="") s.proteinTarget = Math.max(0, Number(proteinTargetEl.value));
+        if(carbTargetEl && carbTargetEl.value!=="") s.carbTarget = Math.max(0, Number(carbTargetEl.value));
+        if(fatTargetEl && fatTargetEl.value!=="") s.fatTarget = Math.max(0, Number(fatTargetEl.value));
+
+        saveState();
+        renderAll();
+      }catch{}
+    };
+
+    const els = [startDateEl,startWeightEl,startBfEl,targetCalEl,highCalEl,highStartWeekEl,secondHighStartWeekEl,kcalPerLbEl,minCalEl,adhWindowEl,
+                 sleepTargetEl,proteinTargetEl,carbTargetEl,fatTargetEl,primaryHighDowEl,secondHighDowEl].filter(Boolean);
+    els.forEach(el=>{
+      el.addEventListener("change", apply);
+      el.addEventListener("input", ()=>{ /* avoid chatty on every keypress for dates */ if(el.type==="number") apply(); });
+    });
   }
 
 
@@ -1057,6 +1246,7 @@ Attempts remaining before lockout: ${remaining}`);
 
     cacheStateLocally(state);
     syncSettingsToUI();
+    wireSettings();
     renderAll();
 
     const cloudPillEl = document.getElementById("cloudPill");
@@ -1094,6 +1284,7 @@ Attempts remaining before lockout: ${remaining}`);
 
     cacheStateLocally(state);
     syncSettingsToUI();
+    wireSettings();
     renderAll();
   }
 
@@ -1266,7 +1457,12 @@ Attempts remaining before lockout: ${remaining}`);
     for(const spec of monthsSpec){ m[monthKey(spec.y,spec.m)] = 0; }
     for(const ds in state.days){
       const rec = state.days[ds];
-      const hasAny = rec && (rec.calories!==null || rec.weight!==null || rec.bf!==null || (rec.workout && rec.workout !== "") || (rec.notes && rec.notes.trim().length));
+      const hasAny = rec && (
+        rec.calories!==null || rec.weight!==null || rec.bf!==null ||
+        rec.protein!==null || rec.carbs!==null || rec.fat!==null || rec.fiber!==null ||
+        rec.sleepHours!==null || rec.sleepQuality!==null ||
+        (rec.workout && rec.workout !== "") || (rec.notes && rec.notes.trim().length)
+      );
       if(!hasAny) continue;
       const d = parseYMD(ds);
       const key = monthKey(d.getFullYear(), d.getMonth());
@@ -1408,6 +1604,24 @@ Attempts remaining before lockout: ${remaining}`);
         cell.appendChild(slLine);
       }
 
+      // Macros (optional)
+      const hasMacros = rec && (
+        rec.protein!==null && rec.protein!==undefined ||
+        rec.carbs!==null && rec.carbs!==undefined ||
+        rec.fat!==null && rec.fat!==undefined ||
+        rec.fiber!==null && rec.fiber!==undefined
+      );
+      if(hasMacros){
+        const mLine = document.createElement("div");
+        mLine.className = "tiny";
+        const p = (rec.protein===null || rec.protein===undefined) ? "-" : Math.round(rec.protein);
+        const c = (rec.carbs===null || rec.carbs===undefined) ? "-" : Math.round(rec.carbs);
+        const f = (rec.fat===null || rec.fat===undefined) ? "-" : Math.round(rec.fat);
+        const fi = (rec.fiber===null || rec.fiber===undefined) ? null : Math.round(rec.fiber);
+        mLine.innerHTML = `Macros: <b>P${p}</b> / <b>C${c}</b> / <b>F${f}</b>${fi!==null?` <span class="muted">(Fi${fi})</span>`:""}`;
+        cell.appendChild(mLine);
+      }
+
       const exp = expectedRange(ds);
       if(exp){
         const expLine=document.createElement("div");
@@ -1474,6 +1688,10 @@ Attempts remaining before lockout: ${remaining}`);
   const workout = document.getElementById("workout");
   const weight = document.getElementById("weight");
   const bf = document.getElementById("bf");
+  const protein = document.getElementById("protein");
+  const carbs = document.getElementById("carbs");
+  const fat = document.getElementById("fat");
+  const fiber = document.getElementById("fiber");
   const notes = document.getElementById("notes");
   const sleepHours = document.getElementById("sleepHours");
   const sleepQuality = document.getElementById("sleepQuality");
@@ -1552,6 +1770,12 @@ Attempts remaining before lockout: ${remaining}`);
     workout.value = rec.workout || "";
     weight.value = (rec.weight===null || rec.weight===undefined) ? "" : rec.weight;
     bf.value = (rec.bf===null || rec.bf===undefined) ? "" : rec.bf;
+
+    protein.value = (rec.protein===null || rec.protein===undefined) ? "" : rec.protein;
+    carbs.value   = (rec.carbs===null || rec.carbs===undefined) ? "" : rec.carbs;
+    fat.value     = (rec.fat===null || rec.fat===undefined) ? "" : rec.fat;
+    fiber.value   = (rec.fiber===null || rec.fiber===undefined) ? "" : rec.fiber;
+
     notes.value = rec.notes || "";
 
     sleepHours.value = (rec.sleepHours===null || rec.sleepHours===undefined) ? "" : rec.sleepHours;
@@ -1579,6 +1803,12 @@ Attempts remaining before lockout: ${remaining}`);
         workout: workout.value || "",
         weight: weight.value==="" ? null : Number(weight.value),
         bf: bf.value==="" ? null : Number(bf.value),
+
+        protein: protein.value==="" ? null : Number(protein.value),
+        carbs: carbs.value==="" ? null : Number(carbs.value),
+        fat: fat.value==="" ? null : Number(fat.value),
+        fiber: fiber.value==="" ? null : Number(fiber.value),
+
         notes: notes.value.trim(),
         sleepHours: sleepHours.value==="" ? null : Number(sleepHours.value),
         sleepQuality: sleepQuality.value==="" ? null : Number(sleepQuality.value),
@@ -1642,6 +1872,7 @@ Attempts remaining before lockout: ${remaining}`);
           state=data;
           saveState();
           syncSettingsToUI();
+    wireSettings();
           renderAll();
         }catch(e){ alert("Import failed. Choose a valid export file."); }
       };
@@ -1672,6 +1903,7 @@ Attempts remaining before lockout: ${remaining}`);
       localStorage.removeItem(LOCAL_CACHE_KEY);
       state = loadState();
       syncSettingsToUI();
+    wireSettings();
       renderAll();
       alert("Local data reset. If cloud sync is enabled, refresh to pull cloud data.");
     }catch(e){
@@ -1788,8 +2020,15 @@ Attempts remaining before lockout: ${remaining}`);
     const win = Number(state.settings.adhWindow || 150);
 
     let calSum=0, calCount=0, on=0, logged=0;
+
+    let sleepSum=0, sleepCount=0, sleepOn=0;
+    const sleepTarget = Number(state.settings.sleepTarget || 7.0);
+
+    let pSum=0,pCount=0, cSum=0,cCount=0, fSum=0,fCount=0;
+
     for(const ds of days){
       const rec = state.days[ds];
+
       if(rec && rec.calories!==null && rec.calories!==undefined){
         const c = Number(rec.calories);
         calSum += c; calCount++;
@@ -1797,8 +2036,32 @@ Attempts remaining before lockout: ${remaining}`);
         const tgt = targetFor(ds);
         if(Math.abs(c - tgt) <= win) on++;
       }
+
+      if(rec && rec.sleepHours!==null && rec.sleepHours!==undefined){
+        const sh = Number(rec.sleepHours);
+        sleepSum += sh; sleepCount++;
+        if(isFinite(sleepTarget) && sh >= sleepTarget) sleepOn++;
+      }
+
+      if(rec && rec.protein!==null && rec.protein!==undefined){ pSum += Number(rec.protein); pCount++; }
+      if(rec && rec.carbs!==null && rec.carbs!==undefined){ cSum += Number(rec.carbs); cCount++; }
+      if(rec && rec.fat!==null && rec.fat!==undefined){ fSum += Number(rec.fat); fCount++; }
     }
-    return { avgCal: calCount ? (calSum/calCount) : null, adh: logged ? (on/logged) : null, loggedDays: logged };
+
+    return {
+      avgCal: calCount ? (calSum/calCount) : null,
+      adh: logged ? (on/logged) : null,
+      loggedDays: logged,
+
+      avgSleep: sleepCount ? (sleepSum/sleepCount) : null,
+      sleepLogged: sleepCount,
+      sleepAdh: sleepCount ? (sleepOn/sleepCount) : null,
+
+      avgProtein: pCount ? (pSum/pCount) : null,
+      avgCarbs: cCount ? (cSum/cCount) : null,
+      avgFat: fCount ? (fSum/fCount) : null,
+      macroLogged: Math.max(pCount, cCount, fCount)
+    };
   }
 
   function setPill(id, cls, html){
@@ -1853,6 +2116,15 @@ Attempts remaining before lockout: ${remaining}`);
     const d7 = compute7Day();
     document.getElementById("kpiAvgCal").textContent = (d7.avgCal===null) ? "-" : `${Math.round(d7.avgCal)} kcal`;
     document.getElementById("kpiAdh").textContent = (d7.adh===null) ? "-" : `${Math.round(d7.adh*100)}%`;
+    const kSleep = document.getElementById("kpiAvgSleep");
+    if(kSleep) kSleep.textContent = (d7.avgSleep===null) ? "-" : `${d7.avgSleep.toFixed(1)} h`;
+    const kP = document.getElementById("kpiAvgProtein");
+    if(kP) kP.textContent = (d7.avgProtein===null) ? "-" : `${Math.round(d7.avgProtein)} g`;
+    const kC = document.getElementById("kpiAvgCarbs");
+    if(kC) kC.textContent = (d7.avgCarbs===null) ? "-" : `${Math.round(d7.avgCarbs)} g`;
+    const kF = document.getElementById("kpiAvgFat");
+    if(kF) kF.textContent = (d7.avgFat===null) ? "-" : `${Math.round(d7.avgFat)} g`;
+
 
     if(d7.adh===null){
       setPill("dietPill","warn", "<b>Diet:</b> Log calories to score");
@@ -1880,7 +2152,166 @@ Attempts remaining before lockout: ${remaining}`);
     return null;
   }
 
-  function renderCoach(){
+  
+  function safeEl(id){ return document.getElementById(id); }
+
+  function sparkline(points, w=320, h=80){
+    const vals = points.filter(v=>v!==null && v!==undefined && isFinite(v));
+    if(vals.length < 2) return `<div class="tiny muted" style="padding:10px;">Not enough data yet.</div>`;
+    const min = Math.min(...vals);
+    const max = Math.max(...vals);
+    const span = (max-min) || 1;
+    const pad = 6;
+
+    const xs = points.map((_,i)=> pad + ( (w-2*pad) * (points.length===1?0:i/(points.length-1)) ));
+    const ys = points.map(v=>{
+      if(v===null || v===undefined || !isFinite(v)) return null;
+      const t = (v - min) / span;
+      return (h-pad) - t*(h-2*pad);
+    });
+
+    let d = "";
+    for(let i=0;i<xs.length;i++){
+      if(ys[i]===null) continue;
+      d += (d ? " " : "") + `${xs[i].toFixed(1)},${ys[i].toFixed(1)}`;
+    }
+    if(!d) return `<div class="tiny muted" style="padding:10px;">Not enough data yet.</div>`;
+
+    return `
+      <svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true">
+        <polyline fill="none" stroke="rgba(148,163,184,.9)" stroke-width="2" points="${d}"></polyline>
+      </svg>
+    `;
+  }
+
+  function barSpark(values, w=320, h=80){
+    const vals = values.filter(v=>v!==null && v!==undefined && isFinite(v));
+    if(vals.length < 2) return `<div class="tiny muted" style="padding:10px;">Not enough data yet.</div>`;
+    const max = Math.max(...vals, 1);
+    const pad = 6;
+    const barW = (w-2*pad)/values.length;
+
+    let rects = "";
+    for(let i=0;i<values.length;i++){
+      const v = values[i];
+      if(v===null || v===undefined || !isFinite(v)) continue;
+      const bh = (h-2*pad) * (v/max);
+      const x = pad + i*barW + 1;
+      const y = (h-pad) - bh;
+      rects += `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${Math.max(1,barW-2).toFixed(1)}" height="${bh.toFixed(1)}" fill="rgba(148,163,184,.6)"></rect>`;
+    }
+
+    return `
+      <svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true">
+        ${rects}
+      </svg>
+    `;
+  }
+
+  function renderTrends(){
+    const elW = safeEl("sparkWeight");
+    const elC = safeEl("sparkCalories");
+    const elS = safeEl("sparkSleep");
+    const elWT = safeEl("weekdayTable");
+    if(!elW || !elC || !elS || !elWT) return;
+
+    const today = ymd(new Date());
+    const wDays = lastNDays(today, 21);
+    const wSeries = wDays.map(ds=>{
+      const rec = state.days[ds];
+      return rec && rec.weight!==null && rec.weight!==undefined ? Number(rec.weight) : null;
+    });
+    elW.innerHTML = sparkline(wSeries);
+
+    const cDays = lastNDays(today, 14);
+    const cSeries = cDays.map(ds=>{
+      const rec = state.days[ds];
+      if(!rec || rec.calories===null || rec.calories===undefined) return null;
+      const tgt = targetFor(ds);
+      return Math.max(0, Math.abs(Number(rec.calories) - tgt));
+    });
+    elC.innerHTML = barSpark(cSeries);
+
+    const sSeries = cDays.map(ds=>{
+      const rec = state.days[ds];
+      return rec && rec.sleepHours!==null && rec.sleepHours!==undefined ? Number(rec.sleepHours) : null;
+    });
+    elS.innerHTML = sparkline(sSeries);
+
+    // Notes
+    const wNote = safeEl("sparkWeightNote");
+    const cNote = safeEl("sparkCaloriesNote");
+    const sNote = safeEl("sparkSleepNote");
+    if(wNote){
+      const last = [...wSeries].reverse().find(v=>v!==null);
+      wNote.textContent = last===undefined ? "-" : `Latest logged: ${last.toFixed(1)} lb`;
+    }
+    if(cNote){
+      const diffs = cSeries.filter(v=>v!==null);
+      cNote.textContent = diffs.length ? `Avg deviation: ${Math.round(diffs.reduce((a,b)=>a+b,0)/diffs.length)} kcal` : "-";
+    }
+    if(sNote){
+      const sVals = sSeries.filter(v=>v!==null);
+      if(!sVals.length) sNote.textContent = "-";
+      else {
+        const avg = sVals.reduce((a,b)=>a+b,0)/sVals.length;
+        sNote.textContent = `Avg: ${avg.toFixed(1)} h (14 days)`;
+      }
+    }
+
+    // Weekday consistency table (8 weeks)
+    const weeks = 8*7;
+    const dList = lastNDays(today, weeks);
+    const win = Number(state.settings.adhWindow || 150);
+    const sleepTarget = Number(state.settings.sleepTarget || 7.0);
+
+    const agg = Array.from({length:7}, ()=>({calOn:0, calLogged:0, sleepOn:0, sleepLogged:0}));
+    for(const ds of dList){
+      const d = parseYMD(ds);
+      const dow = d.getDay();
+      const rec = state.days[ds];
+      if(rec && rec.calories!==null && rec.calories!==undefined){
+        agg[dow].calLogged++;
+        const tgt = targetFor(ds);
+        if(Math.abs(Number(rec.calories)-tgt) <= win) agg[dow].calOn++;
+      }
+      if(rec && rec.sleepHours!==null && rec.sleepHours!==undefined){
+        agg[dow].sleepLogged++;
+        if(Number(rec.sleepHours) >= sleepTarget) agg[dow].sleepOn++;
+      }
+    }
+
+    const rows = [];
+    rows.push(`<div class="miniRow"><b>Day</b><b>Diet</b><b>Sleep</b></div>`);
+    for(let dow=0; dow<7; dow++){
+      const dName = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][dow];
+      const a = agg[dow];
+      const dietPct = a.calLogged ? Math.round(100*a.calOn/a.calLogged) : null;
+      const sleepPct = a.sleepLogged ? Math.round(100*a.sleepOn/a.sleepLogged) : null;
+      rows.push(`<div class="miniRow"><div><b>${dName}</b></div><div>${dietPct===null? "-" : dietPct+"%"}</div><div>${sleepPct===null? "-" : sleepPct+"%"}</div></div>`);
+    }
+    elWT.innerHTML = rows.join("");
+
+    // Insights pill quick summary
+    const insPill = safeEl("insightsPill");
+    if(insPill){
+      const d7 = compute7Day();
+      let msg = "Log more data";
+      let cls = "warn";
+      if(d7.adh!==null && d7.avgSleep!==null){
+        const diet = Math.round(d7.adh*100);
+        const sl = d7.avgSleep.toFixed(1);
+        msg = `Diet ${diet}% • Sleep ${sl}h`;
+        cls = (diet>=75 && d7.avgSleep>=sleepTarget) ? "good" : (diet>=50 ? "warn" : "bad");
+      } else if(d7.adh!==null){
+        msg = `Diet ${Math.round(d7.adh*100)}%`;
+        cls = (d7.adh>=0.75) ? "good" : (d7.adh>=0.50 ? "warn" : "bad");
+      }
+      setPill("insightsPill", cls, `<b>Insights:</b> ${msg}`);
+    }
+  }
+
+function renderCoach(){
     const d7 = compute7Day();
     const nxt = nextWeighInTarget();
 
@@ -1928,9 +2359,25 @@ Attempts remaining before lockout: ${remaining}`);
 
     if(d7.adh!==null){
       const pct = d7.adh;
-      if(pct>=0.90){ primary="Stay the course"; cls="good"; pillText="On track"; }
-      else if(pct>=0.75){ primary="Tighten adherence"; cls="warn"; pillText="Adjust"; }
-      else { primary="Fix compliance first"; cls="bad"; pillText="Action needed"; }
+
+      // If diet adherence is low, that's the first lever.
+      if(pct < 0.75){
+        primary = "Fix compliance first";
+        cls = (pct < 0.50) ? "bad" : "warn";
+        pillText = "Action needed";
+      } else {
+        // Diet is decent. Next lever is sleep (if we have it).
+        const st = Number(state.settings.sleepTarget || 7.0);
+        if(d7.avgSleep!==null && isFinite(st) && d7.avgSleep < st){
+          primary = "Increase sleep consistency";
+          cls = "warn";
+          pillText = "Sleep";
+        } else {
+          primary = (pct>=0.90) ? "Stay the course" : "Tighten adherence";
+          cls = (pct>=0.90) ? "good" : "warn";
+          pillText = (pct>=0.90) ? "On track" : "Adjust";
+        }
+      }
     }
 
     document.getElementById("coachPrimary").textContent = primary;
@@ -1943,6 +2390,7 @@ Attempts remaining before lockout: ${remaining}`);
     renderActiveMonth();
     renderKpis();
     renderCoach();
+    try{ renderTrends(); } catch {}
   }
 
   window.addEventListener("resize", ()=>{ renderActiveMonth(); });
