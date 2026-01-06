@@ -308,16 +308,22 @@
   .spark{
     margin-top:10px;
     width:100%;
-    min-height:80px;
+    min-height:110px;
     border-radius:12px;
-    background:rgba(15,23,42,.18);
+    background:linear-gradient(180deg, rgba(15,23,42,.22), rgba(15,23,42,.10));
     border:1px solid var(--line);
     display:flex;
-    align-items:center;
-    justify-content:center;
+    align-items:stretch;
+    justify-content:stretch;
     overflow:hidden;
+    padding:6px;
   }
-  .spark svg{ width:100%; height:80px; display:block; }
+  .spark svg{ width:100%; height:100%; display:block; }
+  .spark .axisText{ fill:rgba(169,182,198,.92); font-size:10px; }
+  .spark .axisLine{ stroke:rgba(148,163,184,.22); stroke-width:1; }
+  .spark .gridLine{ stroke:rgba(148,163,184,.14); stroke-width:1; }
+  .spark .legendText{ fill:rgba(169,182,198,.92); font-size:10px; }
+  .spark .titleText{ fill:rgba(233,240,247,.92); font-size:10px; font-weight:600; }
   .miniTable{
     margin-top:10px;
     border:1px solid var(--line);
@@ -2155,58 +2161,190 @@ Attempts remaining before lockout: ${remaining}`);
   
   function safeEl(id){ return document.getElementById(id); }
 
-  function sparkline(points, w=320, h=80){
+  let __sparkId = 0;
+  function fmtMD(ymdStr){
+    try{
+      const d = parseYMD(ymdStr);
+      return d.toLocaleDateString("en-US",{month:"2-digit",day:"2-digit"});
+    }catch(e){ return ""; }
+  }
+
+  function sparkline(points, opts={}){
+    const w = opts.w ?? 320;
+    const h = opts.h ?? 110;
+    const unit = opts.unit ?? "";
+    const yLabel = opts.yLabel ?? "";
+    const xLabels = opts.xLabels ?? null; // [start, end]
+    const goal = (opts.goal!==undefined && opts.goal!==null && isFinite(opts.goal)) ? Number(opts.goal) : null;
+    const goalLabel = opts.goalLabel ?? "Goal";
+    const autoColor = !!opts.autoColor;
+    const explicitColor = opts.color ?? null;
+
     const vals = points.filter(v=>v!==null && v!==undefined && isFinite(v));
     if(vals.length < 2) return `<div class="tiny muted" style="padding:10px;">Not enough data yet.</div>`;
-    const min = Math.min(...vals);
-    const max = Math.max(...vals);
+
+    let min = Math.min(...vals);
+    let max = Math.max(...vals);
+    if(goal!==null){
+      min = Math.min(min, goal);
+      max = Math.max(max, goal);
+    }
     const span = (max-min) || 1;
-    const pad = 6;
 
-    const xs = points.map((_,i)=> pad + ( (w-2*pad) * (points.length===1?0:i/(points.length-1)) ));
-    const ys = points.map(v=>{
-      if(v===null || v===undefined || !isFinite(v)) return null;
+    const padL = 42, padR = 10, padT = 10, padB = 20;
+    const plotW = w - padL - padR;
+    const plotH = h - padT - padB;
+
+    const xs = points.map((_,i)=> padL + (plotW * (points.length===1 ? 0 : i/(points.length-1))));
+    const yOf = (v)=>{
       const t = (v - min) / span;
-      return (h-pad) - t*(h-2*pad);
-    });
+      return (padT+plotH) - t*plotH;
+    };
+    const ys = points.map(v => (v===null || v===undefined || !isFinite(v)) ? null : yOf(Number(v)));
 
+    // Build path with gaps
     let d = "";
     for(let i=0;i<xs.length;i++){
       if(ys[i]===null) continue;
-      d += (d ? " " : "") + `${xs[i].toFixed(1)},${ys[i].toFixed(1)}`;
+      d += (d ? " L " : "M ") + `${xs[i].toFixed(1)} ${ys[i].toFixed(1)}`;
     }
     if(!d) return `<div class="tiny muted" style="padding:10px;">Not enough data yet.</div>`;
 
-    return `
-      <svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true">
-        <polyline fill="none" stroke="rgba(148,163,184,.9)" stroke-width="2" points="${d}"></polyline>
-      </svg>
-    `;
-  }
-
-  function barSpark(values, w=320, h=80){
-    const vals = values.filter(v=>v!==null && v!==undefined && isFinite(v));
-    if(vals.length < 2) return `<div class="tiny muted" style="padding:10px;">Not enough data yet.</div>`;
-    const max = Math.max(...vals, 1);
-    const pad = 6;
-    const barW = (w-2*pad)/values.length;
-
-    let rects = "";
-    for(let i=0;i<values.length;i++){
-      const v = values[i];
-      if(v===null || v===undefined || !isFinite(v)) continue;
-      const bh = (h-2*pad) * (v/max);
-      const x = pad + i*barW + 1;
-      const y = (h-pad) - bh;
-      rects += `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${Math.max(1,barW-2).toFixed(1)}" height="${bh.toFixed(1)}" fill="rgba(148,163,184,.6)"></rect>`;
+    // Auto-color by direction (first->last)
+    let lineColor = explicitColor || "var(--accent)";
+    if(autoColor){
+      const first = vals[0];
+      const last = vals[vals.length-1];
+      if(isFinite(first) && isFinite(last)){
+        if(last < first) lineColor = "var(--good)";
+        else if(last > first) lineColor = "var(--bad)";
+        else lineColor = "var(--accent)";
+      }
     }
 
+    const yMax = max;
+    const yMin = min;
+    const yMid = min + span/2;
+
+    const id = (++__sparkId);
+    const goalY = (goal!==null) ? yOf(goal) : null;
+
+    const fmt = (v)=> (Math.abs(v) >= 100 ? v.toFixed(0) : v.toFixed(1)) + (unit ? ` ${unit}` : "");
+    const x0 = xLabels ? (xLabels[0] ?? "") : "";
+    const x1 = xLabels ? (xLabels[1] ?? "") : "";
+
     return `
       <svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true">
-        ${rects}
+        <defs>
+          <linearGradient id="sparkFill${id}" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stop-color="rgba(59,130,246,.22)"/>
+            <stop offset="100%" stop-color="rgba(59,130,246,0)"/>
+          </linearGradient>
+        </defs>
+
+        <!-- Grid -->
+        <line class="gridLine" x1="${padL}" x2="${w-padR}" y1="${padT}" y2="${padT}"></line>
+        <line class="gridLine" x1="${padL}" x2="${w-padR}" y1="${(padT+plotH/2).toFixed(1)}" y2="${(padT+plotH/2).toFixed(1)}"></line>
+        <line class="gridLine" x1="${padL}" x2="${w-padR}" y1="${(padT+plotH).toFixed(1)}" y2="${(padT+plotH).toFixed(1)}"></line>
+
+        <!-- Axes -->
+        <line class="axisLine" x1="${padL}" x2="${padL}" y1="${padT}" y2="${padT+plotH}"></line>
+        <line class="axisLine" x1="${padL}" x2="${w-padR}" y1="${padT+plotH}" y2="${padT+plotH}"></line>
+
+        <!-- Axis labels -->
+        ${yLabel ? `<text class="titleText" x="${padL}" y="${(padT-2)}">${yLabel}</text>` : ``}
+        <text class="axisText" x="${padL-4}" y="${(padT+4)}" text-anchor="end">${fmt(yMax)}</text>
+        <text class="axisText" x="${padL-4}" y="${(padT+plotH/2+4).toFixed(1)}" text-anchor="end">${fmt(yMid)}</text>
+        <text class="axisText" x="${padL-4}" y="${(padT+plotH+4).toFixed(1)}" text-anchor="end">${fmt(yMin)}</text>
+
+        ${x0 ? `<text class="axisText" x="${padL}" y="${(padT+plotH+14).toFixed(1)}" text-anchor="start">${x0}</text>` : ``}
+        ${x1 ? `<text class="axisText" x="${(w-padR)}" y="${(padT+plotH+14).toFixed(1)}" text-anchor="end">${x1}</text>` : ``}
+
+        <!-- Goal -->
+        ${goalY!==null ? `
+          <line x1="${padL}" x2="${(w-padR)}" y1="${goalY.toFixed(1)}" y2="${goalY.toFixed(1)}"
+            stroke="var(--warn)" stroke-width="1" stroke-dasharray="4 3"></line>
+          <text class="legendText" x="${(w-padR)}" y="${(goalY-2).toFixed(1)}" text-anchor="end">${goalLabel}</text>
+        ` : ``}
+
+        <!-- Line -->
+        <path d="${d}" fill="none" stroke="${lineColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
       </svg>
     `;
   }
+
+
+  function barSpark(values, opts={}){
+    const w = opts.w ?? 320;
+    const h = opts.h ?? 110;
+    const unit = opts.unit ?? "";
+    const yLabel = opts.yLabel ?? "";
+    const xLabels = opts.xLabels ?? null; // [start, end]
+
+    const vals = values.filter(v=>v!==null && v!==undefined && isFinite(v));
+    if(vals.length < 2) return `<div class="tiny muted" style="padding:10px;">Not enough data yet.</div>`;
+
+    const padL = 42, padR = 10, padT = 10, padB = 20;
+    const plotW = w - padL - padR;
+    const plotH = h - padT - padB;
+
+    const maxAbs = Math.max(...vals.map(v=>Math.abs(v)), 1);
+    const scale = (plotH/2) / maxAbs;
+    const baselineY = padT + plotH/2;
+
+    const n = values.length;
+    const barW = plotW / n;
+    const gap = Math.min(2, barW*0.12);
+
+    let rects = "";
+    for(let i=0;i<n;i++){
+      const v = values[i];
+      if(v===null || v===undefined || !isFinite(v)) continue;
+      const vv = Number(v);
+      const bh = Math.abs(vv) * scale;
+      const x = padL + i*barW + gap;
+      const y = vv >= 0 ? (baselineY - bh) : baselineY;
+      const fill = vv >= 0 ? "var(--bad)" : "var(--good)";
+      rects += `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${Math.max(1, barW-2*gap).toFixed(1)}" height="${Math.max(1, bh).toFixed(1)}" rx="2" ry="2" fill="${fill}" opacity="0.75"></rect>`;
+    }
+
+    const fmt = (v)=> `${Math.round(v)}${unit ? ` ${unit}` : ""}`;
+    const x0 = xLabels ? (xLabels[0] ?? "") : "";
+    const x1 = xLabels ? (xLabels[1] ?? "") : "";
+
+    return `
+      <svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true">
+        <!-- Grid -->
+        <line class="gridLine" x1="${padL}" x2="${w-padR}" y1="${padT}" y2="${padT}"></line>
+        <line class="gridLine" x1="${padL}" x2="${w-padR}" y1="${baselineY.toFixed(1)}" y2="${baselineY.toFixed(1)}"></line>
+        <line class="gridLine" x1="${padL}" x2="${w-padR}" y1="${(padT+plotH).toFixed(1)}" y2="${(padT+plotH).toFixed(1)}"></line>
+
+        <!-- Axes -->
+        <line class="axisLine" x1="${padL}" x2="${padL}" y1="${padT}" y2="${padT+plotH}"></line>
+        <line class="axisLine" x1="${padL}" x2="${w-padR}" y1="${padT+plotH}" y2="${padT+plotH}"></line>
+
+        ${yLabel ? `<text class="titleText" x="${padL}" y="${(padT-2)}">${yLabel}</text>` : ``}
+
+        <!-- Y labels -->
+        <text class="axisText" x="${padL-4}" y="${(padT+4)}" text-anchor="end">${fmt(maxAbs)}</text>
+        <text class="axisText" x="${padL-4}" y="${(baselineY+4).toFixed(1)}" text-anchor="end">0</text>
+        <text class="axisText" x="${padL-4}" y="${(padT+plotH+4).toFixed(1)}" text-anchor="end">-${fmt(maxAbs)}</text>
+
+        ${x0 ? `<text class="axisText" x="${padL}" y="${(padT+plotH+14).toFixed(1)}" text-anchor="start">${x0}</text>` : ``}
+        ${x1 ? `<text class="axisText" x="${(w-padR)}" y="${(padT+plotH+14).toFixed(1)}" text-anchor="end">${x1}</text>` : ``}
+
+        <!-- Bars -->
+        ${rects}
+
+        <!-- Legend -->
+        <rect x="${(w-padR-84)}" y="${(padT)}" width="10" height="10" fill="var(--good)" opacity="0.75"></rect>
+        <text class="legendText" x="${(w-padR-70)}" y="${(padT+9)}">Under</text>
+        <rect x="${(w-padR-40)}" y="${(padT)}" width="10" height="10" fill="var(--bad)" opacity="0.75"></rect>
+        <text class="legendText" x="${(w-padR-26)}" y="${(padT+9)}">Over</text>
+      </svg>
+    `;
+  }
+
 
   function renderTrends(){
     const elW = safeEl("sparkWeight");
@@ -2216,27 +2354,33 @@ Attempts remaining before lockout: ${remaining}`);
     if(!elW || !elC || !elS || !elWT) return;
 
     const today = ymd(new Date());
+    const win = Number(state.settings.adhWindow || 150);
+    const sleepTarget = Number(state.settings.sleepTarget || 7.0);
+
     const wDays = lastNDays(today, 21);
     const wSeries = wDays.map(ds=>{
       const rec = state.days[ds];
       return rec && rec.weight!==null && rec.weight!==undefined ? Number(rec.weight) : null;
     });
-    elW.innerHTML = sparkline(wSeries);
+    elW.innerHTML = sparkline(wSeries, {unit:"lb", yLabel:"lb", xLabels:[fmtMD(wDays[0]), fmtMD(wDays[wDays.length-1])], autoColor:true});
 
     const cDays = lastNDays(today, 14);
     const cSeries = cDays.map(ds=>{
       const rec = state.days[ds];
       if(!rec || rec.calories===null || rec.calories===undefined) return null;
       const tgt = targetFor(ds);
-      return Math.max(0, Math.abs(Number(rec.calories) - tgt));
+      return Number(rec.calories) - tgt;
     });
-    elC.innerHTML = barSpark(cSeries);
+    elC.innerHTML = barSpark(cSeries, {unit:"kcal", yLabel:"kcal vs tgt", xLabels:[fmtMD(cDays[0]), fmtMD(cDays[cDays.length-1])]});
 
     const sSeries = cDays.map(ds=>{
       const rec = state.days[ds];
       return rec && rec.sleepHours!==null && rec.sleepHours!==undefined ? Number(rec.sleepHours) : null;
     });
-    elS.innerHTML = sparkline(sSeries);
+    const sValsForColor = sSeries.filter(v=>v!==null);
+    const sAvgForColor = sValsForColor.length ? (sValsForColor.reduce((a,b)=>a+b,0)/sValsForColor.length) : null;
+    const sColor = (sAvgForColor===null) ? "var(--accent)" : (sAvgForColor>=sleepTarget ? "var(--good)" : (sAvgForColor>=sleepTarget-0.5 ? "var(--warn)" : "var(--bad)"));
+    elS.innerHTML = sparkline(sSeries, {unit:"h", yLabel:"hrs", xLabels:[fmtMD(cDays[0]), fmtMD(cDays[cDays.length-1])], goal:sleepTarget, goalLabel:`Goal ${sleepTarget.toFixed(1)}h`, color:sColor});
 
     // Notes
     const wNote = safeEl("sparkWeightNote");
@@ -2244,11 +2388,23 @@ Attempts remaining before lockout: ${remaining}`);
     const sNote = safeEl("sparkSleepNote");
     if(wNote){
       const last = [...wSeries].reverse().find(v=>v!==null);
-      wNote.textContent = last===undefined ? "-" : `Latest logged: ${last.toFixed(1)} lb`;
+      if(last===undefined){ wNote.textContent = "-"; }
+      else {
+        const vv = wSeries.filter(v=>v!==null);
+        const mn = vv.length ? Math.min(...vv) : null;
+        const mx = vv.length ? Math.max(...vv) : null;
+        wNote.textContent = `Latest: ${last.toFixed(1)} lb` + (mn!==null && mx!==null ? ` • Range: ${mn.toFixed(1)}-${mx.toFixed(1)}` : "");
+      }
     }
     if(cNote){
       const diffs = cSeries.filter(v=>v!==null);
-      cNote.textContent = diffs.length ? `Avg deviation: ${Math.round(diffs.reduce((a,b)=>a+b,0)/diffs.length)} kcal` : "-";
+      if(!diffs.length){ cNote.textContent = "-"; }
+      else {
+        const avg = diffs.reduce((a,b)=>a+b,0)/diffs.length;
+        const absAvg = diffs.reduce((a,b)=>a+Math.abs(b),0)/diffs.length;
+        const sign = avg>=0 ? "+" : "";
+        cNote.textContent = `Avg: ${sign}${Math.round(avg)} kcal (abs ${Math.round(absAvg)})`;
+      }
     }
     if(sNote){
       const sVals = sSeries.filter(v=>v!==null);
@@ -2262,8 +2418,6 @@ Attempts remaining before lockout: ${remaining}`);
     // Weekday consistency table (8 weeks)
     const weeks = 8*7;
     const dList = lastNDays(today, weeks);
-    const win = Number(state.settings.adhWindow || 150);
-    const sleepTarget = Number(state.settings.sleepTarget || 7.0);
 
     const agg = Array.from({length:7}, ()=>({calOn:0, calLogged:0, sleepOn:0, sleepLogged:0}));
     for(const ds of dList){
