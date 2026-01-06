@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>15 Week Body Transformation</title>
+<title>15_Week_Body_Transformation</title>
 <style>
   :root{
     --bg:#0b0f14;
@@ -311,9 +311,10 @@
 <div class="container">
   <header>
     <div>
-      <h1>15 Week Body Transformation (Jan to May 2026)</h1>
+      <h1>15_Week_Body_Transformation (Jan to May 2026)</h1>
       <div class="sub">
-        Fast highlighted: <span class="mono">01/02/2026</span> to <span class="mono">01/03/2026</span> only.
+        Fast highlighted: <span class="mono">2026-01-02</span> to <span class="mono">2026-01-03</span> only.
+        <b>Jan 4 is a standard day</b> (not fasting).
         High-carb schedule: <b>Week 3+</b> Sundays, and <b>Week 10+</b> Sundays + Wednesdays.
         Dynamic calories adjust automatically as your weight drops (BMR adjustment).
         Reverse diet is built in for <b>Apr 20 through May 14</b> to ramp toward <b>2700</b>.
@@ -618,6 +619,36 @@
           </div>
         </div>
 
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;">
+          <div>
+            <label>Sleep (hours)</label>
+            <input id="sleepHours" type="number" step="0.1" min="0" max="24" placeholder="e.g., 7.5"/>
+          </div>
+          <div>
+            <label>Sleep quality (1–5)</label>
+            <select id="sleepQuality">
+              <option value=""></option>
+              <option value="1">1 (rough)</option>
+              <option value="2">2</option>
+              <option value="3">3 (ok)</option>
+              <option value="4">4</option>
+              <option value="5">5 (great)</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;">
+          <div>
+            <label>Bedtime</label>
+            <input id="bedtime" type="time"/>
+          </div>
+          <div>
+            <label>Wake time</label>
+            <input id="waketime" type="time"/>
+          </div>
+        </div>
+
+
         <div style="display:grid; grid-template-columns:1fr; gap:10px; margin-top:10px;">
           <div>
             <label>Notes</label>
@@ -725,7 +756,7 @@
 
   // Supabase
   const SUPABASE_URL = "https://dklnhdjxplpqnrjziqkq.supabase.co";
-  const SUPABASE_ANON_KEY = "sb_publishable_IMLHiJEMCfXAQqGIdhBAHQ_I1OCnlst";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRrbG5oZGp4cGxwcW5yanppcWtxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc1MzkxNjAsImV4cCI6MjA4MzExNTE2MH0.qp0eOggU4nrhgjj-yrUmhvHNRz1uL8TSp9xrDsAq5Sg";
   const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   async function getUser() {
@@ -790,7 +821,7 @@
         settings:{
           startDate:"2026-01-05",
           startWeight:221.6,
-          startBf:26.0,
+          startBf:25.0,
           targetCal:2200,
           highCal:2400,
           highStartWeek:3,
@@ -812,7 +843,7 @@
       const defSettings = {
         startDate:"2026-01-05",
         startWeight:221.6,
-        startBf:26.0,
+        startBf:25.0,
         targetCal:2200,
         highCal:2400,
         highStartWeek:3,
@@ -835,7 +866,7 @@
         settings:{
           startDate:"2026-01-05",
           startWeight:221.6,
-          startBf:26.0,
+          startBf:25.0,
           targetCal:2200,
           highCal:2400,
           highStartWeek:3,
@@ -918,13 +949,108 @@
     secondHighDowEl.value  = String(state.settings.secondHighDow);
   }
 
+
+  // ===== Local login lockout (UX + basic abuse reduction) =====
+  // Note: This is enforced in the browser (localStorage). It improves UX and discourages casual brute force,
+  // but it does NOT prevent direct calls to Supabase Auth endpoints. For stronger protection, add server-side
+  // rate limiting / WAF and consider CAPTCHA on auth.
+  const AUTH_GUARD_KEY = "supabase_auth_guard_v1";
+  const AUTH_MAX_FAILS = 5;
+  const AUTH_LOCKOUT_MS = 3 * 60 * 60 * 1000; // 3 hours
+
+  function _authGuardLoad(){
+    try { return JSON.parse(localStorage.getItem(AUTH_GUARD_KEY) || "{}"); } catch { return {}; }
+  }
+  function _authGuardSave(obj){
+    try { localStorage.setItem(AUTH_GUARD_KEY, JSON.stringify(obj)); } catch {}
+  }
+  function authGetLock(email){
+    const key = (email || "").trim().toLowerCase();
+    const all = _authGuardLoad();
+    const rec = all[key] || { fails: 0, lockoutUntil: 0 };
+    return { key, all, rec };
+  }
+  function authSetLock(email, fails, lockoutUntil){
+    const { key, all } = authGetLock(email);
+    all[key] = { fails, lockoutUntil };
+    _authGuardSave(all);
+  }
+  function authClearLock(email){
+    const { key, all } = authGetLock(email);
+    delete all[key];
+    _authGuardSave(all);
+  }
+  function authIsLocked(email){
+    const { rec } = authGetLock(email);
+    const now = Date.now();
+    return rec.lockoutUntil && now < rec.lockoutUntil ? rec.lockoutUntil : 0;
+  }
+  function authLockMsg(untilMs){
+    const mins = Math.ceil((untilMs - Date.now()) / 60000);
+    const hrs = Math.floor(mins / 60);
+    const remM = mins % 60;
+    if(hrs <= 0) return `Locked out. Try again in ${mins} minute(s).`;
+    return `Locked out. Try again in ${hrs}h ${remM}m.`;
+  }
+
   // Auth button wiring
   document.getElementById("signInBtn").addEventListener("click", async () => {
     const email = document.getElementById("authEmail").value.trim();
     const pass = document.getElementById("authPass").value;
 
+    if(!email || !pass){
+      alert("Enter email and password.");
+      return;
+    }
+
+    // Enforce local lockout after repeated failures (per email, per device/browser)
+    const lockedUntil = authIsLocked(email);
+    if(lockedUntil){
+      const msg = authLockMsg(lockedUntil);
+      alert(msg);
+      const cloudPillEl = document.getElementById("cloudPill");
+      if(cloudPillEl){
+        cloudPillEl.classList.remove("good","warn");
+        cloudPillEl.classList.add("bad");
+        cloudPillEl.innerHTML = `<b>Cloud:</b> Locked out (${email})`;
+      }
+      return;
+    }
+
     const { error } = await supabase.auth.signInWithPassword({ email, password: pass });
-    if (error) { alert(error.message); return; }
+
+    if (error) {
+      const { rec } = authGetLock(email);
+      const fails = (rec.fails || 0) + 1;
+
+      if (fails >= AUTH_MAX_FAILS) {
+        const until = Date.now() + AUTH_LOCKOUT_MS;
+        authSetLock(email, fails, until);
+        alert(`Too many failed attempts. ${authLockMsg(until)}`);
+        const cloudPillEl = document.getElementById("cloudPill");
+        if(cloudPillEl){
+          cloudPillEl.classList.remove("good","warn");
+          cloudPillEl.classList.add("bad");
+          cloudPillEl.innerHTML = `<b>Cloud:</b> Locked out (${email})`;
+        }
+      } else {
+        authSetLock(email, fails, 0);
+        const remaining = AUTH_MAX_FAILS - fails;
+        alert(`${error.message}
+
+Attempts remaining before lockout: ${remaining}`);
+        const cloudPillEl = document.getElementById("cloudPill");
+        if(cloudPillEl){
+          cloudPillEl.classList.remove("good","bad");
+          cloudPillEl.classList.add("warn");
+          cloudPillEl.innerHTML = `<b>Cloud:</b> Sign-in failed (${remaining} left)`;
+        }
+      }
+      return;
+    }
+
+    // Success: clear lock record for this email
+    authClearLock(email);
 
     const cloud = await cloudLoadState();
     if (cloud) state = cloud;
@@ -932,6 +1058,7 @@
     cacheStateLocally(state);
     syncSettingsToUI();
     renderAll();
+
     const cloudPillEl = document.getElementById("cloudPill");
     if(cloudPillEl){
       cloudPillEl.classList.remove("warn","bad");
@@ -1271,6 +1398,16 @@
       bfLine.innerHTML = `BF%: <b>${bfVal}</b>`;
       cell.appendChild(bfLine);
 
+      // Sleep (optional)
+      if(rec.sleepHours!==null && rec.sleepHours!==undefined && rec.sleepHours!==""){
+        const slLine=document.createElement("div");
+        slLine.className="line";
+        const sh = Number(rec.sleepHours).toFixed(1) + "h";
+        const sq = (rec.sleepQuality!==null && rec.sleepQuality!==undefined && rec.sleepQuality!=="") ? ` (Q${rec.sleepQuality})` : "";
+        slLine.innerHTML = `Sleep: <b>${sh}${sq}</b>`;
+        cell.appendChild(slLine);
+      }
+
       const exp = expectedRange(ds);
       if(exp){
         const expLine=document.createElement("div");
@@ -1338,6 +1475,10 @@
   const weight = document.getElementById("weight");
   const bf = document.getElementById("bf");
   const notes = document.getElementById("notes");
+  const sleepHours = document.getElementById("sleepHours");
+  const sleepQuality = document.getElementById("sleepQuality");
+  const bedtime = document.getElementById("bedtime");
+  const waketime = document.getElementById("waketime");
   const vsExpectedNote = document.getElementById("vsExpectedNote");
 
   const closeBtn = document.getElementById("closeBtn");
@@ -1413,6 +1554,11 @@
     bf.value = (rec.bf===null || rec.bf===undefined) ? "" : rec.bf;
     notes.value = rec.notes || "";
 
+    sleepHours.value = (rec.sleepHours===null || rec.sleepHours===undefined) ? "" : rec.sleepHours;
+    sleepQuality.value = (rec.sleepQuality===null || rec.sleepQuality===undefined) ? "" : String(rec.sleepQuality);
+    bedtime.value = rec.bedtime || "";
+    waketime.value = rec.waketime || "";
+
     if(isFastDay(ds)) tagPill.innerHTML = "<b>Target:</b> FAST (0)";
     else if(inReverseWindow(ds)) tagPill.innerHTML = `<b>Target:</b> Reverse (${tgt})`;
     else if(isHighCarbDay(ds)) tagPill.innerHTML = `<b>Target:</b> High-carb (${tgt})`;
@@ -1433,7 +1579,11 @@
         workout: workout.value || "",
         weight: weight.value==="" ? null : Number(weight.value),
         bf: bf.value==="" ? null : Number(bf.value),
-        notes: notes.value.trim()
+        notes: notes.value.trim(),
+        sleepHours: sleepHours.value==="" ? null : Number(sleepHours.value),
+        sleepQuality: sleepQuality.value==="" ? null : Number(sleepQuality.value),
+        bedtime: bedtime.value || "",
+        waketime: waketime.value || ""
       };
       state.days[activeDate] = rec;
       saveState();
@@ -1442,7 +1592,7 @@
     }, 260);
   }
 
-  [calories, workout, weight, bf, notes].forEach(el=>{
+  [calories, workout, weight, bf, notes, sleepHours, sleepQuality, bedtime, waketime].forEach(el=>{
     el.addEventListener("input", ()=>{ if(activeDate) updateVsExpected(activeDate); autosaveDebounced(); });
     el.addEventListener("change", ()=>{ if(activeDate) updateVsExpected(activeDate); autosaveDebounced(); });
   });
@@ -1580,7 +1730,7 @@
     el.addEventListener("input", ()=>{
       state.settings.startDate = startDateEl.value || "2026-01-05";
       state.settings.startWeight = Number(startWeightEl.value||221.6);
-      state.settings.startBf = Number(startBfEl.value||26.0);
+      state.settings.startBf = Number(startBfEl.value||25.0);
       state.settings.targetCal = Number(targetCalEl.value||2200);
       state.settings.highCal = Number(highCalEl.value||2400);
       state.settings.highStartWeek = Number(highStartWeekEl.value||3);
