@@ -294,6 +294,12 @@
   .coach-metric strong{font-weight:950; font-size:18px;}
   .coach-sub{font-size:12px; color:var(--muted); margin-top:2px;}
 
+  .kpiText{font-size:12px; color:var(--muted); line-height:1.35;}
+  .kpiText b{color:var(--ink); font-weight:850;}
+  .kpiText ul{margin:8px 0 0 18px; padding:0;}
+  .kpiText li{margin:4px 0;}
+  .kpiText .tinyNote{margin-top:8px; opacity:.85;}
+
   @media(max-width:620px){
     .tabs{flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch;}
     .tabs::-webkit-scrollbar{height:8px;}
@@ -423,6 +429,17 @@
         <div class="v" id="coachDyn">-</div>
         <div class="s">Uses your latest logged weight</div>
       </div>
+
+      <div class="kpi">
+        <div class="k">Suggestion cadence</div>
+        <div class="kpiText" id="coachCadence">-</div>
+        <div class="s">What updates when</div>
+      </div>
+      <div class="kpi">
+        <div class="k">Next coach check-in</div>
+        <div class="v" id="coachNextCheck">-</div>
+        <div class="s">Next checkpoint date</div>
+      </div>
     </div>
   </section>
 
@@ -460,6 +477,17 @@
         <div class="k">7-day avg calories</div>
         <div class="v" id="kpiAvgCal">-</div>
         <div class="s">From logged calories</div>
+      </div>
+
+      <div class="kpi">
+        <div class="k">7-day avg deficit</div>
+        <div class="v" id="kpiAvgDeficit">-</div>
+        <div class="s">Target minus intake (planned fasts count as 0)</div>
+      </div>
+      <div class="kpi">
+        <div class="k">Estimated loss pace</div>
+        <div class="v" id="kpiEstLoss">-</div>
+        <div class="s">From avg deficit (3500 kcal ≈ 1 lb)</div>
       </div>
       <div class="kpi">
         <div class="k">7-day adherence</div>
@@ -596,77 +624,6 @@
           <input type="number" id="fatTarget" step="1" min="0" value="90"/>
 
         </div>
-
-        <div>
-          <label>DNA personalization</label>
-          <select id="dnaEnabled">
-            <option value="1">Enabled</option>
-            <option value="0">Disabled</option>
-          </select>
-        </div>
-
-        <div>
-          <label>DNA: Best exercise bias</label>
-          <select id="dnaBestExercise" disabled>
-            <option value="cardio_bias">Cardio bias</option>
-            <option value="cardio_mixed" selected>Cardio mixed</option>
-            <option value="strength_bias">Strength bias</option>
-          </select>
-        </div>
-
-        <div>
-          <label>DNA: Carb response</label>
-          <select id="dnaCarbResponse" disabled>
-            <option value="lower">Lower</option>
-            <option value="avg">Average</option>
-            <option value="higher" selected>Higher</option>
-          </select>
-        </div>
-
-        <div>
-          <label>DNA: Chronotype</label>
-          <select id="dnaChronotype" disabled>
-            <option value="morning">Morning</option>
-            <option value="mod_evening" selected>Moderately evening</option>
-            <option value="evening">Evening</option>
-          </select>
-        </div>
-
-        <div>
-          <label>DNA: Motivation style</label>
-          <select id="dnaMotivation" disabled>
-            <option value="internal">Internal</option>
-            <option value="external" selected>External</option>
-          </select>
-        </div>
-
-        <div>
-          <label>DNA: Bone density risk</label>
-          <select id="dnaBoneRisk" disabled>
-            <option value="average">Average</option>
-            <option value="slightly_above">Slightly above avg</option>
-            <option value="above" selected>Above avg</option>
-          </select>
-        </div>
-
-        <div>
-          <label>DNA: Cognitive decline risk</label>
-          <select id="dnaCognitiveRisk" disabled>
-            <option value="average">Average</option>
-            <option value="slightly_above">Slightly above avg</option>
-            <option value="above" selected>Above avg</option>
-          </select>
-        </div>
-
-        <div>
-          <label>DNA: Stress resilience</label>
-          <select id="dnaStressResilience" disabled>
-            <option value="average" selected>Average</option>
-            <option value="above">Above avg</option>
-          </select>
-        </div>
-        <div class="tiny muted" style="grid-column:1/-1; margin-top:-4px;">DNA traits are locked from your report. They influence coach priorities automatically over time.</div>
-
         <div>
           <label>Primary high-carb day</label>
           <select id="primaryHighDow" disabled>
@@ -691,6 +648,54 @@
             <option value="6">Saturday</option>
           </select>
         </div>
+
+      <div class="controls" style="padding-top:6px;">
+        <div style="grid-column:1/-1;">
+          <div class="tiny" style="opacity:.9; margin:6px 0 8px;">
+            <b>DNA profile</b> (read-only from your report). These traits adjust coaching priorities over time as your logs change.
+          </div>
+        </div>
+
+        <div>
+          <label>Use DNA-based coaching</label>
+          <select id="dnaEnabled">
+            <option value="1">Enabled</option>
+            <option value="0">Disabled</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Best exercise</label>
+          <div class="tiny" id="dnaBestExercise">-</div>
+        </div>
+        <div>
+          <label>Carb response</label>
+          <div class="tiny" id="dnaCarb">-</div>
+        </div>
+
+        <div>
+          <label>Chronotype</label>
+          <div class="tiny" id="dnaChrono">-</div>
+        </div>
+        <div>
+          <label>Motivation</label>
+          <div class="tiny" id="dnaMotivation">-</div>
+        </div>
+        <div>
+          <label>Bone density risk</label>
+          <div class="tiny" id="dnaBone">-</div>
+        </div>
+
+        <div>
+          <label>Mental decline risk</label>
+          <div class="tiny" id="dnaCognitive">-</div>
+        </div>
+        <div>
+          <label>Stress resilience</label>
+          <div class="tiny" id="dnaStress">-</div>
+        </div>
+      </div>
+
       </div>
 
       <div class="btnRow" style="justify-content:flex-end;">
@@ -1022,7 +1027,7 @@
         settings:{
           startDate:"2026-01-05",
           startWeight:221.6,
-          startBf:26.0,
+          startBf:25.0,
           targetCal:2200,
           highCal:2400,
           highStartWeek:3,
@@ -1032,21 +1037,9 @@
           adhWindow:150,
           kcalPerLb:10,
           minCal:1700,
-          sleepTarget:7.0,
-          proteinTarget:220,
-          carbTarget:100,
-          fatTarget:90,
           dnaEnabled:true,
           dnaLocked:true,
-          dnaProfile:{
-            bestExercise:"cardio_mixed",
-            carbResponse:"higher",
-            chronotype:"mod_evening",
-            motivation:"external",
-            boneRisk:"above",
-            cognitiveRisk:"above",
-            stressResilience:"average"
-          }
+          dnaProfile:{bestExercise:"cardio_mixed_strength", carbResponse:"higher", chronotype:"mod_evening", motivation:"external", boneRisk:"above_avg", cognitiveRisk:"above_avg", stress:"average"}
         },
         ui:{ activeMonthKey:"2026-0" }
       };
@@ -1059,7 +1052,7 @@
       const defSettings = {
         startDate:"2026-01-05",
         startWeight:221.6,
-        startBf:26.0,
+        startBf:25.0,
         targetCal:2200,
         highCal:2400,
         highStartWeek:3,
@@ -1075,25 +1068,13 @@
         fatTarget:90,
         dnaEnabled:true,
         dnaLocked:true,
-        dnaProfile:{
-          bestExercise:"cardio_mixed",
-          carbResponse:"higher",
-          chronotype:"mod_evening",
-          motivation:"external",
-          boneRisk:"above",
-          cognitiveRisk:"above",
-          stressResilience:"average"
-        }
+        dnaProfile:{bestExercise:"cardio_mixed_strength", carbResponse:"higher", chronotype:"mod_evening", motivation:"external", boneRisk:"above_avg", cognitiveRisk:"above_avg", stress:"average"}
       };
       s.settings = {...defSettings, ...s.settings};
-
-      if(!s.settings.dnaProfile) s.settings.dnaProfile = {};
-      s.settings.dnaProfile = { ...defSettings.dnaProfile, ...s.settings.dnaProfile };
-
-      if(s.settings.dnaLocked){
-        s.settings.dnaProfile = { ...defSettings.dnaProfile };
-      }
-
+      // Lock DNA trait values to the report (read-only). Keep only the enable/disable toggle mutable.
+      s.settings.dnaEnabled = (s.settings.dnaEnabled === undefined || s.settings.dnaEnabled === null) ? true : !!s.settings.dnaEnabled;
+      s.settings.dnaLocked = true;
+      s.settings.dnaProfile = {...defSettings.dnaProfile};
 
       const defUi = { activeMonthKey:"2026-0" };
       s.ui = {...defUi, ...s.ui};
@@ -1105,7 +1086,7 @@
         settings:{
           startDate:"2026-01-05",
           startWeight:221.6,
-          startBf:26.0,
+          startBf:25.0,
           targetCal:2200,
           highCal:2400,
           highStartWeek:3,
@@ -1114,22 +1095,7 @@
           secondHighDow:3,
           adhWindow:150,
           kcalPerLb:10,
-          minCal:1700,
-          sleepTarget:7.0,
-          proteinTarget:220,
-          carbTarget:100,
-          fatTarget:90,
-          dnaEnabled:true,
-          dnaLocked:true,
-          dnaProfile:{
-            bestExercise:"cardio_mixed",
-            carbResponse:"higher",
-            chronotype:"mod_evening",
-            motivation:"external",
-            boneRisk:"above",
-            cognitiveRisk:"above",
-            stressResilience:"average"
-          }
+          minCal:1700
         },
         ui:{ activeMonthKey:"2026-0" }
       };
@@ -1137,6 +1103,57 @@
   }
 
   let state = loadState(); // local fallback
+
+
+  // ===== DNA profile (from your report) =====
+  // These are treated as read-only constants: they influence coaching priorities, not your calorie targets.
+  const DNA_REPORT_PROFILE = Object.freeze({
+    bestExercise: { code:"cardio_mixed_strength", label:"Cardio mixed strength (benefits from regular low intensity cardio)" },
+    carbResponse: { code:"higher", label:"Higher ability to use carbohydrates (best with complex carbs)" },
+    chronotype:   { code:"mod_evening", label:"Moderately evening (night owl)" },
+    motivation:   { code:"external", label:"Externally motivated" },
+    boneRisk:     { code:"above_avg", label:"Above average fracture risk, lower bone mineral density" },
+    cognitiveRisk:{ code:"above_avg", label:"Above average cognitive decline risk" },
+    stress:       { code:"average", label:"Average stress tolerance" }
+  });
+
+  function enforceDnaProfile(){
+    // Preserve the user's choice to enable/disable DNA coaching,
+    // but always lock the trait values to the report.
+    if(!state.settings) state.settings = {};
+    const enabled = (state.settings.dnaEnabled === undefined || state.settings.dnaEnabled === null)
+      ? true
+      : !!state.settings.dnaEnabled;
+    state.settings.dnaEnabled = enabled;
+    state.settings.dnaLocked = true;
+    state.settings.dnaProfile = {
+      bestExercise: DNA_REPORT_PROFILE.bestExercise.code,
+      carbResponse: DNA_REPORT_PROFILE.carbResponse.code,
+      chronotype: DNA_REPORT_PROFILE.chronotype.code,
+      motivation: DNA_REPORT_PROFILE.motivation.code,
+      boneRisk: DNA_REPORT_PROFILE.boneRisk.code,
+      cognitiveRisk: DNA_REPORT_PROFILE.cognitiveRisk.code,
+      stress: DNA_REPORT_PROFILE.stress.code
+    };
+  }
+
+  function renderDnaPanel(){
+    // Update the read-only display panel (if present)
+    const elBest = document.getElementById("dnaBestExercise");
+    if(elBest) elBest.textContent = DNA_REPORT_PROFILE.bestExercise.label;
+    const elCarb = document.getElementById("dnaCarb");
+    if(elCarb) elCarb.textContent = DNA_REPORT_PROFILE.carbResponse.label;
+    const elChr = document.getElementById("dnaChrono");
+    if(elChr) elChr.textContent = DNA_REPORT_PROFILE.chronotype.label;
+    const elMot = document.getElementById("dnaMotivation");
+    if(elMot) elMot.textContent = DNA_REPORT_PROFILE.motivation.label;
+    const elBone = document.getElementById("dnaBone");
+    if(elBone) elBone.textContent = DNA_REPORT_PROFILE.boneRisk.label;
+    const elCog = document.getElementById("dnaCognitive");
+    if(elCog) elCog.textContent = DNA_REPORT_PROFILE.cognitiveRisk.label;
+    const elStress = document.getElementById("dnaStress");
+    if(elStress) elStress.textContent = DNA_REPORT_PROFILE.stress.label;
+  }
 
   const savePill = document.getElementById("savePill");
   function pulseSaved(){
@@ -1169,17 +1186,9 @@
   const proteinTargetEl = document.getElementById("proteinTarget");
   const carbTargetEl = document.getElementById("carbTarget");
   const fatTargetEl = document.getElementById("fatTarget");
+  const dnaEnabledEl = document.getElementById("dnaEnabled");
   const primaryHighDowEl = document.getElementById("primaryHighDow");
   const secondHighDowEl  = document.getElementById("secondHighDow");
-  const dnaEnabledEl = document.getElementById("dnaEnabled");
-  const dnaBestExerciseEl = document.getElementById("dnaBestExercise");
-  const dnaCarbResponseEl = document.getElementById("dnaCarbResponse");
-  const dnaChronotypeEl = document.getElementById("dnaChronotype");
-  const dnaMotivationEl = document.getElementById("dnaMotivation");
-  const dnaBoneRiskEl = document.getElementById("dnaBoneRisk");
-  const dnaCognitiveRiskEl = document.getElementById("dnaCognitiveRisk");
-  const dnaStressResilienceEl = document.getElementById("dnaStressResilience");
-
 
   // Advanced settings toggle pill
   const advancedDetailsEl = document.getElementById("advancedDetails");
@@ -1216,19 +1225,11 @@
     if(proteinTargetEl) proteinTargetEl.value = state.settings.proteinTarget;
     if(carbTargetEl) carbTargetEl.value = state.settings.carbTarget;
     if(fatTargetEl) fatTargetEl.value = state.settings.fatTarget;
+    if(dnaEnabledEl) dnaEnabledEl.value = state.settings.dnaEnabled ? "1" : "0";
+    renderDnaPanel();
     primaryHighDowEl.value = String(state.settings.primaryHighDow);
     secondHighDowEl.value  = String(state.settings.secondHighDow);
-
-    if(dnaEnabledEl) dnaEnabledEl.value = state.settings.dnaEnabled ? "1" : "0";
-    if(dnaBestExerciseEl) dnaBestExerciseEl.value = state.settings.dnaProfile?.bestExercise || "cardio_mixed";
-    if(dnaCarbResponseEl) dnaCarbResponseEl.value = state.settings.dnaProfile?.carbResponse || "avg";
-    if(dnaChronotypeEl) dnaChronotypeEl.value = state.settings.dnaProfile?.chronotype || "mod_evening";
-    if(dnaMotivationEl) dnaMotivationEl.value = state.settings.dnaProfile?.motivation || "external";
-    if(dnaBoneRiskEl) dnaBoneRiskEl.value = state.settings.dnaProfile?.boneRisk || "above";
-    if(dnaCognitiveRiskEl) dnaCognitiveRiskEl.value = state.settings.dnaProfile?.cognitiveRisk || "above";
-    if(dnaStressResilienceEl) dnaStressResilienceEl.value = state.settings.dnaProfile?.stressResilience || "average";
   }
-
 
 
   function wireSettings(){
@@ -1247,6 +1248,7 @@
       [proteinTargetEl, v=>Number(v)],
       [carbTargetEl, v=>Number(v)],
       [fatTargetEl, v=>Number(v)],
+      [dnaEnabledEl, v=>String(v)],
       [primaryHighDowEl, v=>Number(v)],
       [secondHighDowEl, v=>Number(v)]
     ];
@@ -1269,23 +1271,15 @@
         if(proteinTargetEl && proteinTargetEl.value!=="") s.proteinTarget = Math.max(0, Number(proteinTargetEl.value));
         if(carbTargetEl && carbTargetEl.value!=="") s.carbTarget = Math.max(0, Number(carbTargetEl.value));
         if(fatTargetEl && fatTargetEl.value!=="") s.fatTarget = Math.max(0, Number(fatTargetEl.value));
-
         if(dnaEnabledEl) s.dnaEnabled = (dnaEnabledEl.value === "1");
-        s.dnaProfile = s.dnaProfile || {};
-        if(dnaBestExerciseEl) s.dnaProfile.bestExercise = dnaBestExerciseEl.value;
-        if(dnaCarbResponseEl) s.dnaProfile.carbResponse = dnaCarbResponseEl.value;
-        if(dnaChronotypeEl) s.dnaProfile.chronotype = dnaChronotypeEl.value;
-        if(dnaMotivationEl) s.dnaProfile.motivation = dnaMotivationEl.value;
-        if(dnaBoneRiskEl) s.dnaProfile.boneRisk = dnaBoneRiskEl.value;
-        if(dnaCognitiveRiskEl) s.dnaProfile.cognitiveRisk = dnaCognitiveRiskEl.value;
-        if(dnaStressResilienceEl) s.dnaProfile.stressResilience = dnaStressResilienceEl.value;
 
         saveState();
         renderAll();
       }catch{}
-    };    const els = [startDateEl,startWeightEl,startBfEl,targetCalEl,highCalEl,highStartWeekEl,secondHighStartWeekEl,kcalPerLbEl,minCalEl,adhWindowEl,
-                 sleepTargetEl,proteinTargetEl,carbTargetEl,fatTargetEl,primaryHighDowEl,secondHighDowEl,
-                 dnaEnabledEl,dnaBestExerciseEl,dnaCarbResponseEl,dnaChronotypeEl,dnaMotivationEl,dnaBoneRiskEl,dnaCognitiveRiskEl,dnaStressResilienceEl].filter(Boolean);
+    };
+
+    const els = [startDateEl,startWeightEl,startBfEl,targetCalEl,highCalEl,highStartWeekEl,secondHighStartWeekEl,kcalPerLbEl,minCalEl,adhWindowEl,
+                 sleepTargetEl,proteinTargetEl,carbTargetEl,fatTargetEl,primaryHighDowEl,secondHighDowEl,dnaEnabledEl].filter(Boolean);
     els.forEach(el=>{
       el.addEventListener("change", apply);
       el.addEventListener("input", ()=>{ /* avoid chatty on every keypress for dates */ if(el.type==="number") apply(); });
@@ -2215,7 +2209,7 @@ Attempts remaining before lockout: ${remaining}`);
     for(const ds of days){
       const rec = state.days[ds] || {};
 
-      // Calories: if planned fast day and calories missing, treat as 0 (but still log it).
+      // Calories: if planned fast day and calories missing, treat as 0
       let hasCalories = rec.calories!==null && rec.calories!==undefined && rec.calories!=="";
       let cal = hasCalories ? Number(rec.calories) : null;
 
@@ -2226,7 +2220,6 @@ Attempts remaining before lockout: ${remaining}`);
 
       if(hasCalories && isFinite(cal)){
         calSum += cal; calCount++;
-
         const tgt = targetFor(ds);
         const diff = Math.abs(cal - tgt);
         logged++;
@@ -2236,55 +2229,53 @@ Attempts remaining before lockout: ${remaining}`);
         deficitCount++;
       }
 
-      // Sleep: tracker stores sleepHours
       if(rec.sleepHours!==null && rec.sleepHours!==undefined && rec.sleepHours!==""){
-        const h = Number(rec.sleepHours);
-        if(isFinite(h)){
-          sleepSum += h; sleepCount++;
-          if(h >= sleepTarget) sleepOn++;
+        const sh = Number(rec.sleepHours);
+        if(isFinite(sh)){
+          sleepSum += sh; sleepCount++;
+          if(isFinite(sleepTarget) && sh >= sleepTarget) sleepOn++;
         }
       }
 
-      // Macros
       if(rec.protein!==null && rec.protein!==undefined && rec.protein!==""){
-        const p = Number(rec.protein);
-        if(isFinite(p)){
-          pSum += p; pCount++;
+        const pv = Number(rec.protein);
+        if(isFinite(pv)){
+          pSum += pv; pCount++;
           pLogged++;
-          if(isFinite(pTarget) && pTarget > 0 && p >= pTarget) pMeet++;
+          if(isFinite(pTarget) && pv >= pTarget) pMeet++;
         }
       }
       if(rec.carbs!==null && rec.carbs!==undefined && rec.carbs!==""){
-        const c = Number(rec.carbs);
-        if(isFinite(c)){ cSum += c; cCount++; }
+        const cv = Number(rec.carbs);
+        if(isFinite(cv)){ cSum += cv; cCount++; }
       }
       if(rec.fat!==null && rec.fat!==undefined && rec.fat!==""){
-        const f = Number(rec.fat);
-        if(isFinite(f)){ fSum += f; fCount++; }
+        const fv = Number(rec.fat);
+        if(isFinite(fv)){ fSum += fv; fCount++; }
       }
     }
 
-    const avgDef = deficitCount ? (deficitSum/deficitCount) : null;
-    const estLoss = (avgDef===null) ? null : ((avgDef * 7) / 3500);
+    const avgDeficit = deficitCount ? (deficitSum/deficitCount) : null; // kcal/day (positive is deficit)
+    const estLossPerWeek = (avgDeficit===null) ? null : ((avgDeficit*7)/3500);
 
     return {
       avgCal: calCount ? (calSum/calCount) : null,
       adh: logged ? (on/logged) : null,
       loggedDays: logged,
 
+      avgDeficit: avgDeficit,
+      estLossPerWeek: estLossPerWeek,
+
       avgSleep: sleepCount ? (sleepSum/sleepCount) : null,
       sleepLogged: sleepCount,
       sleepAdh: sleepCount ? (sleepOn/sleepCount) : null,
 
       avgProtein: pCount ? (pSum/pCount) : null,
+      proteinAdh: pLogged ? (pMeet/pLogged) : null,
+
       avgCarbs: cCount ? (cSum/cCount) : null,
       avgFat: fCount ? (fSum/fCount) : null,
-      macroLogged: Math.max(pCount, cCount, fCount),
-
-      avgDeficit: avgDef,
-      estLossRate: estLoss,
-      proteinAdh: pLogged ? (pMeet/pLogged) : null,
-      proteinLogged: pLogged
+      macroLogged: Math.max(pCount, cCount, fCount)
     };
   }
 
@@ -2340,6 +2331,27 @@ Attempts remaining before lockout: ${remaining}`);
 
     const d7 = compute7Day();
     document.getElementById("kpiAvgCal").textContent = (d7.avgCal===null) ? "-" : `${Math.round(d7.avgCal)} kcal`;
+
+    const elDef = document.getElementById("kpiAvgDeficit");
+    if(elDef){
+      if(d7.avgDeficit===null){
+        elDef.textContent = "-";
+      }else{
+        const v = Math.round(Math.abs(d7.avgDeficit));
+        elDef.textContent = (d7.avgDeficit >= 0) ? `Deficit ${v} kcal/day` : `Surplus ${v} kcal/day`;
+      }
+    }
+
+    const elPace = document.getElementById("kpiEstLoss");
+    if(elPace){
+      if(d7.estLossPerWeek===null){
+        elPace.textContent = "-";
+      }else{
+        const v = Math.abs(d7.estLossPerWeek);
+        elPace.textContent = (d7.estLossPerWeek >= 0) ? `${v.toFixed(2)} lb/week loss` : `${v.toFixed(2)} lb/week gain`;
+      }
+    }
+
     document.getElementById("kpiAdh").textContent = (d7.adh===null) ? "-" : `${Math.round(d7.adh*100)}%`;
     const kSleep = document.getElementById("kpiAvgSleep");
     if(kSleep) kSleep.textContent = (d7.avgSleep===null) ? "-" : `${d7.avgSleep.toFixed(1)} h`;
@@ -2694,44 +2706,6 @@ function renderCoach(){
     const d7 = compute7Day();
     const nxt = nextWeighInTarget();
 
-    const dnaEnabled = !!state.settings.dnaEnabled;
-    const dna = state.settings.dnaProfile || {};
-
-    function last7Workouts(){
-      const anchor = ymd(new Date());
-      const days = lastNDays(anchor, 7);
-      const out = [];
-      for(const ds of days){
-        const rec = state.days[ds];
-        if(rec && rec.workout) out.push(String(rec.workout));
-      }
-      return out;
-    }
-
-    function workoutCounts(){
-      const wk = last7Workouts();
-      const counts = { strength:0, hiit:0, walk:0 };
-      wk.forEach(x=>{ if(counts[x]!==undefined) counts[x]++; });
-      counts.total = wk.length;
-      return counts;
-    }
-
-    // If you tend to handle carbs well (per DNA), carbs are more "useful" on training days,
-    // but they still need to be controlled on rest days.
-    function trainingDayCarbAdequacy(d7){
-      const wk = workoutCounts();
-      const trained = wk.total;
-      if(trained === 0) return null;
-
-      const carbTarget = Number(state.settings.carbTarget || 0);
-      const avgCarbs = d7.avgCarbs;
-      if(avgCarbs===null || !isFinite(avgCarbs) || carbTarget<=0) return null;
-
-      // A crude signal: if you're training often and carbs are far below target, performance/adherence can suffer.
-      const ratio = avgCarbs / carbTarget;
-      return { trained, ratio, wk };
-    }
-
     const nextEl = document.getElementById("coachNextTarget");
     if(nxt){
       const wt = (nxt.range || "").replace(" to ", "–") + " lb";
@@ -2750,12 +2724,10 @@ function renderCoach(){
     const week15Ds = ymd(week15Thu);
     const week15Range = fmtRange(THU_WEEK_RANGES[14]).replace(" to ", "–") + " lb";
     const w15El = document.getElementById("coachWeek15");
-    if(w15El){
-      w15El.innerHTML = `
-        <div class="coach-date">${fmtUSDate(week15Ds)}</div>
-        <div class="coach-metric"><strong>${week15Range}</strong></div>
-      `;
-    }
+    w15El.innerHTML = `
+      <div class="coach-date">${fmtUSDate(week15Ds)}</div>
+      <div class="coach-metric"><strong>${week15Range}</strong></div>
+    `;
 
     const w0 = Number(state.settings.startWeight);
     const w  = getWeightBefore(ymd(new Date()));
@@ -2763,169 +2735,127 @@ function renderCoach(){
     const adj = Math.round((w - w0) * kcalPerLb);
 
     const dynEl = document.getElementById("coachDyn");
-    if(dynEl){
-      if(!isFinite(adj)){
-        dynEl.textContent = "-";
-      } else if(adj === 0){
-        dynEl.textContent = "Calories unchanged from start";
-      } else {
-        dynEl.textContent = `${adj > 0 ? "+" : ""}${adj} kcal vs start`;
-      }
+    if(!isFinite(adj)){
+      dynEl.textContent = "-";
+    } else if(adj === 0){
+      dynEl.textContent = "Calories unchanged from start";
+    } else {
+      dynEl.textContent = `${adj > 0 ? "+" : ""}${adj} kcal vs start`;
     }
 
-    const cadEl = document.getElementById("coachCadence");
-    if(cadEl){
-      cadEl.innerHTML = `
+    // Cadence + next checkpoint
+    const cadenceEl = document.getElementById("coachCadence");
+    if(cadenceEl){
+      cadenceEl.innerHTML = `
         <ul>
           <li><b>Real-time:</b> updates whenever you save a day.</li>
-          <li><b>Daily:</b> diet, macros, and sleep KPIs use the rolling last 7 days.</li>
-          <li><b>Weigh-ins:</b> Mon/Thu compare to expected ranges and refresh "On track".</li>
-          <li><b>Weekly:</b> Thu range check is the main progress checkpoint.</li>
-          <li><b>DNA overlay:</b> when enabled, suggestions are nudged using your DNA profile (exercise bias, carb response, chronotype, motivation, bone and cognitive flags, stress resilience).</li>
+          <li><b>Daily:</b> diet, macro, and sleep KPIs use the rolling last 7 days.</li>
+          <li><b>Weigh-ins:</b> Mon/Thu compare to expected ranges and refresh “On track”.</li>
+          <li><b>Weekly:</b> Thursday range check is the main progress checkpoint.</li>
         </ul>
+        <div class="tinyNote">DNA overlay changes <b>what</b> the coach emphasizes, based on your logs.</div>
       `;
     }
-
     const nextCheckEl = document.getElementById("coachNextCheck");
     if(nextCheckEl){
       if(nxt){
-        nextCheckEl.innerHTML = `
-          <div class="coach-date">${fmtUSDate(nxt.ds)}</div>
-          <div class="tiny muted" style="margin-top:6px;">Log weight, compare to expected range, then adjust compliance if needed.</div>
-        `;
-      } else {
+        nextCheckEl.innerHTML = `<div class="coach-date">${fmtUSDate(nxt.ds)}</div><div class="coach-sub">Next weigh-in checkpoint</div>`;
+      }else{
         nextCheckEl.textContent = "-";
       }
     }
 
     // ===== Primary guidance logic =====
-    let primary = "Log calories consistently";
-    let cls = "warn";
-    let pillText = "Log data";
+    let primary="Log calories consistently";
+    let secondary="";
+    let cls="warn";
+    let pillText="Log data";
 
-    const sleepTarget = Number(state.settings.sleepTarget || 7.0);
-    const proteinTarget = Number(state.settings.proteinTarget || 0);
-    const trendRate = computeWeightTrend(21); // lb/week (negative means losing)
-
-    const hasEnoughDiet = (d7.loggedDays || 0) >= 4;
     const dietPct = (d7.adh===null) ? null : d7.adh;
-    const sleepOk = (d7.avgSleep!==null && isFinite(sleepTarget)) ? (d7.avgSleep >= sleepTarget) : null;
-    const proteinOk = (d7.avgProtein!==null && isFinite(proteinTarget) && proteinTarget>0) ? (d7.avgProtein >= proteinTarget) : null;
+    const sleepTarget = Number(state.settings.sleepTarget || 7.0);
 
-    if(!hasEnoughDiet){
-      primary = "Log calories for 4+ days to unlock guidance";
-      cls = "warn";
-      pillText = "Log more";
-    } else if(dietPct !== null){
-      if(dietPct < 0.75){
-        primary = "Fix compliance first";
-        cls = (dietPct < 0.50) ? "bad" : "warn";
-        pillText = "Action needed";
-      } else {
-        // Diet is decent. Now choose the next lever.
-        if(sleepOk === false){
-          primary = "Increase sleep consistency";
+    // A bit of trend awareness
+    const tr = computeWeightTrend(21); // lb/week (negative means losing)
+    const avgDef = d7.avgDeficit; // kcal/day, positive means deficit
+
+    if(dietPct===null){
+      primary = "Log calories to unlock accurate guidance";
+      cls="warn";
+      pillText="Log data";
+    }else if(dietPct < 0.75){
+      primary = "Fix compliance first";
+      cls = (dietPct < 0.50) ? "bad" : "warn";
+      pillText = "Action needed";
+
+      // DNA: external motivation nudges accountability
+      if(state.settings.dnaEnabled && state.settings.dnaProfile?.motivation === "external"){
+        secondary = "Use external accountability: a simple daily checklist and a hard stop meal plan.";
+      }
+    }else{
+      // Diet is decent. Next lever is sleep (if we have it).
+      if(d7.avgSleep!==null && isFinite(sleepTarget) && d7.avgSleep < sleepTarget){
+        primary = "Increase sleep consistency";
+        cls = "warn";
+        pillText = "Sleep";
+
+        if(state.settings.dnaEnabled && state.settings.dnaProfile?.chronotype === "mod_evening"){
+          secondary = "You skew night-owl: anchor a consistent wake time first, then pull bedtime earlier in 15 minute steps.";
+        }
+      }else{
+        // Diet and sleep decent: look at deficit / trend.
+        if(avgDef!==null && avgDef < 250){
+          primary = "Create a clearer deficit (or add cardio) for the next 7 days";
           cls = "warn";
-          pillText = "Sleep";
-        } else if(proteinOk === false){
-          primary = "Hit protein target more often";
-          cls = "warn";
-          pillText = "Protein";
-        } else {
+          pillText = "Tighten";
+
+          if(state.settings.dnaEnabled && state.settings.dnaProfile?.bestExercise === "cardio_mixed_strength"){
+            secondary = "DNA favors cardio mixed strength: add 3 to 5 low intensity sessions (20 to 40 min) before cutting more calories.";
+          }
+        }else{
           primary = (dietPct>=0.90) ? "Stay the course" : "Tighten adherence";
           cls = (dietPct>=0.90) ? "good" : "warn";
           pillText = (dietPct>=0.90) ? "On track" : "Adjust";
+
+          if(state.settings.dnaEnabled && state.settings.dnaProfile?.carbResponse === "higher"){
+            // Nudge carbs when they're way under target
+            if(d7.avgCarbs!==null && d7.avgCarbs < Number(state.settings.carbTarget || 0)*0.60){
+              secondary = "Your DNA handles carbs well: consider shifting some calories into complex carbs around training for performance and adherence.";
+            }
+          }
         }
       }
     }
 
-    // If deficit suggests loss but trend doesn't reflect it, call out water/noise and focus on consistency.
-    if(hasEnoughDiet && d7.avgDeficit!==null && isFinite(d7.avgDeficit) && trendRate!==null && isFinite(trendRate)){
-      const expectedLoss = (d7.avgDeficit * 7) / 3500; // lb/week
-      const actualLoss = -trendRate; // if losing, trendRate is negative
-      // if expected >= 1 lb/wk but actual < 0.25 lb/wk, likely noise or logging mismatch
-      if(expectedLoss >= 1.0 && actualLoss < 0.25){
-        primary = "Stay consistent 7 more days (water and variance can hide fat loss)";
-        cls = "warn";
-        pillText = "Variance";
+    // Safety/long-term nudges (DNA-based, but lightweight)
+    if(state.settings.dnaEnabled){
+      const bone = state.settings.dnaProfile?.boneRisk;
+      const cog  = state.settings.dnaProfile?.cognitiveRisk;
+      const stress = state.settings.dnaProfile?.stress;
+
+      const nudges = [];
+      if(bone === "above_avg") nudges.push("Keep strength and impact work (walks, loaded carries). Prioritize calcium/vit D.");
+      if(cog === "above_avg") nudges.push("Prioritize sleep + cardio for long-term brain health.");
+      if(stress === "average") nudges.push("Keep changes simple: one lever at a time to avoid burnout.");
+
+      if(nudges.length){
+        secondary = secondary ? (secondary + " " + nudges.join(" ")) : nudges.join(" ");
       }
     }
 
-    // ===== DNA overlay adjustments =====
-    if(dnaEnabled){
-      const wk = workoutCounts();
-
-      // Cardio/mixed bias: prioritize steps/zone2 if adherence is shaky or scale trend is slow.
-      if((dna.bestExercise === "cardio_bias" || dna.bestExercise === "cardio_mixed") && hasEnoughDiet){
-        if((dietPct!==null && dietPct < 0.90) || (trendRate!==null && trendRate > -0.25)){
-          primary = "Add consistent low-intensity cardio (steps/zone 2) and keep diet tight";
-          cls = (cls==="good") ? "warn" : cls;
-          pillText = "Cardio lever";
-        }
-      }
-
-      // Carb response: if you're training often and carbs are far below target, suggest reallocating carbs to training windows.
-      if(dna.carbResponse === "higher"){
-        const carbSig = trainingDayCarbAdequacy(d7);
-        if(carbSig && carbSig.trained >= 3 && carbSig.ratio < 0.60 && dietPct!==null && dietPct >= 0.75){
-          primary = "Reallocate carbs to training days (keep weekly calories controlled)";
-          cls = "warn";
-          pillText = "Performance";
-        }
-      }
-
-      // Chronotype: if you skew evening, protect sleep timing and avoid early hard sessions.
-      if(dna.chronotype === "mod_evening" || dna.chronotype === "evening"){
-        if(sleepOk === false){
-          primary = "Protect sleep timing (your chronotype leans later)";
-          cls = "warn";
-          pillText = "Sleep timing";
-        }
-      }
-
-      // External motivation: push systems over willpower.
-      if(dna.motivation === "external" && (dietPct===null || dietPct < 0.90)){
-        if(primary === "Fix compliance first"){
-          primary = "Add accountability: pre-log meals + daily streak goal (external motivation works)";
-          cls = (cls==="bad") ? "bad" : "warn";
-          pillText = "System";
-        }
-      }
-
-      // Stress resilience: when average, the simplest safeguard is routine and recovery.
-      if(dna.stressResilience === "average"){
-        if(sleepOk === false && hasEnoughDiet){
-          primary = "Reduce stress load: 10-min wind-down + protect sleep window";
-          cls = "warn";
-          pillText = "Recovery";
-        }
-      }
-
-      // Bone density: if activity is very low, nudge weight-bearing and impact.
-      if(dna.boneRisk === "above" || dna.boneRisk === "slightly_above"){
-        if(wk.total < 2){
-          primary = "Add 2–3x/week weight-bearing sessions (bone health + fat loss)";
-          cls = "warn";
-          pillText = "Bone health";
-        }
-      }
-
-      // Cognitive risk: emphasize sleep and aerobic fitness as keystone habits.
-      if(dna.cognitiveRisk === "above" && sleepOk === false){
-        primary = "Prioritize sleep consistency (it is your highest ROI lever)";
-        cls = "warn";
-        pillText = "Sleep ROI";
-      }
+    const pEl = document.getElementById("coachPrimary");
+    if(pEl){
+      pEl.innerHTML = `
+        <div>${primary}</div>
+        ${secondary ? `<div class="coach-sub">${secondary}</div>` : ``}
+      `;
     }
 
-    document.getElementById("coachPrimary").textContent = primary;
     setPill("coachPill", cls, `<b>Guidance:</b> ${pillText}`);
     setPill("onTrackPill", cls, `<b>On track:</b> ${primary}`);
   }
 
-
-
   function renderAll(){
+    enforceDnaProfile();
     buildTabs();
     renderActiveMonth();
     renderKpis();
