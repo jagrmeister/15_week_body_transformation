@@ -1828,12 +1828,41 @@ Attempts remaining before lockout: ${remaining}`);
     }, 260);
   }
 
-  [calories, workout, weight, bf, notes, sleepHours, sleepQuality, bedtime, waketime].forEach(el=>{
+  
+  // Flush the current day record immediately (used on modal close so last edits aren't lost)
+  function saveActiveDayImmediate(){
+    if(!activeDate) return;
+    const rec = {
+      calories: calories.value==="" ? null : Number(calories.value),
+      workout: workout.value || "",
+      weight: weight.value==="" ? null : Number(weight.value),
+      bf: bf.value==="" ? null : Number(bf.value),
+
+      protein: protein.value==="" ? null : Number(protein.value),
+      carbs: carbs.value==="" ? null : Number(carbs.value),
+      fat: fat.value==="" ? null : Number(fat.value),
+      fiber: fiber.value==="" ? null : Number(fiber.value),
+
+      notes: notes.value.trim(),
+      sleepHours: sleepHours.value==="" ? null : Number(sleepHours.value),
+      sleepQuality: sleepQuality.value==="" ? null : Number(sleepQuality.value),
+      bedtime: bedtime.value || "",
+      waketime: waketime.value || ""
+    };
+    state.days[activeDate] = rec;
+    saveState();
+    setSaveIndicator("Saved", "good");
+  }
+
+[calories, workout, weight, bf, protein, carbs, fat, fiber, notes, sleepHours, sleepQuality, bedtime, waketime].forEach(el=>{
     el.addEventListener("input", ()=>{ if(activeDate) updateVsExpected(activeDate); autosaveDebounced(); });
     el.addEventListener("change", ()=>{ if(activeDate) updateVsExpected(activeDate); autosaveDebounced(); });
   });
 
   function closeModal(){
+    // Ensure latest edits (including macros) persist even if you close quickly
+    saveActiveDayImmediate();
+    if(_timer) { clearTimeout(_timer); _timer = null; }
     modal.classList.remove("open");
     activeDate = null;
     renderAll();
