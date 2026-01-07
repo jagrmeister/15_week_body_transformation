@@ -126,6 +126,11 @@
   .kpi .v{margin-top:6px; font-size:20px; font-weight:950;}
   .kpi .s{margin-top:6px; font-size:12px; color:var(--muted);}
 
+  .kpiText{margin-top:6px; font-size:13px; line-height:1.35; font-weight:650; color:var(--ink);} 
+  .kpiText ul{margin:0; padding-left:18px;}
+  .kpiText li{margin:4px 0;}
+  .kpiText b{font-weight:900;}
+
   .controls{display:grid; grid-template-columns: repeat(4,1fr); gap:10px; padding:12px 16px 16px;}
   @media(max-width:1100px){ .controls{grid-template-columns: repeat(2,1fr);} }
   @media(max-width:620px){ .controls{grid-template-columns: 1fr;} }
@@ -548,12 +553,12 @@
 
       <div class="kpi">
         <div class="k">Suggestion cadence</div>
-        <div class="v" id="coachCadence" style="font-size:13px; line-height:1.25;">-</div>
+        <div class="kpiText" id="coachCadence">-</div>
         <div class="s">What updates when</div>
       </div>
       <div class="kpi">
         <div class="k">Next coach check-in</div>
-        <div class="v" id="coachNextCheck">-</div>
+        <div class="kpiText" id="coachNextCheck">-</div>
         <div class="s">Next scheduled weigh-in review</div>
       </div>
 </div>
@@ -2802,10 +2807,12 @@ function renderCoach(){
     const cadEl = document.getElementById("coachCadence");
     if(cadEl){
       cadEl.innerHTML = `
-        <div><b>Real-time:</b> updates whenever you save a day.</div>
-        <div><b>Daily:</b> diet, macros, and sleep KPIs use the rolling last 7 days.</div>
-        <div><b>Weigh-ins:</b> Mon/Thu compare to expected ranges and refresh "On track".</div>
-        <div><b>Weekly:</b> Thu range check is the main progress checkpoint.</div>
+        <ul>
+          <li><b>Real-time:</b> updates whenever you save a day.</li>
+          <li><b>Daily:</b> diet, macros, and sleep KPIs use the rolling last 7 days.</li>
+          <li><b>Weigh-ins:</b> Mon/Thu compare to expected ranges and refresh "On track".</li>
+          <li><b>Weekly:</b> Thu range check is the main progress checkpoint.</li>
+        </ul>
       `;
     }
 
