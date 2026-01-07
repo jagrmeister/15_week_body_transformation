@@ -126,11 +126,6 @@
   .kpi .v{margin-top:6px; font-size:20px; font-weight:950;}
   .kpi .s{margin-top:6px; font-size:12px; color:var(--muted);}
 
-  .kpiText{margin-top:6px; font-size:13px; line-height:1.35; font-weight:650; color:var(--ink);} 
-  .kpiText ul{margin:0; padding-left:18px;}
-  .kpiText li{margin:4px 0;}
-  .kpiText b{font-weight:900;}
-
   .controls{display:grid; grid-template-columns: repeat(4,1fr); gap:10px; padding:12px 16px 16px;}
   @media(max-width:1100px){ .controls{grid-template-columns: repeat(2,1fr);} }
   @media(max-width:620px){ .controls{grid-template-columns: 1fr;} }
@@ -348,148 +343,27 @@
   .miniRow:first-child{ border-top:none; font-weight:800; color:var(--ink); background:rgba(255,255,255,.03); }
   .miniRow b{ color:var(--ink); }
 
-
-  /* Hero header */
-  .heroCard{ overflow:hidden; }
-  .hero{
-    position:relative;
-    border-radius:16px;
-    padding:22px 22px;
-    background: linear-gradient(135deg, rgba(116,178,255,.18), rgba(253,122,44,.14));
-  }
-  .heroBg{
-    position:absolute;
-    inset:0;
-    width:100%;
-    height:100%;
-    opacity:0.28;
-    pointer-events:none;
-  }
-  .heroContent{
-    position:relative;
-    display:flex;
-    gap:18px;
-    justify-content:space-between;
-    align-items:flex-start;
-    flex-wrap:wrap;
-  }
-  .brandRow{ display:flex; gap:14px; align-items:center; }
-  .logoMark{
-    width:56px; height:56px;
-    border-radius:14px;
-    background: rgba(255,255,255,.06);
-    border:1px solid rgba(255,255,255,.10);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    box-shadow: 0 10px 30px rgba(0,0,0,.18);
-  }
-  .heroTitle{ font-size:22px; font-weight:800; letter-spacing:.2px; }
-  .heroTag{ font-size:13px; opacity:.85; margin-top:2px; }
-  .heroSub{ margin-top:10px; font-size:13px; opacity:.85; max-width:760px; line-height:1.45; }
-  .heroRight{
-    min-width:280px;
-    flex:1;
-    display:flex;
-    flex-direction:column;
-    gap:12px;
-    align-items:flex-end;
-  }
-  .heroPills{ display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end; }
-  .heroStats{
-    display:grid;
-    grid-template-columns: repeat(3, minmax(110px, 1fr));
-    gap:10px;
-    width: min(520px, 100%);
-  }
-  .heroStat{
-    padding:10px 12px;
-    border-radius:14px;
-    background: rgba(0,0,0,.18);
-    border:1px solid rgba(255,255,255,.10);
-  }
-  .heroStat .k{ font-size:12px; opacity:.75; }
-  .heroStat .v{ font-size:16px; font-weight:800; margin-top:4px; }
-
-  @media (max-width: 800px){
-    .heroRight{ align-items:stretch; }
-    .heroStats{ grid-template-columns: repeat(2, minmax(120px, 1fr)); }
-  }
 </style>
 </head>
 
 <body>
 <div class="container">
-    <section class="card heroCard" style="margin-bottom:18px;">
-    <div class="hero">
-      <svg class="heroBg" viewBox="0 0 1200 360" preserveAspectRatio="none" aria-hidden="true">
-        <defs>
-          <linearGradient id="heroGrad" x1="0" x2="1" y1="0" y2="1">
-            <stop offset="0" stop-color="#74B2FF" stop-opacity="0.95"></stop>
-            <stop offset="1" stop-color="#FD7A2C" stop-opacity="0.85"></stop>
-          </linearGradient>
-          <pattern id="heroPattern" width="80" height="80" patternUnits="userSpaceOnUse">
-            <g fill="none" stroke="rgba(255,255,255,.28)" stroke-width="3">
-              <path d="M22 40h36"/>
-              <path d="M18 28v24M62 28v24"/>
-              <path d="M14 32v16M66 32v16" opacity="0.55"/>
-            </g>
-          </pattern>
-        </defs>
-        <rect width="1200" height="360" fill="url(#heroPattern)"></rect>
-        <path d="M0,260 C220,210 360,330 600,280 C820,235 980,210 1200,250 L1200,360 L0,360 Z" fill="url(#heroGrad)" opacity="0.55"></path>
-        <path d="M0,210 C260,160 420,290 640,235 C900,170 1040,160 1200,200 L1200,360 L0,360 Z" fill="url(#heroGrad)" opacity="0.35"></path>
-      </svg>
-
-      <div class="heroContent">
-        <div class="heroLeft">
-          <div class="brandRow">
-            <div class="logoMark" aria-hidden="true">
-              <svg width="30" height="30" viewBox="0 0 24 24" fill="none">
-                <path d="M7 9v6M17 9v6" stroke="rgba(255,255,255,.92)" stroke-width="2" stroke-linecap="round"/>
-                <path d="M9 12h6" stroke="rgba(255,255,255,.92)" stroke-width="2" stroke-linecap="round"/>
-                <path d="M5 10v4M19 10v4" stroke="rgba(255,255,255,.6)" stroke-width="2" stroke-linecap="round"/>
-              </svg>
-            </div>
-            <div>
-              <div class="heroTitle">15 Week Body Transformation</div>
-              <div class="heroTag">Jan to May 2026</div>
-            </div>
-          </div>
-
-          <div class="heroSub">
-            Fast highlighted: <span class="mono">2026-01-02</span> to <span class="mono">2026-01-03</span> only.
-            <b>Jan 4 is a standard day</b> (not fasting).
-            High-carb schedule: <b>Week 3+</b> Sundays, and <b>Week 10+</b> Sundays + Wednesdays.
-            Dynamic calories adjust automatically as your weight drops (BMR adjustment).
-            Reverse diet is built in for <b>Apr 20 through May 14</b> to ramp toward <b>2700</b>.
-          </div>
-        </div>
-
-        <div class="heroRight">
-          <div class="heroPills">
-            <div class="pill dot" id="statusPill"><b>Status:</b> -</div>
-            <div class="pill dot good" id="savePill"><b>Data:</b> Saved locally</div>
-          </div>
-
-          <div class="heroStats">
-            <div class="heroStat">
-              <div class="k">Today target</div>
-              <div class="v" id="heroTodayTarget">-</div>
-            </div>
-            <div class="heroStat">
-              <div class="k">Next weigh-in</div>
-              <div class="v" id="heroNextWeighInShort">-</div>
-            </div>
-            <div class="heroStat">
-              <div class="k">7-day diet</div>
-              <div class="v" id="heroDietShort">-</div>
-            </div>
-          </div>
-        </div>
+  <header>
+    <div>
+      <h1>15_Week_Body_Transformation (Jan to May 2026)</h1>
+      <div class="sub">
+        Fast highlighted: <span class="mono">2026-01-02</span> to <span class="mono">2026-01-03</span> only.
+        <b>Jan 4 is a standard day</b> (not fasting).
+        High-carb schedule: <b>Week 3+</b> Sundays, and <b>Week 10+</b> Sundays + Wednesdays.
+        Dynamic calories adjust automatically as your weight drops (BMR adjustment).
+        Reverse diet is built in for <b>Apr 20 through May 14</b> to ramp toward <b>2700</b>.
       </div>
     </div>
-  </section>
+    <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+      <div class="pill dot" id="statusPill"><b>Status:</b> -</div>
+      <div class="pill dot good" id="savePill"><b>Data:</b> Saved locally</div>
+    </div>
+  </header>
 
   <section class="card" id="cloudCard" style="margin-bottom:18px;">
     <div class="head">
@@ -549,19 +423,7 @@
         <div class="v" id="coachDyn">-</div>
         <div class="s">Uses your latest logged weight</div>
       </div>
-    
-
-      <div class="kpi">
-        <div class="k">Suggestion cadence</div>
-        <div class="kpiText" id="coachCadence">-</div>
-        <div class="s">What updates when</div>
-      </div>
-      <div class="kpi">
-        <div class="k">Next coach check-in</div>
-        <div class="kpiText" id="coachNextCheck">-</div>
-        <div class="s">Next scheduled weigh-in review</div>
-      </div>
-</div>
+    </div>
   </section>
 
   
@@ -625,32 +487,6 @@
         <div class="s">From logged macros</div>
       </div>
 
-
-      <div class="kpi">
-        <div class="k">7-day avg deficit</div>
-        <div class="v" id="kpiAvgDeficit">-</div>
-        <div class="s">Targets vs logged calories</div>
-      </div>
-      <div class="kpi">
-        <div class="k">Est. loss rate</div>
-        <div class="v" id="kpiEstLossRate">-</div>
-        <div class="s">Deficit converted to lb/week</div>
-      </div>
-      <div class="kpi">
-        <div class="k">7-day sleep adherence</div>
-        <div class="v" id="kpiSleepAdh">-</div>
-        <div class="s">Nights at or above your target</div>
-      </div>
-      <div class="kpi">
-        <div class="k">7-day protein adherence</div>
-        <div class="v" id="kpiProteinAdh">-</div>
-        <div class="s">Days meeting protein target</div>
-      </div>
-      <div class="kpi">
-        <div class="k">Weight trend (21 days)</div>
-        <div class="v" id="kpiTrendRate">-</div>
-        <div class="s">Least-squares trend, lb/week</div>
-      </div>
     </div>
   </section>
 
@@ -759,6 +595,75 @@
           <label>Fat target (g)</label>
           <input type="number" id="fatTarget" step="1" min="0" value="90"/>
 
+        </div>
+
+        <div>
+          <label>DNA personalization</label>
+          <select id="dnaEnabled">
+            <option value="1">Enabled</option>
+            <option value="0">Disabled</option>
+          </select>
+        </div>
+
+        <div>
+          <label>DNA: Best exercise bias</label>
+          <select id="dnaBestExercise">
+            <option value="cardio_bias">Cardio bias</option>
+            <option value="cardio_mixed" selected>Cardio mixed</option>
+            <option value="strength_bias">Strength bias</option>
+          </select>
+        </div>
+
+        <div>
+          <label>DNA: Carb response</label>
+          <select id="dnaCarbResponse">
+            <option value="lower">Lower</option>
+            <option value="avg">Average</option>
+            <option value="higher" selected>Higher</option>
+          </select>
+        </div>
+
+        <div>
+          <label>DNA: Chronotype</label>
+          <select id="dnaChronotype">
+            <option value="morning">Morning</option>
+            <option value="mod_evening" selected>Moderately evening</option>
+            <option value="evening">Evening</option>
+          </select>
+        </div>
+
+        <div>
+          <label>DNA: Motivation style</label>
+          <select id="dnaMotivation">
+            <option value="internal">Internal</option>
+            <option value="external" selected>External</option>
+          </select>
+        </div>
+
+        <div>
+          <label>DNA: Bone density risk</label>
+          <select id="dnaBoneRisk">
+            <option value="average">Average</option>
+            <option value="slightly_above">Slightly above avg</option>
+            <option value="above" selected>Above avg</option>
+          </select>
+        </div>
+
+        <div>
+          <label>DNA: Cognitive decline risk</label>
+          <select id="dnaCognitiveRisk">
+            <option value="average">Average</option>
+            <option value="slightly_above">Slightly above avg</option>
+            <option value="above" selected>Above avg</option>
+          </select>
+        </div>
+
+        <div>
+          <label>DNA: Stress resilience</label>
+          <select id="dnaStressResilience">
+            <option value="average" selected>Average</option>
+            <option value="above">Above avg</option>
+          </select>
         </div>
         <div>
           <label>Primary high-carb day</label>
@@ -1115,7 +1020,7 @@
         settings:{
           startDate:"2026-01-05",
           startWeight:221.6,
-          startBf:25.0,
+          startBf:26.0,
           targetCal:2200,
           highCal:2400,
           highStartWeek:3,
@@ -1124,7 +1029,21 @@
           secondHighDow:3,
           adhWindow:150,
           kcalPerLb:10,
-          minCal:1700
+          minCal:1700,
+          sleepTarget:7.0,
+          proteinTarget:220,
+          carbTarget:100,
+          fatTarget:90,
+          dnaEnabled:true,
+          dnaProfile:{
+            bestExercise:"cardio_mixed",
+            carbResponse:"higher",
+            chronotype:"mod_evening",
+            motivation:"external",
+            boneRisk:"above",
+            cognitiveRisk:"above",
+            stressResilience:"average"
+          }
         },
         ui:{ activeMonthKey:"2026-0" }
       };
@@ -1137,7 +1056,7 @@
       const defSettings = {
         startDate:"2026-01-05",
         startWeight:221.6,
-        startBf:25.0,
+        startBf:26.0,
         targetCal:2200,
         highCal:2400,
         highStartWeek:3,
@@ -1150,9 +1069,23 @@
         sleepTarget:7.0,
         proteinTarget:220,
         carbTarget:100,
-        fatTarget:90
+        fatTarget:90,
+        dnaEnabled:true,
+        dnaProfile:{
+          bestExercise:"cardio_mixed",
+          carbResponse:"higher",
+          chronotype:"mod_evening",
+          motivation:"external",
+          boneRisk:"above",
+          cognitiveRisk:"above",
+          stressResilience:"average"
+        }
       };
       s.settings = {...defSettings, ...s.settings};
+
+      if(!s.settings.dnaProfile) s.settings.dnaProfile = {};
+      s.settings.dnaProfile = { ...defSettings.dnaProfile, ...s.settings.dnaProfile };
+
 
       const defUi = { activeMonthKey:"2026-0" };
       s.ui = {...defUi, ...s.ui};
@@ -1164,7 +1097,7 @@
         settings:{
           startDate:"2026-01-05",
           startWeight:221.6,
-          startBf:25.0,
+          startBf:26.0,
           targetCal:2200,
           highCal:2400,
           highStartWeek:3,
@@ -1173,7 +1106,21 @@
           secondHighDow:3,
           adhWindow:150,
           kcalPerLb:10,
-          minCal:1700
+          minCal:1700,
+          sleepTarget:7.0,
+          proteinTarget:220,
+          carbTarget:100,
+          fatTarget:90,
+          dnaEnabled:true,
+          dnaProfile:{
+            bestExercise:"cardio_mixed",
+            carbResponse:"higher",
+            chronotype:"mod_evening",
+            motivation:"external",
+            boneRisk:"above",
+            cognitiveRisk:"above",
+            stressResilience:"average"
+          }
         },
         ui:{ activeMonthKey:"2026-0" }
       };
@@ -1215,6 +1162,15 @@
   const fatTargetEl = document.getElementById("fatTarget");
   const primaryHighDowEl = document.getElementById("primaryHighDow");
   const secondHighDowEl  = document.getElementById("secondHighDow");
+  const dnaEnabledEl = document.getElementById("dnaEnabled");
+  const dnaBestExerciseEl = document.getElementById("dnaBestExercise");
+  const dnaCarbResponseEl = document.getElementById("dnaCarbResponse");
+  const dnaChronotypeEl = document.getElementById("dnaChronotype");
+  const dnaMotivationEl = document.getElementById("dnaMotivation");
+  const dnaBoneRiskEl = document.getElementById("dnaBoneRisk");
+  const dnaCognitiveRiskEl = document.getElementById("dnaCognitiveRisk");
+  const dnaStressResilienceEl = document.getElementById("dnaStressResilience");
+
 
   // Advanced settings toggle pill
   const advancedDetailsEl = document.getElementById("advancedDetails");
@@ -1253,7 +1209,17 @@
     if(fatTargetEl) fatTargetEl.value = state.settings.fatTarget;
     primaryHighDowEl.value = String(state.settings.primaryHighDow);
     secondHighDowEl.value  = String(state.settings.secondHighDow);
+
+    if(dnaEnabledEl) dnaEnabledEl.value = state.settings.dnaEnabled ? "1" : "0";
+    if(dnaBestExerciseEl) dnaBestExerciseEl.value = state.settings.dnaProfile?.bestExercise || "cardio_mixed";
+    if(dnaCarbResponseEl) dnaCarbResponseEl.value = state.settings.dnaProfile?.carbResponse || "avg";
+    if(dnaChronotypeEl) dnaChronotypeEl.value = state.settings.dnaProfile?.chronotype || "mod_evening";
+    if(dnaMotivationEl) dnaMotivationEl.value = state.settings.dnaProfile?.motivation || "external";
+    if(dnaBoneRiskEl) dnaBoneRiskEl.value = state.settings.dnaProfile?.boneRisk || "above";
+    if(dnaCognitiveRiskEl) dnaCognitiveRiskEl.value = state.settings.dnaProfile?.cognitiveRisk || "above";
+    if(dnaStressResilienceEl) dnaStressResilienceEl.value = state.settings.dnaProfile?.stressResilience || \"average\";
   }
+
 
 
   function wireSettings(){
@@ -1295,13 +1261,22 @@
         if(carbTargetEl && carbTargetEl.value!=="") s.carbTarget = Math.max(0, Number(carbTargetEl.value));
         if(fatTargetEl && fatTargetEl.value!=="") s.fatTarget = Math.max(0, Number(fatTargetEl.value));
 
+        if(dnaEnabledEl) s.dnaEnabled = (dnaEnabledEl.value === "1");
+        s.dnaProfile = s.dnaProfile || {};
+        if(dnaBestExerciseEl) s.dnaProfile.bestExercise = dnaBestExerciseEl.value;
+        if(dnaCarbResponseEl) s.dnaProfile.carbResponse = dnaCarbResponseEl.value;
+        if(dnaChronotypeEl) s.dnaProfile.chronotype = dnaChronotypeEl.value;
+        if(dnaMotivationEl) s.dnaProfile.motivation = dnaMotivationEl.value;
+        if(dnaBoneRiskEl) s.dnaProfile.boneRisk = dnaBoneRiskEl.value;
+        if(dnaCognitiveRiskEl) s.dnaProfile.cognitiveRisk = dnaCognitiveRiskEl.value;
+        if(dnaStressResilienceEl) s.dnaProfile.stressResilience = dnaStressResilienceEl.value;
+
         saveState();
         renderAll();
       }catch{}
-    };
-
-    const els = [startDateEl,startWeightEl,startBfEl,targetCalEl,highCalEl,highStartWeekEl,secondHighStartWeekEl,kcalPerLbEl,minCalEl,adhWindowEl,
-                 sleepTargetEl,proteinTargetEl,carbTargetEl,fatTargetEl,primaryHighDowEl,secondHighDowEl].filter(Boolean);
+    };    const els = [startDateEl,startWeightEl,startBfEl,targetCalEl,highCalEl,highStartWeekEl,secondHighStartWeekEl,kcalPerLbEl,minCalEl,adhWindowEl,
+                 sleepTargetEl,proteinTargetEl,carbTargetEl,fatTargetEl,primaryHighDowEl,secondHighDowEl,
+                 dnaEnabledEl,dnaBestExerciseEl,dnaCarbResponseEl,dnaChronotypeEl,dnaMotivationEl,dnaBoneRiskEl,dnaCognitiveRiskEl,dnaStressResilienceEl].filter(Boolean);
     els.forEach(el=>{
       el.addEventListener("change", apply);
       el.addEventListener("input", ()=>{ /* avoid chatty on every keypress for dates */ if(el.type==="number") apply(); });
@@ -2229,10 +2204,18 @@ Attempts remaining before lockout: ${remaining}`);
     let pMeet=0, pLogged=0;
 
     for(const ds of days){
-      const rec = state.days[ds];
+      const rec = state.days[ds] || {};
 
-      if(rec && rec.calories!==null && rec.calories!==undefined){
-        const cal = Number(rec.calories);
+      // Calories: if planned fast day and calories missing, treat as 0 (but still log it).
+      let hasCalories = rec.calories!==null && rec.calories!==undefined && rec.calories!=="";
+      let cal = hasCalories ? Number(rec.calories) : null;
+
+      if(!hasCalories && isFastDay(ds)){
+        cal = 0;
+        hasCalories = true;
+      }
+
+      if(hasCalories && isFinite(cal)){
         calSum += cal; calCount++;
 
         const tgt = targetFor(ds);
@@ -2244,20 +2227,32 @@ Attempts remaining before lockout: ${remaining}`);
         deficitCount++;
       }
 
-      if(rec && rec.sleep!==null && rec.sleep!==undefined){
-        const h = Number(rec.sleep);
-        sleepSum += h; sleepCount++;
-        if(h >= sleepTarget) sleepOn++;
+      // Sleep: tracker stores sleepHours
+      if(rec.sleepHours!==null && rec.sleepHours!==undefined && rec.sleepHours!==""){
+        const h = Number(rec.sleepHours);
+        if(isFinite(h)){
+          sleepSum += h; sleepCount++;
+          if(h >= sleepTarget) sleepOn++;
+        }
       }
 
-      if(rec && rec.protein!==null && rec.protein!==undefined){
+      // Macros
+      if(rec.protein!==null && rec.protein!==undefined && rec.protein!==""){
         const p = Number(rec.protein);
-        pSum += p; pCount++;
-        pLogged++;
-        if(isFinite(pTarget) && pTarget > 0 && p >= pTarget) pMeet++;
+        if(isFinite(p)){
+          pSum += p; pCount++;
+          pLogged++;
+          if(isFinite(pTarget) && pTarget > 0 && p >= pTarget) pMeet++;
+        }
       }
-      if(rec && rec.carbs!==null && rec.carbs!==undefined){ cSum += Number(rec.carbs); cCount++; }
-      if(rec && rec.fat!==null && rec.fat!==undefined){ fSum += Number(rec.fat); fCount++; }
+      if(rec.carbs!==null && rec.carbs!==undefined && rec.carbs!==""){
+        const c = Number(rec.carbs);
+        if(isFinite(c)){ cSum += c; cCount++; }
+      }
+      if(rec.fat!==null && rec.fat!==undefined && rec.fat!==""){
+        const f = Number(rec.fat);
+        if(isFinite(f)){ fSum += f; fCount++; }
+      }
     }
 
     const avgDef = deficitCount ? (deficitSum/deficitCount) : null;
@@ -2285,34 +2280,7 @@ Attempts remaining before lockout: ${remaining}`);
   }
 
 
-    function computeWeightTrend(daysBack=21){
-    const today = ymd(new Date());
-    const days = lastNDays(today, daysBack);
-
-    const pts = [];
-    for(let i=0;i<days.length;i++){
-      const rec = state.days[days[i]];
-      const w = (rec && rec.weight!==null && rec.weight!==undefined) ? Number(rec.weight) : null;
-      if(w!==null && w!==undefined && isFinite(w)) pts.push({x:i, y:w});
-    }
-    if(pts.length < 2) return null;
-
-    const n = pts.length;
-    const meanX = pts.reduce((a,p)=>a+p.x,0) / n;
-    const meanY = pts.reduce((a,p)=>a+p.y,0) / n;
-
-    let num=0, den=0;
-    for(const p of pts){
-      num += (p.x-meanX) * (p.y-meanY);
-      den += (p.x-meanX) * (p.x-meanX);
-    }
-    if(den === 0) return null;
-
-    const slopePerDay = num / den;
-    return slopePerDay * 7;
-  }
-
-function setPill(id, cls, html){
+  function setPill(id, cls, html){
     const el = document.getElementById(id);
     el.classList.remove("good","warn","bad");
     if(cls) el.classList.add(cls);
@@ -2372,55 +2340,6 @@ function setPill(id, cls, html){
     if(kC) kC.textContent = (d7.avgCarbs===null) ? "-" : `${Math.round(d7.avgCarbs)} g`;
     const kF = document.getElementById("kpiAvgFat");
     if(kF) kF.textContent = (d7.avgFat===null) ? "-" : `${Math.round(d7.avgFat)} g`;
-
-    // Additional snapshot KPIs
-    const kDef = document.getElementById("kpiAvgDeficit");
-    if(kDef){
-      if(d7.avgDeficit===null) kDef.textContent = "-";
-      else if(d7.avgDeficit >= 0) kDef.textContent = `${Math.round(d7.avgDeficit)} kcal/day`;
-      else kDef.textContent = `Surplus ${Math.abs(Math.round(d7.avgDeficit))} kcal/day`;
-    }
-
-    const kLoss = document.getElementById("kpiEstLossRate");
-    if(kLoss){
-      if(d7.estLossRate===null) kLoss.textContent = "-";
-      else if(d7.estLossRate >= 0) kLoss.textContent = `~${d7.estLossRate.toFixed(2)} lb/week`;
-      else kLoss.textContent = `Gain ~${Math.abs(d7.estLossRate).toFixed(2)} lb/week`;
-    }
-
-    const kSleepAdh = document.getElementById("kpiSleepAdh");
-    if(kSleepAdh){
-      kSleepAdh.textContent = (d7.sleepAdh===null) ? "-" : `${Math.round(d7.sleepAdh*100)}%`;
-    }
-
-    const kProtAdh = document.getElementById("kpiProteinAdh");
-    if(kProtAdh){
-      kProtAdh.textContent = (d7.proteinAdh===null) ? "-" : `${Math.round(d7.proteinAdh*100)}%`;
-    }
-
-    const kTrend = document.getElementById("kpiTrendRate");
-    if(kTrend){
-      const tr = computeWeightTrend(21);
-      kTrend.textContent = (tr===null) ? "-" : `${tr.toFixed(2)} lb/week`;
-    }
-
-    // Hero header quick stats
-    const ht = document.getElementById("heroTodayTarget");
-    if(ht){
-      const ds = ymd(new Date());
-      const tgt = targetFor(ds);
-      ht.textContent = (tgt===0) ? "Fast (0 kcal)" : `${Math.round(tgt)} kcal`;
-    }
-    const hn = document.getElementById("heroNextWeighInShort");
-    if(hn){
-      const nxt = nextWeighInTarget();
-      hn.textContent = nxt ? `${fmtMD(nxt.ds)} • ${nxt.range} lb` : "-";
-    }
-    const hd = document.getElementById("heroDietShort");
-    if(hd){
-      if(d7.adh===null) hd.textContent = "Log to score";
-      else hd.textContent = `${Math.round(d7.adh*100)}% on target`;
-    }
 
 
     if(d7.adh===null){
@@ -2766,9 +2685,46 @@ function renderCoach(){
     const d7 = compute7Day();
     const nxt = nextWeighInTarget();
 
+    const dnaEnabled = !!state.settings.dnaEnabled;
+    const dna = state.settings.dnaProfile || {};
+
+    function last7Workouts(){
+      const anchor = ymd(new Date());
+      const days = lastNDays(anchor, 7);
+      const out = [];
+      for(const ds of days){
+        const rec = state.days[ds];
+        if(rec && rec.workout) out.push(String(rec.workout));
+      }
+      return out;
+    }
+
+    function workoutCounts(){
+      const wk = last7Workouts();
+      const counts = { strength:0, hiit:0, walk:0 };
+      wk.forEach(x=>{ if(counts[x]!==undefined) counts[x]++; });
+      counts.total = wk.length;
+      return counts;
+    }
+
+    // If you tend to handle carbs well (per DNA), carbs are more "useful" on training days,
+    // but they still need to be controlled on rest days.
+    function trainingDayCarbAdequacy(d7){
+      const wk = workoutCounts();
+      const trained = wk.total;
+      if(trained === 0) return null;
+
+      const carbTarget = Number(state.settings.carbTarget || 0);
+      const avgCarbs = d7.avgCarbs;
+      if(avgCarbs===null || !isFinite(avgCarbs) || carbTarget<=0) return null;
+
+      // A crude signal: if you're training often and carbs are far below target, performance/adherence can suffer.
+      const ratio = avgCarbs / carbTarget;
+      return { trained, ratio, wk };
+    }
+
     const nextEl = document.getElementById("coachNextTarget");
     if(nxt){
-      // Expected ranges are like "221.1 to 222.1" (lbs)
       const wt = (nxt.range || "").replace(" to ", "–") + " lb";
       const bf = (nxt.bfRange || "").replace(" to ", "–");
       nextEl.innerHTML = `
@@ -2785,10 +2741,12 @@ function renderCoach(){
     const week15Ds = ymd(week15Thu);
     const week15Range = fmtRange(THU_WEEK_RANGES[14]).replace(" to ", "–") + " lb";
     const w15El = document.getElementById("coachWeek15");
-    w15El.innerHTML = `
-      <div class="coach-date">${fmtUSDate(week15Ds)}</div>
-      <div class="coach-metric"><strong>${week15Range}</strong></div>
-    `;
+    if(w15El){
+      w15El.innerHTML = `
+        <div class="coach-date">${fmtUSDate(week15Ds)}</div>
+        <div class="coach-metric"><strong>${week15Range}</strong></div>
+      `;
+    }
 
     const w0 = Number(state.settings.startWeight);
     const w  = getWeightBefore(ymd(new Date()));
@@ -2796,12 +2754,14 @@ function renderCoach(){
     const adj = Math.round((w - w0) * kcalPerLb);
 
     const dynEl = document.getElementById("coachDyn");
-    if(!isFinite(adj)){
-      dynEl.textContent = "-";
-    } else if(adj === 0){
-      dynEl.textContent = "Calories unchanged from start";
-    } else {
-      dynEl.textContent = `${adj > 0 ? "+" : ""}${adj} kcal vs start`;
+    if(dynEl){
+      if(!isFinite(adj)){
+        dynEl.textContent = "-";
+      } else if(adj === 0){
+        dynEl.textContent = "Calories unchanged from start";
+      } else {
+        dynEl.textContent = `${adj > 0 ? "+" : ""}${adj} kcal vs start`;
+      }
     }
 
     const cadEl = document.getElementById("coachCadence");
@@ -2812,6 +2772,7 @@ function renderCoach(){
           <li><b>Daily:</b> diet, macros, and sleep KPIs use the rolling last 7 days.</li>
           <li><b>Weigh-ins:</b> Mon/Thu compare to expected ranges and refresh "On track".</li>
           <li><b>Weekly:</b> Thu range check is the main progress checkpoint.</li>
+          <li><b>DNA overlay:</b> when enabled, suggestions are nudged using your DNA profile (exercise bias, carb response, chronotype, motivation, bone and cognitive flags, stress resilience).</li>
         </ul>
       `;
     }
@@ -2828,31 +2789,123 @@ function renderCoach(){
       }
     }
 
+    // ===== Primary guidance logic =====
+    let primary = "Log calories consistently";
+    let cls = "warn";
+    let pillText = "Log data";
 
-    let primary="Log calories consistently";
-    let cls="warn";
-    let pillText="Log data";
+    const sleepTarget = Number(state.settings.sleepTarget || 7.0);
+    const proteinTarget = Number(state.settings.proteinTarget || 0);
+    const trendRate = computeWeightTrend(21); // lb/week (negative means losing)
 
-    if(d7.adh!==null){
-      const pct = d7.adh;
+    const hasEnoughDiet = (d7.loggedDays || 0) >= 4;
+    const dietPct = (d7.adh===null) ? null : d7.adh;
+    const sleepOk = (d7.avgSleep!==null && isFinite(sleepTarget)) ? (d7.avgSleep >= sleepTarget) : null;
+    const proteinOk = (d7.avgProtein!==null && isFinite(proteinTarget) && proteinTarget>0) ? (d7.avgProtein >= proteinTarget) : null;
 
-      // If diet adherence is low, that's the first lever.
-      if(pct < 0.75){
+    if(!hasEnoughDiet){
+      primary = "Log calories for 4+ days to unlock guidance";
+      cls = "warn";
+      pillText = "Log more";
+    } else if(dietPct !== null){
+      if(dietPct < 0.75){
         primary = "Fix compliance first";
-        cls = (pct < 0.50) ? "bad" : "warn";
+        cls = (dietPct < 0.50) ? "bad" : "warn";
         pillText = "Action needed";
       } else {
-        // Diet is decent. Next lever is sleep (if we have it).
-        const st = Number(state.settings.sleepTarget || 7.0);
-        if(d7.avgSleep!==null && isFinite(st) && d7.avgSleep < st){
+        // Diet is decent. Now choose the next lever.
+        if(sleepOk === false){
           primary = "Increase sleep consistency";
           cls = "warn";
           pillText = "Sleep";
+        } else if(proteinOk === false){
+          primary = "Hit protein target more often";
+          cls = "warn";
+          pillText = "Protein";
         } else {
-          primary = (pct>=0.90) ? "Stay the course" : "Tighten adherence";
-          cls = (pct>=0.90) ? "good" : "warn";
-          pillText = (pct>=0.90) ? "On track" : "Adjust";
+          primary = (dietPct>=0.90) ? "Stay the course" : "Tighten adherence";
+          cls = (dietPct>=0.90) ? "good" : "warn";
+          pillText = (dietPct>=0.90) ? "On track" : "Adjust";
         }
+      }
+    }
+
+    // If deficit suggests loss but trend doesn't reflect it, call out water/noise and focus on consistency.
+    if(hasEnoughDiet && d7.avgDeficit!==null && isFinite(d7.avgDeficit) && trendRate!==null && isFinite(trendRate)){
+      const expectedLoss = (d7.avgDeficit * 7) / 3500; // lb/week
+      const actualLoss = -trendRate; // if losing, trendRate is negative
+      // if expected >= 1 lb/wk but actual < 0.25 lb/wk, likely noise or logging mismatch
+      if(expectedLoss >= 1.0 && actualLoss < 0.25){
+        primary = "Stay consistent 7 more days (water and variance can hide fat loss)";
+        cls = "warn";
+        pillText = "Variance";
+      }
+    }
+
+    // ===== DNA overlay adjustments =====
+    if(dnaEnabled){
+      const wk = workoutCounts();
+
+      // Cardio/mixed bias: prioritize steps/zone2 if adherence is shaky or scale trend is slow.
+      if((dna.bestExercise === "cardio_bias" || dna.bestExercise === "cardio_mixed") && hasEnoughDiet){
+        if((dietPct!==null && dietPct < 0.90) || (trendRate!==null && trendRate > -0.25)){
+          primary = "Add consistent low-intensity cardio (steps/zone 2) and keep diet tight";
+          cls = (cls==="good") ? "warn" : cls;
+          pillText = "Cardio lever";
+        }
+      }
+
+      // Carb response: if you're training often and carbs are far below target, suggest reallocating carbs to training windows.
+      if(dna.carbResponse === "higher"){
+        const carbSig = trainingDayCarbAdequacy(d7);
+        if(carbSig && carbSig.trained >= 3 && carbSig.ratio < 0.60 && dietPct!==null && dietPct >= 0.75){
+          primary = "Reallocate carbs to training days (keep weekly calories controlled)";
+          cls = "warn";
+          pillText = "Performance";
+        }
+      }
+
+      // Chronotype: if you skew evening, protect sleep timing and avoid early hard sessions.
+      if(dna.chronotype === "mod_evening" || dna.chronotype === "evening"){
+        if(sleepOk === false){
+          primary = "Protect sleep timing (your chronotype leans later)";
+          cls = "warn";
+          pillText = "Sleep timing";
+        }
+      }
+
+      // External motivation: push systems over willpower.
+      if(dna.motivation === "external" && (dietPct===null || dietPct < 0.90)){
+        if(primary === "Fix compliance first"){
+          primary = "Add accountability: pre-log meals + daily streak goal (external motivation works)";
+          cls = (cls==="bad") ? "bad" : "warn";
+          pillText = "System";
+        }
+      }
+
+      // Stress resilience: when average, the simplest safeguard is routine and recovery.
+      if(dna.stressResilience === "average"){
+        if(sleepOk === false && hasEnoughDiet){
+          primary = "Reduce stress load: 10-min wind-down + protect sleep window";
+          cls = "warn";
+          pillText = "Recovery";
+        }
+      }
+
+      // Bone density: if activity is very low, nudge weight-bearing and impact.
+      if(dna.boneRisk === "above" || dna.boneRisk === "slightly_above"){
+        if(wk.total < 2){
+          primary = "Add 2–3x/week weight-bearing sessions (bone health + fat loss)";
+          cls = "warn";
+          pillText = "Bone health";
+        }
+      }
+
+      // Cognitive risk: emphasize sleep and aerobic fitness as keystone habits.
+      if(dna.cognitiveRisk === "above" && sleepOk === false){
+        primary = "Prioritize sleep consistency (it is your highest ROI lever)";
+        cls = "warn";
+        pillText = "Sleep ROI";
       }
     }
 
@@ -2860,6 +2913,8 @@ function renderCoach(){
     setPill("coachPill", cls, `<b>Guidance:</b> ${pillText}`);
     setPill("onTrackPill", cls, `<b>On track:</b> ${primary}`);
   }
+
+
 
   function renderAll(){
     buildTabs();
