@@ -2171,7 +2171,7 @@ Attempts remaining before lockout: ${remaining}`);
 
   function sparkline(points, opts={}){
     const w = opts.w ?? 320;
-    const h = opts.h ?? 110;
+    const h = opts.h ?? 120;
     const unit = opts.unit ?? "";
     const yLabel = opts.yLabel ?? "";
     const xLabels = opts.xLabels ?? null; // [start, end]
@@ -2191,7 +2191,7 @@ Attempts remaining before lockout: ${remaining}`);
     }
     const span = (max-min) || 1;
 
-    const padL = 42, padR = 10, padT = 10, padB = 20;
+    const padL = 42, padR = 10, padT = 10, padB = 34;
     const plotW = w - padL - padR;
     const plotH = h - padT - padB;
 
@@ -2231,7 +2231,8 @@ Attempts remaining before lockout: ${remaining}`);
 
     const fmt = (v)=> (Math.abs(v) >= 100 ? v.toFixed(0) : v.toFixed(1)) + (unit ? ` ${unit}` : "");
     const x0 = xLabels ? (xLabels[0] ?? "") : "";
-    const x1 = xLabels ? (xLabels[1] ?? "") : "";
+    const xM = xLabels ? (xLabels.length >= 3 ? (xLabels[1] ?? "") : "") : "";
+    const x1 = xLabels ? (xLabels.length >= 3 ? (xLabels[2] ?? "") : (xLabels[1] ?? "")) : "";
 
     return `
       <svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true">
@@ -2245,6 +2246,7 @@ Attempts remaining before lockout: ${remaining}`);
         <!-- Grid -->
         <line class="gridLine" x1="${padL}" x2="${w-padR}" y1="${padT}" y2="${padT}"></line>
         <line class="gridLine" x1="${padL}" x2="${w-padR}" y1="${(padT+plotH/2).toFixed(1)}" y2="${(padT+plotH/2).toFixed(1)}"></line>
+        <line class="gridLine" x1="${(padL+plotW/2).toFixed(1)}" x2="${(padL+plotW/2).toFixed(1)}" y1="${padT}" y2="${(padT+plotH).toFixed(1)}"></line>
         <line class="gridLine" x1="${padL}" x2="${w-padR}" y1="${(padT+plotH).toFixed(1)}" y2="${(padT+plotH).toFixed(1)}"></line>
 
         <!-- Axes -->
@@ -2252,12 +2254,13 @@ Attempts remaining before lockout: ${remaining}`);
         <line class="axisLine" x1="${padL}" x2="${w-padR}" y1="${padT+plotH}" y2="${padT+plotH}"></line>
 
         <!-- Axis labels -->
-        ${yLabel ? `<text class="titleText" x="${padL}" y="${(padT-2)}">${yLabel}</text>` : ``}
+        ${yLabel ? `<text class="titleText" x="${(padL+2)}" y="${(padT+10)}">${yLabel}</text>` : ``}
         <text class="axisText" x="${padL-4}" y="${(padT+4)}" text-anchor="end">${fmt(yMax)}</text>
         <text class="axisText" x="${padL-4}" y="${(padT+plotH/2+4).toFixed(1)}" text-anchor="end">${fmt(yMid)}</text>
         <text class="axisText" x="${padL-4}" y="${(padT+plotH+4).toFixed(1)}" text-anchor="end">${fmt(yMin)}</text>
 
         ${x0 ? `<text class="axisText" x="${padL}" y="${(padT+plotH+14).toFixed(1)}" text-anchor="start">${x0}</text>` : ``}
+        ${xM ? `<text class="axisText" x="${(padL+plotW/2).toFixed(1)}" y="${(padT+plotH+14).toFixed(1)}" text-anchor="middle">${xM}</text>` : ``}
         ${x1 ? `<text class="axisText" x="${(w-padR)}" y="${(padT+plotH+14).toFixed(1)}" text-anchor="end">${x1}</text>` : ``}
 
         <!-- Goal -->
@@ -2310,20 +2313,22 @@ Attempts remaining before lockout: ${remaining}`);
 
     const fmt = (v)=> `${Math.round(v)}${unit ? ` ${unit}` : ""}`;
     const x0 = xLabels ? (xLabels[0] ?? "") : "";
-    const x1 = xLabels ? (xLabels[1] ?? "") : "";
+    const xM = xLabels ? (xLabels.length >= 3 ? (xLabels[1] ?? "") : "") : "";
+    const x1 = xLabels ? (xLabels.length >= 3 ? (xLabels[2] ?? "") : (xLabels[1] ?? "")) : "";
 
     return `
       <svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true">
         <!-- Grid -->
         <line class="gridLine" x1="${padL}" x2="${w-padR}" y1="${padT}" y2="${padT}"></line>
         <line class="gridLine" x1="${padL}" x2="${w-padR}" y1="${baselineY.toFixed(1)}" y2="${baselineY.toFixed(1)}"></line>
+        <line class="gridLine" x1="${(padL+plotW/2).toFixed(1)}" x2="${(padL+plotW/2).toFixed(1)}" y1="${padT}" y2="${(padT+plotH).toFixed(1)}"></line>
         <line class="gridLine" x1="${padL}" x2="${w-padR}" y1="${(padT+plotH).toFixed(1)}" y2="${(padT+plotH).toFixed(1)}"></line>
 
         <!-- Axes -->
         <line class="axisLine" x1="${padL}" x2="${padL}" y1="${padT}" y2="${padT+plotH}"></line>
         <line class="axisLine" x1="${padL}" x2="${w-padR}" y1="${padT+plotH}" y2="${padT+plotH}"></line>
 
-        ${yLabel ? `<text class="titleText" x="${padL}" y="${(padT-2)}">${yLabel}</text>` : ``}
+        ${yLabel ? `<text class="titleText" x="${(padL+2)}" y="${(padT+10)}">${yLabel}</text>` : ``}
 
         <!-- Y labels -->
         <text class="axisText" x="${padL-4}" y="${(padT+4)}" text-anchor="end">${fmt(maxAbs)}</text>
@@ -2331,16 +2336,17 @@ Attempts remaining before lockout: ${remaining}`);
         <text class="axisText" x="${padL-4}" y="${(padT+plotH+4).toFixed(1)}" text-anchor="end">-${fmt(maxAbs)}</text>
 
         ${x0 ? `<text class="axisText" x="${padL}" y="${(padT+plotH+14).toFixed(1)}" text-anchor="start">${x0}</text>` : ``}
+        ${xM ? `<text class="axisText" x="${(padL+plotW/2).toFixed(1)}" y="${(padT+plotH+14).toFixed(1)}" text-anchor="middle">${xM}</text>` : ``}
         ${x1 ? `<text class="axisText" x="${(w-padR)}" y="${(padT+plotH+14).toFixed(1)}" text-anchor="end">${x1}</text>` : ``}
 
         <!-- Bars -->
         ${rects}
 
-        <!-- Legend -->
-        <rect x="${(w-padR-84)}" y="${(padT)}" width="10" height="10" fill="var(--good)" opacity="0.75"></rect>
-        <text class="legendText" x="${(w-padR-70)}" y="${(padT+9)}">Under</text>
-        <rect x="${(w-padR-40)}" y="${(padT)}" width="10" height="10" fill="var(--bad)" opacity="0.75"></rect>
-        <text class="legendText" x="${(w-padR-26)}" y="${(padT+9)}">Over</text>
+        <!-- Legend (below chart) -->
+        <rect x="${(padL+plotW/2-44).toFixed(1)}" y="${(padT+plotH+20).toFixed(1)}" width="10" height="10" fill="var(--good)" opacity="0.75"></rect>
+        <text class="legendText" x="${(padL+plotW/2-30).toFixed(1)}" y="${(padT+plotH+29).toFixed(1)}">Under</text>
+        <rect x="${(padL+plotW/2+10).toFixed(1)}" y="${(padT+plotH+20).toFixed(1)}" width="10" height="10" fill="var(--bad)" opacity="0.75"></rect>
+        <text class="legendText" x="${(padL+plotW/2+24).toFixed(1)}" y="${(padT+plotH+29).toFixed(1)}">Over</text>
       </svg>
     `;
   }
@@ -2362,7 +2368,7 @@ Attempts remaining before lockout: ${remaining}`);
       const rec = state.days[ds];
       return rec && rec.weight!==null && rec.weight!==undefined ? Number(rec.weight) : null;
     });
-    elW.innerHTML = sparkline(wSeries, {unit:"lb", yLabel:"lb", xLabels:[fmtMD(wDays[0]), fmtMD(wDays[wDays.length-1])], autoColor:true});
+    elW.innerHTML = sparkline(wSeries, {unit:"lb", yLabel:"lb", xLabels:[fmtMD(wDays[0]), fmtMD(wDays[Math.floor(wDays.length/2)]), fmtMD(wDays[wDays.length-1])], autoColor:true});
 
     const cDays = lastNDays(today, 14);
     const cSeries = cDays.map(ds=>{
@@ -2371,7 +2377,7 @@ Attempts remaining before lockout: ${remaining}`);
       const tgt = targetFor(ds);
       return Number(rec.calories) - tgt;
     });
-    elC.innerHTML = barSpark(cSeries, {unit:"kcal", yLabel:"kcal vs tgt", xLabels:[fmtMD(cDays[0]), fmtMD(cDays[cDays.length-1])]});
+    elC.innerHTML = barSpark(cSeries, {unit:"kcal", yLabel:"kcal vs tgt", xLabels:[fmtMD(cDays[0]), fmtMD(cDays[Math.floor(cDays.length/2)]), fmtMD(cDays[cDays.length-1])]});
 
     const sSeries = cDays.map(ds=>{
       const rec = state.days[ds];
@@ -2380,7 +2386,7 @@ Attempts remaining before lockout: ${remaining}`);
     const sValsForColor = sSeries.filter(v=>v!==null);
     const sAvgForColor = sValsForColor.length ? (sValsForColor.reduce((a,b)=>a+b,0)/sValsForColor.length) : null;
     const sColor = (sAvgForColor===null) ? "var(--accent)" : (sAvgForColor>=sleepTarget ? "var(--good)" : (sAvgForColor>=sleepTarget-0.5 ? "var(--warn)" : "var(--bad)"));
-    elS.innerHTML = sparkline(sSeries, {unit:"h", yLabel:"hrs", xLabels:[fmtMD(cDays[0]), fmtMD(cDays[cDays.length-1])], goal:sleepTarget, goalLabel:`Goal ${sleepTarget.toFixed(1)}h`, color:sColor});
+    elS.innerHTML = sparkline(sSeries, {unit:"h", yLabel:"hrs", xLabels:[fmtMD(cDays[0]), fmtMD(cDays[Math.floor(cDays.length/2)]), fmtMD(cDays[cDays.length-1])], goal:sleepTarget, goalLabel:`Goal ${sleepTarget.toFixed(1)}h`, color:sColor});
 
     // Notes
     const wNote = safeEl("sparkWeightNote");
