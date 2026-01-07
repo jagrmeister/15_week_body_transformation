@@ -607,7 +607,7 @@
 
         <div>
           <label>DNA: Best exercise bias</label>
-          <select id="dnaBestExercise">
+          <select id="dnaBestExercise" disabled>
             <option value="cardio_bias">Cardio bias</option>
             <option value="cardio_mixed" selected>Cardio mixed</option>
             <option value="strength_bias">Strength bias</option>
@@ -616,7 +616,7 @@
 
         <div>
           <label>DNA: Carb response</label>
-          <select id="dnaCarbResponse">
+          <select id="dnaCarbResponse" disabled>
             <option value="lower">Lower</option>
             <option value="avg">Average</option>
             <option value="higher" selected>Higher</option>
@@ -625,7 +625,7 @@
 
         <div>
           <label>DNA: Chronotype</label>
-          <select id="dnaChronotype">
+          <select id="dnaChronotype" disabled>
             <option value="morning">Morning</option>
             <option value="mod_evening" selected>Moderately evening</option>
             <option value="evening">Evening</option>
@@ -634,7 +634,7 @@
 
         <div>
           <label>DNA: Motivation style</label>
-          <select id="dnaMotivation">
+          <select id="dnaMotivation" disabled>
             <option value="internal">Internal</option>
             <option value="external" selected>External</option>
           </select>
@@ -642,7 +642,7 @@
 
         <div>
           <label>DNA: Bone density risk</label>
-          <select id="dnaBoneRisk">
+          <select id="dnaBoneRisk" disabled>
             <option value="average">Average</option>
             <option value="slightly_above">Slightly above avg</option>
             <option value="above" selected>Above avg</option>
@@ -651,7 +651,7 @@
 
         <div>
           <label>DNA: Cognitive decline risk</label>
-          <select id="dnaCognitiveRisk">
+          <select id="dnaCognitiveRisk" disabled>
             <option value="average">Average</option>
             <option value="slightly_above">Slightly above avg</option>
             <option value="above" selected>Above avg</option>
@@ -660,11 +660,13 @@
 
         <div>
           <label>DNA: Stress resilience</label>
-          <select id="dnaStressResilience">
+          <select id="dnaStressResilience" disabled>
             <option value="average" selected>Average</option>
             <option value="above">Above avg</option>
           </select>
         </div>
+        <div class="tiny muted" style="grid-column:1/-1; margin-top:-4px;">DNA traits are locked from your report. They influence coach priorities automatically over time.</div>
+
         <div>
           <label>Primary high-carb day</label>
           <select id="primaryHighDow" disabled>
@@ -1035,6 +1037,7 @@
           carbTarget:100,
           fatTarget:90,
           dnaEnabled:true,
+          dnaLocked:true,
           dnaProfile:{
             bestExercise:"cardio_mixed",
             carbResponse:"higher",
@@ -1071,6 +1074,7 @@
         carbTarget:100,
         fatTarget:90,
         dnaEnabled:true,
+        dnaLocked:true,
         dnaProfile:{
           bestExercise:"cardio_mixed",
           carbResponse:"higher",
@@ -1085,6 +1089,10 @@
 
       if(!s.settings.dnaProfile) s.settings.dnaProfile = {};
       s.settings.dnaProfile = { ...defSettings.dnaProfile, ...s.settings.dnaProfile };
+
+      if(s.settings.dnaLocked){
+        s.settings.dnaProfile = { ...defSettings.dnaProfile };
+      }
 
 
       const defUi = { activeMonthKey:"2026-0" };
@@ -1112,6 +1120,7 @@
           carbTarget:100,
           fatTarget:90,
           dnaEnabled:true,
+          dnaLocked:true,
           dnaProfile:{
             bestExercise:"cardio_mixed",
             carbResponse:"higher",
@@ -1217,7 +1226,7 @@
     if(dnaMotivationEl) dnaMotivationEl.value = state.settings.dnaProfile?.motivation || "external";
     if(dnaBoneRiskEl) dnaBoneRiskEl.value = state.settings.dnaProfile?.boneRisk || "above";
     if(dnaCognitiveRiskEl) dnaCognitiveRiskEl.value = state.settings.dnaProfile?.cognitiveRisk || "above";
-    if(dnaStressResilienceEl) dnaStressResilienceEl.value = state.settings.dnaProfile?.stressResilience || \"average\";
+    if(dnaStressResilienceEl) dnaStressResilienceEl.value = state.settings.dnaProfile?.stressResilience || "average";
   }
 
 
