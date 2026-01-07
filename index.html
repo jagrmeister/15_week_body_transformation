@@ -343,27 +343,148 @@
   .miniRow:first-child{ border-top:none; font-weight:800; color:var(--ink); background:rgba(255,255,255,.03); }
   .miniRow b{ color:var(--ink); }
 
+
+  /* Hero header */
+  .heroCard{ overflow:hidden; }
+  .hero{
+    position:relative;
+    border-radius:16px;
+    padding:22px 22px;
+    background: linear-gradient(135deg, rgba(116,178,255,.18), rgba(253,122,44,.14));
+  }
+  .heroBg{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    opacity:0.28;
+    pointer-events:none;
+  }
+  .heroContent{
+    position:relative;
+    display:flex;
+    gap:18px;
+    justify-content:space-between;
+    align-items:flex-start;
+    flex-wrap:wrap;
+  }
+  .brandRow{ display:flex; gap:14px; align-items:center; }
+  .logoMark{
+    width:56px; height:56px;
+    border-radius:14px;
+    background: rgba(255,255,255,.06);
+    border:1px solid rgba(255,255,255,.10);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    box-shadow: 0 10px 30px rgba(0,0,0,.18);
+  }
+  .heroTitle{ font-size:22px; font-weight:800; letter-spacing:.2px; }
+  .heroTag{ font-size:13px; opacity:.85; margin-top:2px; }
+  .heroSub{ margin-top:10px; font-size:13px; opacity:.85; max-width:760px; line-height:1.45; }
+  .heroRight{
+    min-width:280px;
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+    align-items:flex-end;
+  }
+  .heroPills{ display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end; }
+  .heroStats{
+    display:grid;
+    grid-template-columns: repeat(3, minmax(110px, 1fr));
+    gap:10px;
+    width: min(520px, 100%);
+  }
+  .heroStat{
+    padding:10px 12px;
+    border-radius:14px;
+    background: rgba(0,0,0,.18);
+    border:1px solid rgba(255,255,255,.10);
+  }
+  .heroStat .k{ font-size:12px; opacity:.75; }
+  .heroStat .v{ font-size:16px; font-weight:800; margin-top:4px; }
+
+  @media (max-width: 800px){
+    .heroRight{ align-items:stretch; }
+    .heroStats{ grid-template-columns: repeat(2, minmax(120px, 1fr)); }
+  }
 </style>
 </head>
 
 <body>
 <div class="container">
-  <header>
-    <div>
-      <h1>15_Week_Body_Transformation (Jan to May 2026)</h1>
-      <div class="sub">
-        Fast highlighted: <span class="mono">2026-01-02</span> to <span class="mono">2026-01-03</span> only.
-        <b>Jan 4 is a standard day</b> (not fasting).
-        High-carb schedule: <b>Week 3+</b> Sundays, and <b>Week 10+</b> Sundays + Wednesdays.
-        Dynamic calories adjust automatically as your weight drops (BMR adjustment).
-        Reverse diet is built in for <b>Apr 20 through May 14</b> to ramp toward <b>2700</b>.
+    <section class="card heroCard" style="margin-bottom:18px;">
+    <div class="hero">
+      <svg class="heroBg" viewBox="0 0 1200 360" preserveAspectRatio="none" aria-hidden="true">
+        <defs>
+          <linearGradient id="heroGrad" x1="0" x2="1" y1="0" y2="1">
+            <stop offset="0" stop-color="#74B2FF" stop-opacity="0.95"></stop>
+            <stop offset="1" stop-color="#FD7A2C" stop-opacity="0.85"></stop>
+          </linearGradient>
+          <pattern id="heroPattern" width="80" height="80" patternUnits="userSpaceOnUse">
+            <g fill="none" stroke="rgba(255,255,255,.28)" stroke-width="3">
+              <path d="M22 40h36"/>
+              <path d="M18 28v24M62 28v24"/>
+              <path d="M14 32v16M66 32v16" opacity="0.55"/>
+            </g>
+          </pattern>
+        </defs>
+        <rect width="1200" height="360" fill="url(#heroPattern)"></rect>
+        <path d="M0,260 C220,210 360,330 600,280 C820,235 980,210 1200,250 L1200,360 L0,360 Z" fill="url(#heroGrad)" opacity="0.55"></path>
+        <path d="M0,210 C260,160 420,290 640,235 C900,170 1040,160 1200,200 L1200,360 L0,360 Z" fill="url(#heroGrad)" opacity="0.35"></path>
+      </svg>
+
+      <div class="heroContent">
+        <div class="heroLeft">
+          <div class="brandRow">
+            <div class="logoMark" aria-hidden="true">
+              <svg width="30" height="30" viewBox="0 0 24 24" fill="none">
+                <path d="M7 9v6M17 9v6" stroke="rgba(255,255,255,.92)" stroke-width="2" stroke-linecap="round"/>
+                <path d="M9 12h6" stroke="rgba(255,255,255,.92)" stroke-width="2" stroke-linecap="round"/>
+                <path d="M5 10v4M19 10v4" stroke="rgba(255,255,255,.6)" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div>
+              <div class="heroTitle">15 Week Body Transformation</div>
+              <div class="heroTag">Jan to May 2026</div>
+            </div>
+          </div>
+
+          <div class="heroSub">
+            Fast highlighted: <span class="mono">2026-01-02</span> to <span class="mono">2026-01-03</span> only.
+            <b>Jan 4 is a standard day</b> (not fasting).
+            High-carb schedule: <b>Week 3+</b> Sundays, and <b>Week 10+</b> Sundays + Wednesdays.
+            Dynamic calories adjust automatically as your weight drops (BMR adjustment).
+            Reverse diet is built in for <b>Apr 20 through May 14</b> to ramp toward <b>2700</b>.
+          </div>
+        </div>
+
+        <div class="heroRight">
+          <div class="heroPills">
+            <div class="pill dot" id="statusPill"><b>Status:</b> -</div>
+            <div class="pill dot good" id="savePill"><b>Data:</b> Saved locally</div>
+          </div>
+
+          <div class="heroStats">
+            <div class="heroStat">
+              <div class="k">Today target</div>
+              <div class="v" id="heroTodayTarget">-</div>
+            </div>
+            <div class="heroStat">
+              <div class="k">Next weigh-in</div>
+              <div class="v" id="heroNextWeighInShort">-</div>
+            </div>
+            <div class="heroStat">
+              <div class="k">7-day diet</div>
+              <div class="v" id="heroDietShort">-</div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-    <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
-      <div class="pill dot" id="statusPill"><b>Status:</b> -</div>
-      <div class="pill dot good" id="savePill"><b>Data:</b> Saved locally</div>
-    </div>
-  </header>
+  </section>
 
   <section class="card" id="cloudCard" style="margin-bottom:18px;">
     <div class="head">
@@ -423,7 +544,19 @@
         <div class="v" id="coachDyn">-</div>
         <div class="s">Uses your latest logged weight</div>
       </div>
-    </div>
+    
+
+      <div class="kpi">
+        <div class="k">Suggestion cadence</div>
+        <div class="v" id="coachCadence" style="font-size:13px; line-height:1.25;">-</div>
+        <div class="s">What updates when</div>
+      </div>
+      <div class="kpi">
+        <div class="k">Next coach check-in</div>
+        <div class="v" id="coachNextCheck">-</div>
+        <div class="s">Next scheduled weigh-in review</div>
+      </div>
+</div>
   </section>
 
   
@@ -487,6 +620,32 @@
         <div class="s">From logged macros</div>
       </div>
 
+
+      <div class="kpi">
+        <div class="k">7-day avg deficit</div>
+        <div class="v" id="kpiAvgDeficit">-</div>
+        <div class="s">Targets vs logged calories</div>
+      </div>
+      <div class="kpi">
+        <div class="k">Est. loss rate</div>
+        <div class="v" id="kpiEstLossRate">-</div>
+        <div class="s">Deficit converted to lb/week</div>
+      </div>
+      <div class="kpi">
+        <div class="k">7-day sleep adherence</div>
+        <div class="v" id="kpiSleepAdh">-</div>
+        <div class="s">Nights at or above your target</div>
+      </div>
+      <div class="kpi">
+        <div class="k">7-day protein adherence</div>
+        <div class="v" id="kpiProteinAdh">-</div>
+        <div class="s">Days meeting protein target</div>
+      </div>
+      <div class="kpi">
+        <div class="k">Weight trend (21 days)</div>
+        <div class="v" id="kpiTrendRate">-</div>
+        <div class="s">Least-squares trend, lb/week</div>
+      </div>
     </div>
   </section>
 
@@ -2055,33 +2214,49 @@ Attempts remaining before lockout: ${remaining}`);
     const win = Number(state.settings.adhWindow || 150);
 
     let calSum=0, calCount=0, on=0, logged=0;
+    let deficitSum=0, deficitCount=0;
 
     let sleepSum=0, sleepCount=0, sleepOn=0;
     const sleepTarget = Number(state.settings.sleepTarget || 7.0);
 
     let pSum=0,pCount=0, cSum=0,cCount=0, fSum=0,fCount=0;
+    const pTarget = Number(state.settings.proteinTarget || 200);
+    let pMeet=0, pLogged=0;
 
     for(const ds of days){
       const rec = state.days[ds];
 
       if(rec && rec.calories!==null && rec.calories!==undefined){
-        const c = Number(rec.calories);
-        calSum += c; calCount++;
-        logged++;
+        const cal = Number(rec.calories);
+        calSum += cal; calCount++;
+
         const tgt = targetFor(ds);
-        if(Math.abs(c - tgt) <= win) on++;
+        const diff = Math.abs(cal - tgt);
+        logged++;
+        if(diff <= win) on++;
+
+        deficitSum += (tgt - cal);
+        deficitCount++;
       }
 
-      if(rec && rec.sleepHours!==null && rec.sleepHours!==undefined){
-        const sh = Number(rec.sleepHours);
-        sleepSum += sh; sleepCount++;
-        if(isFinite(sleepTarget) && sh >= sleepTarget) sleepOn++;
+      if(rec && rec.sleep!==null && rec.sleep!==undefined){
+        const h = Number(rec.sleep);
+        sleepSum += h; sleepCount++;
+        if(h >= sleepTarget) sleepOn++;
       }
 
-      if(rec && rec.protein!==null && rec.protein!==undefined){ pSum += Number(rec.protein); pCount++; }
+      if(rec && rec.protein!==null && rec.protein!==undefined){
+        const p = Number(rec.protein);
+        pSum += p; pCount++;
+        pLogged++;
+        if(isFinite(pTarget) && pTarget > 0 && p >= pTarget) pMeet++;
+      }
       if(rec && rec.carbs!==null && rec.carbs!==undefined){ cSum += Number(rec.carbs); cCount++; }
       if(rec && rec.fat!==null && rec.fat!==undefined){ fSum += Number(rec.fat); fCount++; }
     }
+
+    const avgDef = deficitCount ? (deficitSum/deficitCount) : null;
+    const estLoss = (avgDef===null) ? null : ((avgDef * 7) / 3500);
 
     return {
       avgCal: calCount ? (calSum/calCount) : null,
@@ -2095,11 +2270,44 @@ Attempts remaining before lockout: ${remaining}`);
       avgProtein: pCount ? (pSum/pCount) : null,
       avgCarbs: cCount ? (cSum/cCount) : null,
       avgFat: fCount ? (fSum/fCount) : null,
-      macroLogged: Math.max(pCount, cCount, fCount)
+      macroLogged: Math.max(pCount, cCount, fCount),
+
+      avgDeficit: avgDef,
+      estLossRate: estLoss,
+      proteinAdh: pLogged ? (pMeet/pLogged) : null,
+      proteinLogged: pLogged
     };
   }
 
-  function setPill(id, cls, html){
+
+    function computeWeightTrend(daysBack=21){
+    const today = ymd(new Date());
+    const days = lastNDays(today, daysBack);
+
+    const pts = [];
+    for(let i=0;i<days.length;i++){
+      const rec = state.days[days[i]];
+      const w = (rec && rec.weight!==null && rec.weight!==undefined) ? Number(rec.weight) : null;
+      if(w!==null && w!==undefined && isFinite(w)) pts.push({x:i, y:w});
+    }
+    if(pts.length < 2) return null;
+
+    const n = pts.length;
+    const meanX = pts.reduce((a,p)=>a+p.x,0) / n;
+    const meanY = pts.reduce((a,p)=>a+p.y,0) / n;
+
+    let num=0, den=0;
+    for(const p of pts){
+      num += (p.x-meanX) * (p.y-meanY);
+      den += (p.x-meanX) * (p.x-meanX);
+    }
+    if(den === 0) return null;
+
+    const slopePerDay = num / den;
+    return slopePerDay * 7;
+  }
+
+function setPill(id, cls, html){
     const el = document.getElementById(id);
     el.classList.remove("good","warn","bad");
     if(cls) el.classList.add(cls);
@@ -2159,6 +2367,55 @@ Attempts remaining before lockout: ${remaining}`);
     if(kC) kC.textContent = (d7.avgCarbs===null) ? "-" : `${Math.round(d7.avgCarbs)} g`;
     const kF = document.getElementById("kpiAvgFat");
     if(kF) kF.textContent = (d7.avgFat===null) ? "-" : `${Math.round(d7.avgFat)} g`;
+
+    // Additional snapshot KPIs
+    const kDef = document.getElementById("kpiAvgDeficit");
+    if(kDef){
+      if(d7.avgDeficit===null) kDef.textContent = "-";
+      else if(d7.avgDeficit >= 0) kDef.textContent = `${Math.round(d7.avgDeficit)} kcal/day`;
+      else kDef.textContent = `Surplus ${Math.abs(Math.round(d7.avgDeficit))} kcal/day`;
+    }
+
+    const kLoss = document.getElementById("kpiEstLossRate");
+    if(kLoss){
+      if(d7.estLossRate===null) kLoss.textContent = "-";
+      else if(d7.estLossRate >= 0) kLoss.textContent = `~${d7.estLossRate.toFixed(2)} lb/week`;
+      else kLoss.textContent = `Gain ~${Math.abs(d7.estLossRate).toFixed(2)} lb/week`;
+    }
+
+    const kSleepAdh = document.getElementById("kpiSleepAdh");
+    if(kSleepAdh){
+      kSleepAdh.textContent = (d7.sleepAdh===null) ? "-" : `${Math.round(d7.sleepAdh*100)}%`;
+    }
+
+    const kProtAdh = document.getElementById("kpiProteinAdh");
+    if(kProtAdh){
+      kProtAdh.textContent = (d7.proteinAdh===null) ? "-" : `${Math.round(d7.proteinAdh*100)}%`;
+    }
+
+    const kTrend = document.getElementById("kpiTrendRate");
+    if(kTrend){
+      const tr = computeWeightTrend(21);
+      kTrend.textContent = (tr===null) ? "-" : `${tr.toFixed(2)} lb/week`;
+    }
+
+    // Hero header quick stats
+    const ht = document.getElementById("heroTodayTarget");
+    if(ht){
+      const ds = ymd(new Date());
+      const tgt = targetFor(ds);
+      ht.textContent = (tgt===0) ? "Fast (0 kcal)" : `${Math.round(tgt)} kcal`;
+    }
+    const hn = document.getElementById("heroNextWeighInShort");
+    if(hn){
+      const nxt = nextWeighInTarget();
+      hn.textContent = nxt ? `${fmtMD(nxt.ds)} • ${nxt.range} lb` : "-";
+    }
+    const hd = document.getElementById("heroDietShort");
+    if(hd){
+      if(d7.adh===null) hd.textContent = "Log to score";
+      else hd.textContent = `${Math.round(d7.adh*100)}% on target`;
+    }
 
 
     if(d7.adh===null){
@@ -2541,6 +2798,29 @@ function renderCoach(){
     } else {
       dynEl.textContent = `${adj > 0 ? "+" : ""}${adj} kcal vs start`;
     }
+
+    const cadEl = document.getElementById("coachCadence");
+    if(cadEl){
+      cadEl.innerHTML = `
+        <div><b>Real-time:</b> updates whenever you save a day.</div>
+        <div><b>Daily:</b> diet, macros, and sleep KPIs use the rolling last 7 days.</div>
+        <div><b>Weigh-ins:</b> Mon/Thu compare to expected ranges and refresh "On track".</div>
+        <div><b>Weekly:</b> Thu range check is the main progress checkpoint.</div>
+      `;
+    }
+
+    const nextCheckEl = document.getElementById("coachNextCheck");
+    if(nextCheckEl){
+      if(nxt){
+        nextCheckEl.innerHTML = `
+          <div class="coach-date">${fmtUSDate(nxt.ds)}</div>
+          <div class="tiny muted" style="margin-top:6px;">Log weight, compare to expected range, then adjust compliance if needed.</div>
+        `;
+      } else {
+        nextCheckEl.textContent = "-";
+      }
+    }
+
 
     let primary="Log calories consistently";
     let cls="warn";
