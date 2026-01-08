@@ -417,6 +417,122 @@
     .heroStats{ grid-template-columns: repeat(2, minmax(120px, 1fr)); }
   }
 
+
+  /* --- Coach revamp --- */
+  .coachGrid{
+    display:grid;
+    grid-template-columns: 1.6fr 1fr;
+    gap:14px;
+  }
+  @media (max-width: 980px){
+    .coachGrid{ grid-template-columns: 1fr; }
+    .coachSide{ display:grid; grid-template-columns: 1fr 1fr; gap:14px; }
+  }
+  @media (max-width: 640px){
+    .coachSide{ grid-template-columns: 1fr; }
+  }
+
+  .coachMain{ display:flex; flex-direction:column; gap:14px; }
+  .coachSide{ display:flex; flex-direction:column; gap:14px; }
+
+  .coachPanel{
+    background: rgba(255,255,255,.03);
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:18px;
+    padding:14px 14px;
+    box-shadow: var(--shadow2);
+  }
+  .coachTop{ display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+  .coachLabel{
+    font-size:12px;
+    color: var(--muted);
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    margin-bottom:6px;
+  }
+  .coachTitle{
+    font-size:22px;
+    font-weight:900;
+    line-height:1.2;
+  }
+  .coachMini{
+    font-size:12px;
+    color: var(--muted);
+    text-align:right;
+    white-space:nowrap;
+    padding-top:4px;
+  }
+  .coachRecap{
+    margin-top:10px;
+    color: rgba(255,255,255,.88);
+    line-height:1.45;
+  }
+  .coachChips{
+    margin-top:10px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  .chip{
+    font-size:12px;
+    padding:6px 10px;
+    border-radius:999px;
+    border:1px solid rgba(255,255,255,.10);
+    background: rgba(255,255,255,.04);
+    color: rgba(255,255,255,.9);
+  }
+  .chip.good{ border-color: rgba(34,197,94,.35); background: rgba(34,197,94,.10); }
+  .chip.warn{ border-color: rgba(245,158,11,.35); background: rgba(245,158,11,.10); }
+  .chip.bad{ border-color: rgba(239,68,68,.35); background: rgba(239,68,68,.10); }
+
+  .coachSubhead{
+    margin-top:12px;
+    font-size:12px;
+    color: var(--muted);
+    letter-spacing:.06em;
+    text-transform:uppercase;
+  }
+  .coachSteps{
+    margin:10px 0 0 18px;
+    padding:0;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+  .coachSteps li{
+    line-height:1.35;
+    color: rgba(255,255,255,.92);
+  }
+  .coachWhy{
+    margin-top:10px;
+    font-size:12px;
+    color: var(--muted);
+  }
+
+  .quotePanel{
+    background:
+      radial-gradient(1200px 500px at 30% 0%, rgba(59,130,246,.18), transparent 55%),
+      radial-gradient(900px 500px at 90% 100%, rgba(34,197,94,.12), transparent 60%),
+      rgba(255,255,255,.03);
+  }
+  .quoteText{
+    margin-top:8px;
+    font-size:18px;
+    font-weight:800;
+    line-height:1.35;
+  }
+  .quoteBy{
+    margin-top:10px;
+    font-size:12px;
+    color: var(--muted);
+  }
+  .sideValue{
+    margin-top:4px;
+    font-size:16px;
+    font-weight:800;
+    line-height:1.35;
+  }
+
 </style>
 </head>
 
@@ -527,45 +643,67 @@
   </section>
 
 
-  <section class="card" style="margin-bottom:18px;">
-    <div class="head">
-      <div class="t">Coach Suggestions</div>
-      <div class="pill dot" id="coachPill"><b>Guidance:</b> -</div>
-    </div>
-    <div class="kpis">
-      <div class="kpi">
-        <div class="k">Primary action</div>
-        <div class="v" id="coachPrimary">-</div>
-        <div class="s">Based on adherence and weigh-in trend</div>
-      </div>
-      <div class="kpi">
-        <div class="k">Next weigh-in target</div>
-        <div class="v" id="coachNextTarget">-</div>
-        <div class="s">Shown on upcoming Mon or Thu</div>
-      </div>
-      <div class="kpi">
-        <div class="k">Week 15 Thursday target</div>
-        <div class="v" id="coachWeek15">-</div>
-        <div class="s">End-of-block expectation</div>
-      </div>
-      <div class="kpi">
-        <div class="k">Dynamic calorie logic</div>
-        <div class="v" id="coachDyn">-</div>
-        <div class="s">Uses your latest logged weight</div>
+  <section class="card coach-card" style="margin-bottom:18px;">
+  <div class="head">
+    <div class="t">Daily Coach</div>
+    <div class="pill dot" id="coachPill"><b>Guidance:</b> -</div>
+  </div>
+
+  <div class="coachGrid">
+    <div class="coachMain">
+      <div class="coachPanel">
+        <div class="coachTop">
+          <div>
+            <div class="coachLabel">Today’s focus</div>
+            <div class="coachTitle" id="coachFocusTitle">-</div>
+          </div>
+          <div class="coachMini" id="coachMini">-</div>
+        </div>
+
+        <div class="coachRecap" id="coachRecapText">-</div>
+
+        <div class="coachChips" id="coachChips"></div>
+
+        <div class="coachSubhead">Action steps</div>
+        <ul class="coachSteps" id="coachSteps"></ul>
+
+        <div class="coachWhy" id="coachWhyText"></div>
       </div>
 
-      <div class="kpi">
-        <div class="k">Suggestion cadence</div>
-        <div class="kpiText" id="coachCadence">-</div>
-        <div class="s">What updates when</div>
-      </div>
-      <div class="kpi">
-        <div class="k">Next coach check-in</div>
-        <div class="v" id="coachNextCheck">-</div>
-        <div class="s">Next checkpoint date</div>
+      <div class="coachPanel quotePanel">
+        <div class="coachSubhead">Quote of the day</div>
+        <div class="quoteText" id="quoteText">-</div>
+        <div class="quoteBy" id="quoteBy"></div>
       </div>
     </div>
-  </section>
+
+    <div class="coachSide">
+      <div class="coachPanel">
+        <div class="coachLabel">Next weigh-in target</div>
+        <div class="sideValue" id="coachNextTarget">-</div>
+        <div class="tiny muted" style="margin-top:6px;">Shown on upcoming Mon or Thu</div>
+      </div>
+
+      <div class="coachPanel">
+        <div class="coachLabel">Week 15 Thursday target</div>
+        <div class="sideValue" id="coachWeek15">-</div>
+        <div class="tiny muted" style="margin-top:6px;">End-of-block expectation</div>
+      </div>
+
+      <div class="coachPanel">
+        <div class="coachLabel">Dynamic calorie logic</div>
+        <div class="sideValue" id="coachDyn">-</div>
+        <div class="tiny muted" style="margin-top:6px;">Uses your latest logged weight</div>
+      </div>
+
+      <div class="coachPanel">
+        <div class="coachLabel">Next check-in</div>
+        <div class="sideValue" id="coachNextCheck">-</div>
+        <div class="tiny muted" style="margin-top:6px;">Next checkpoint date</div>
+      </div>
+    </div>
+  </div>
+</section>
 
   
   <section class="card" style="margin-bottom:18px;">
@@ -3004,20 +3142,330 @@ Attempts remaining before lockout: ${remaining}`);
     }
   }
 
-function renderCoach(){
+  const QUOTES_60 = [
+    {t:"Build the habit, then let the habit build you.", a:"Weight Journey"},
+    {t:"Today’s win is a boring decision repeated on purpose.", a:"Weight Journey"},
+    {t:"Your body keeps score, so write a better story with your actions.", a:"Weight Journey"},
+    {t:"Consistency beats intensity when intensity is inconsistent.", a:"Weight Journey"},
+    {t:"If it’s measurable, it’s manageable.", a:"Weight Journey"},
+    {t:"Don’t negotiate with the version of you that quits early.", a:"Weight Journey"},
+    {t:"Small deficits done daily become big changes done quietly.", a:"Weight Journey"},
+    {t:"Discipline is future-you sending a thank-you note backward in time.", a:"Weight Journey"},
+    {t:"You don’t need perfect, you need repeatable.", a:"Weight Journey"},
+    {t:"Make the next choice the right size.", a:"Weight Journey"},
+    {t:"Your plan works when you do the unglamorous parts.", a:"Weight Journey"},
+    {t:"Water weight is noise; habits are signal.", a:"Weight Journey"},
+    {t:"Treat sleep like a training session you can’t skip.", a:"Weight Journey"},
+    {t:"Protein first, excuses later.", a:"Weight Journey"},
+    {t:"Eat like an athlete, not like a spectator.", a:"Weight Journey"},
+    {t:"The scale is a report, not a verdict.", a:"Weight Journey"},
+    {t:"Be the person who keeps promises to yourself.", a:"Weight Journey"},
+    {t:"Momentum is a side effect of showing up.", a:"Weight Journey"},
+    {t:"Your future physique is built in the margins of your day.", a:"Weight Journey"},
+    {t:"One clean day is a vote. Seven clean days is a direction.", a:"Weight Journey"},
+    {t:"Make it easy to do the right thing.", a:"Weight Journey"},
+    {t:"Don’t chase motivation; build systems.", a:"Weight Journey"},
+    {t:"You can be tired and still be consistent.", a:"Weight Journey"},
+    {t:"Your calendar is your coach. Use it.", a:"Weight Journey"},
+    {t:"Decide once, execute daily.", a:"Weight Journey"},
+    {t:"A walk today is a win tomorrow.", a:"Weight Journey"},
+    {t:"Strength keeps you honest; cardio keeps you durable.", a:"Weight Journey"},
+    {t:"If you want different results, you need different defaults.", a:"Weight Journey"},
+    {t:"Progress is rarely loud.", a:"Weight Journey"},
+    {t:"The best plan is the one you can repeat.", a:"Weight Journey"},
+    {t:"You’re not behind. You’re calibrating.", a:"Weight Journey"},
+    {t:"When in doubt, tighten the basics.", a:"Weight Journey"},
+    {t:"Hit the target window, then chase the extra credit.", a:"Weight Journey"},
+    {t:"More data, less drama.", a:"Weight Journey"},
+    {t:"A 10-minute walk is a cheat code for adherence.", a:"Weight Journey"},
+    {t:"Your appetite has patterns. Learn them.", a:"Weight Journey"},
+    {t:"Show up for the boring reps. They count too.", a:"Weight Journey"},
+    {t:"You don’t need a new plan. You need a new week of execution.", a:"Weight Journey"},
+    {t:"The easiest lever is the one you’ll actually pull.", a:"Weight Journey"},
+    {t:"Make tomorrow easier by prepping tonight.", a:"Weight Journey"},
+    {t:"Don’t fear hunger. Manage it.", a:"Weight Journey"},
+    {t:"Train for the body you want, recover for the life you live.", a:"Weight Journey"},
+    {t:"A good day is built before noon.", a:"Weight Journey"},
+    {t:"If you miss, don’t spiral. Re-enter the plan.", a:"Weight Journey"},
+    {t:"Your baseline moves when your behavior moves.", a:"Weight Journey"},
+    {t:"Do the thing that makes the next thing easier.", a:"Weight Journey"},
+    {t:"Turn effort into a routine, not an event.", a:"Weight Journey"},
+    {t:"Your diet is a strategy, not a punishment.", a:"Weight Journey"},
+    {t:"Your sleep is a multiplier. Protect it.", a:"Weight Journey"},
+    {t:"Stop chasing perfect numbers. Chase perfect weeks.", a:"Weight Journey"},
+    {t:"The plan doesn’t need faith. It needs reps.", a:"Weight Journey"},
+    {t:"A smaller gap beats a bigger excuse.", a:"Weight Journey"},
+    {t:"Be patient with fat loss and aggressive with consistency.", a:"Weight Journey"},
+    {t:"Your body responds to trends, not moments.", a:"Weight Journey"},
+    {t:"Keep the chain unbroken, even if the link is small.", a:"Weight Journey"},
+    {t:"You can’t outthink what you won’t outdo.", a:"Weight Journey"},
+    {t:"Win the next meal.", a:"Weight Journey"},
+    {t:"Win the next hour.", a:"Weight Journey"},
+    {t:"Win the next decision.", a:"Weight Journey"},
+    {t:"You’re building trust with yourself. That’s the real transformation.", a:"Weight Journey"}
+  ];
+
+  function quoteOfDay(){
+    try{
+      const total = QUOTES_60.length;
+      if(!total) return null;
+      const start = parseYMD(state.settings.startDate);
+      const today = new Date();
+      const ds = ymd(today);
+      const dayNum = Math.max(0, Math.floor((parseYMD(ds) - start) / 86400000));
+      const idx = dayNum % total;
+      const q = QUOTES_60[idx];
+      return {...q, idx, total};
+    }catch(e){
+      return null;
+    }
+  }
+
+  function renderCoach(){
     const d7 = compute7Day();
     const nxt = nextWeighInTarget();
 
+    const win = Number(d7.window || state.settings.adhWindow || 150);
+    const sleepTarget = Number(state.settings.sleepTarget || 7.0);
+    const pTarget = Number(state.settings.proteinTarget || 220);
+
+    const logged = Number(d7.loggedDays || 0);
+    const on = Number(d7.onTargetDays || 0);
+    const onPct = logged ? (on / logged) : 0;
+
+    const avgNetDef = (d7.avgNetDeficit!==null && d7.avgNetDeficit!==undefined) ? d7.avgNetDeficit : d7.avgDeficit;
+    const estLoss = (d7.estNetLossPerWeek!==null && d7.estNetLossPerWeek!==undefined) ? d7.estNetLossPerWeek : d7.estLossPerWeek;
+
+    const dnaEnabled = !!state.settings.dnaEnabled;
+    const dna = state.settings.dnaProfile || {};
+
+    function setText(id, val){
+      const el = document.getElementById(id);
+      if(!el) return;
+      el.textContent = (val===null || val===undefined || val==="") ? "-" : String(val);
+    }
+
+    function latestWeighCompare(){
+      const ws = getWeighIns();
+      for(let i=ws.length-1;i>=0;i--){
+        const ds = ws[i].ds;
+        const r = expectedRange(ds);
+        if(!r) continue;
+        const w = ws[i].w;
+        const status = (w < r.low) ? "below range" : (w > r.high ? "above range" : "in range");
+        return {ds, w, r, status};
+      }
+      return null;
+    }
+
+    function setSteps(list){
+      const ul = document.getElementById("coachSteps");
+      if(!ul) return;
+      ul.innerHTML = "";
+      for(const s of list){
+        const li = document.createElement("li");
+        li.textContent = s;
+        ul.appendChild(li);
+      }
+    }
+
+    function setChips(chips){
+      const wrap = document.getElementById("coachChips");
+      if(!wrap) return;
+      wrap.innerHTML = "";
+      for(const c of chips){
+        const sp = document.createElement("span");
+        sp.className = "chip " + (c.cls || "");
+        sp.textContent = c.text;
+        wrap.appendChild(sp);
+      }
+    }
+
+    const trend = computeWeightTrend(21); // lb/week
+    const wc = latestWeighCompare();
+
+    let focus = "";
+    let recap = "";
+    let steps = [];
+    let why = "";
+    let cls = "warn";
+    let pill = "Action needed";
+
+    // --- Focus selection (simple, predictable) ---
+    if(logged < 5){
+      focus = "Log the basics (6 of 7 days)";
+      steps = [
+        "Log net calories today (intake and calories burned if available).",
+        "Log sleep hours tonight.",
+        "Hit protein target (" + pTarget + "g).",
+        "Keep plan targets unchanged while data stabilizes."
+      ];
+      why = "Why: fewer than 5 logged days makes the 7-day stats unreliable.";
+      cls = "warn";
+      pill = "Log data";
+    } else if(onPct < 0.75){
+      focus = "Bring net calories within the target window";
+      if(dnaEnabled && dna.motivation === "external"){
+        steps.push("Use a simple daily checklist and a hard-stop meal plan.");
+      }
+      steps.push(
+        "Pre-log tomorrow so the day lands within ±" + win + " kcal of target.",
+        "Pull one lever only: reduce intake 150 to 250 kcal, or add 25 to 40 min zone 2.",
+        "Keep protein at " + pTarget + "g and keep training steady."
+      );
+      const off = (d7.avgAbsOffTarget!==null && isFinite(d7.avgAbsOffTarget)) ? Math.round(d7.avgAbsOffTarget) : null;
+      why = "Why: diet is on-target " + on + "/" + logged + " days" + (off!==null ? (" (avg off-target " + off + " kcal/day).") : ".");
+      cls = (onPct < 0.50) ? "bad" : "warn";
+      pill = "Diet";
+    } else if(d7.sleepLogged >= 4 && d7.avgSleep!==null && isFinite(d7.avgSleep) && d7.avgSleep < sleepTarget){
+      focus = "Protect sleep (it multiplies fat loss and recovery)";
+      if(dnaEnabled && (dna.chronotype === "evening" || dna.chronotype === "mod_evening")){
+        steps = [
+          "Anchor wake time within a 60-minute window for 5 nights.",
+          "Set a caffeine cutoff 8 hours before bed.",
+          "Do a 10-minute wind-down: lights down, screens off."
+        ];
+      } else {
+        steps = [
+          "Target bedtime consistency for 5 nights.",
+          "Set a caffeine cutoff 8 hours before bed.",
+          "Keep training intensity steady until sleep rebounds."
+        ];
+      }
+      why = "Why: average sleep is " + d7.avgSleep.toFixed(1) + "h vs target " + sleepTarget.toFixed(1) + "h.";
+      cls = "warn";
+      pill = "Sleep";
+    } else if(d7.proteinAdh!==null && isFinite(d7.proteinAdh) && d7.proteinAdh < 0.70){
+      focus = "Hit protein target consistently";
+      steps = [
+        "Add one high-protein anchor daily (shake or lean meal).",
+        "Spread protein across 3 to 4 feedings.",
+        "Keep calories steady, fix protein first."
+      ];
+      why = "Why: protein target met on " + Math.round(d7.proteinAdh*100) + "% of logged days.";
+      cls = "warn";
+      pill = "Protein";
+    } else if(wc && wc.status === "above range" && onPct >= 0.75){
+      focus = "Small adjustment: add movement before cutting food";
+      const cardioNudge = (dnaEnabled && (dna.bestExercise === "cardio_bias" || dna.bestExercise === "cardio_mixed"));
+      steps = [
+        "Add " + (cardioNudge ? "3" : "2") + " zone-2 walks this week (30 to 45 min).",
+        "Hold calories steady and stay within ±" + win + " kcal.",
+        "Re-check at the next Mon or Thu weigh-in."
+      ];
+      why = "Why: last weigh-in is above the expected range for that date.";
+      cls = "warn";
+      pill = "Adjust";
+    } else {
+      focus = "Stay the course";
+      steps = [
+        "Keep net calories within ±" + win + " kcal (aim 5 of 7 days on-target).",
+        "Maintain protein ≥" + pTarget + "g and sleep ≥" + sleepTarget.toFixed(1) + "h.",
+        "Re-check on Mon or Thu weigh-in."
+      ];
+      why = "Why: the last 7 days are inside the window and trending normally.";
+      cls = "good";
+      pill = "On track";
+    }
+
+    // --- Recap line (compact, data-first) ---
+    const parts = [];
+
+    // Latest logged day snapshot (within last 7 days)
+    try{
+      const today = ymd(new Date());
+      const days = lastNDays(today, 7);
+      for(let i=days.length-1;i>=0;i--){
+        const ds = days[i];
+        const rec = state.days[ds] || {};
+        const hasCal = rec.calories!==null && rec.calories!==undefined && rec.calories!=="";
+        const autoFast = isFastDay(ds) && !hasCal;
+        const cal = hasCal ? Number(rec.calories) : (autoFast ? 0 : null);
+        const burn = (rec.burned!==null && rec.burned!==undefined && rec.burned!=="") ? Number(rec.burned) : 0;
+        const net = (cal===null || !isFinite(cal)) ? null : (cal - (isFinite(burn)?burn:0));
+        if(net!==null && isFinite(net)){
+          const tgt = targetFor(ds);
+          const delta = Math.round(net - tgt);
+          const sign = delta>0 ? "+" : "";
+          parts.push("Latest: " + fmtUSDate(ds) + " net " + Math.round(net) + " vs tgt " + Math.round(tgt) + " (" + sign + delta + ")");
+          break;
+        }
+      }
+    }catch(e){}
+
+    if(logged) parts.push("Logged " + logged + "/7");
+    if(logged) parts.push("Diet " + on + "/" + logged + " within ±" + win);
+    if(avgNetDef!==null && isFinite(avgNetDef)){
+      const sign = avgNetDef >= 0 ? "deficit" : "surplus";
+      parts.push("Avg net " + sign + " " + Math.round(Math.abs(avgNetDef)) + " kcal/day");
+    }
+    if(d7.avgBurned!==null && isFinite(d7.avgBurned)) parts.push("Burned " + Math.round(d7.avgBurned) + " kcal/day");
+    if(d7.avgSleep!==null && isFinite(d7.avgSleep)) parts.push("Sleep " + d7.avgSleep.toFixed(1) + "h");
+    if(d7.avgProtein!==null && isFinite(d7.avgProtein)) parts.push("Protein " + Math.round(d7.avgProtein) + "g");
+    if(trend!==null && isFinite(trend)) parts.push("Trend " + (trend>0?"+":"") + trend.toFixed(1) + " lb/wk");
+    recap = parts.join(" • ");
+
+    // --- Mini header stat ---
+    let mini = "";
+    if(estLoss!==null && isFinite(estLoss)){
+      mini = "Est. pace " + (estLoss>0?"+":"") + estLoss.toFixed(2) + " lb/wk";
+    } else {
+      mini = "On-target " + Math.round(onPct*100) + "%";
+    }
+
+    setText("coachFocusTitle", focus);
+    setText("coachMini", mini);
+    setText("coachRecapText", recap);
+    setText("coachWhyText", why);
+    setSteps(steps);
+
+    // --- Chips ---
+    const chips = [];
+    if(logged){
+      const dietCls = (onPct >= 0.75) ? "good" : (onPct >= 0.50 ? "warn" : "bad");
+      chips.push({text:"Diet: " + on + "/" + logged + " within ±" + win, cls:dietCls});
+    }
+    if(d7.avgAbsOffTarget!==null && isFinite(d7.avgAbsOffTarget)){
+      const off = Math.round(d7.avgAbsOffTarget);
+      const offCls = (off <= win) ? "good" : (off <= win*2 ? "warn" : "bad");
+      chips.push({text:"Avg off-target: " + off + " kcal/day", cls:offCls});
+    }
+    if(avgNetDef!==null && isFinite(avgNetDef)){
+      const sign = avgNetDef >= 0 ? "deficit" : "surplus";
+      const cls2 = avgNetDef >= 0 ? "good" : "warn";
+      chips.push({text:"Net " + sign + ": " + Math.round(Math.abs(avgNetDef)) + " kcal/day", cls:cls2});
+    }
+    if(d7.avgBurned!==null && isFinite(d7.avgBurned)){
+      chips.push({text:"Burned: " + Math.round(d7.avgBurned) + " kcal/day", cls:""}); 
+    }
+    if(d7.avgSleep!==null && isFinite(d7.avgSleep)){
+      const scls = (d7.avgSleep >= sleepTarget) ? "good" : "warn";
+      chips.push({text:"Sleep: " + d7.avgSleep.toFixed(1) + "h", cls:scls});
+    }
+    if(d7.avgProtein!==null && isFinite(d7.avgProtein)){
+      const pcl = (d7.avgProtein >= pTarget) ? "good" : "warn";
+      chips.push({text:"Protein: " + Math.round(d7.avgProtein) + "g", cls:pcl});
+    }
+    if(trend!==null && isFinite(trend)){
+      const tcls = (trend <= -0.5) ? "good" : (trend < 0 ? "warn" : "bad");
+      chips.push({text:"Trend: " + (trend>0?"+":"") + trend.toFixed(1) + " lb/wk", cls:tcls});
+    }
+    if(wc){
+      const wcls = (wc.status === "in range") ? "good" : (wc.status === "below range" ? "warn" : "warn");
+      chips.push({text:"Weigh-in: " + wc.status, cls:wcls});
+    }
+    setChips(chips);
+
+    // --- Side tiles (existing logic preserved) ---
     const nextEl = document.getElementById("coachNextTarget");
-    if(nxt){
+    if(nxt && nextEl){
       const wt = (nxt.range || "").replace(" to ", "–") + " lb";
       const bf = (nxt.bfRange || "").replace(" to ", "–");
-      nextEl.innerHTML = `
-        <div class="coach-date">${fmtUSDate(nxt.ds)}</div>
-        <div class="coach-metric"><span class="label">Weight:</span><strong>${wt}</strong></div>
-        ${bf ? `<div class="coach-metric"><span class="label">Body fat:</span><strong>${bf}%</strong></div>` : ``}
-      `;
-    } else {
+      nextEl.innerHTML =
+        "<div class=\"coach-date\">" + fmtUSDate(nxt.ds) + "</div>" +
+        "<div class=\"coach-metric\"><span class=\"label\">Weight:</span><strong>" + wt + "</strong></div>" +
+        (bf ? ("<div class=\"coach-metric\"><span class=\"label\">Body fat:</span><strong>" + bf + "%</strong></div>") : "");
+    } else if(nextEl) {
       nextEl.textContent = "-";
     }
 
@@ -3026,154 +3474,46 @@ function renderCoach(){
     const week15Ds = ymd(week15Thu);
     const week15Range = fmtRange(THU_WEEK_RANGES[14]).replace(" to ", "–") + " lb";
     const w15El = document.getElementById("coachWeek15");
-    w15El.innerHTML = `
-      <div class="coach-date">${fmtUSDate(week15Ds)}</div>
-      <div class="coach-metric"><strong>${week15Range}</strong></div>
-    `;
+    if(w15El){
+      w15El.innerHTML =
+        "<div class=\"coach-date\">" + fmtUSDate(week15Ds) + "</div>" +
+        "<div class=\"coach-metric\"><strong>" + week15Range + "</strong></div>";
+    }
 
     const w0 = Number(state.settings.startWeight);
     const w  = getWeightBefore(ymd(new Date()));
     const kcalPerLb = Number(state.settings.kcalPerLb);
     const adj = Math.round((w - w0) * kcalPerLb);
-
     const dynEl = document.getElementById("coachDyn");
-    if(!isFinite(adj)){
-      dynEl.textContent = "-";
-    } else if(adj === 0){
-      dynEl.textContent = "Calories unchanged from start";
-    } else {
-      dynEl.textContent = `${adj > 0 ? "+" : ""}${adj} kcal vs start`;
+    if(dynEl){
+      if(!isFinite(adj)) dynEl.textContent = "-";
+      else if(adj === 0) dynEl.textContent = "Calories unchanged from start";
+      else dynEl.textContent = (adj > 0 ? "+" : "") + adj + " kcal vs start";
     }
 
-    // Cadence + next checkpoint
-    const cadenceEl = document.getElementById("coachCadence");
-    if(cadenceEl){
-      cadenceEl.innerHTML = `
-        <ul>
-          <li><b>Real-time:</b> updates whenever you save a day.</li>
-          <li><b>Daily:</b> diet, macro, and sleep KPIs use the rolling last 7 days.</li>
-          <li><b>Weigh-ins:</b> Mon/Thu compare to expected ranges and refresh “On track”.</li>
-          <li><b>Weekly:</b> Thursday range check is the main progress checkpoint.</li>
-        </ul>
-        <div class="tinyNote">DNA overlay changes <b>what</b> the coach emphasizes, based on your logs.</div>
-      `;
-    }
     const nextCheckEl = document.getElementById("coachNextCheck");
     if(nextCheckEl){
       if(nxt){
-        nextCheckEl.innerHTML = `<div class="coach-date">${fmtUSDate(nxt.ds)}</div><div class="coach-sub">Next weigh-in checkpoint</div>`;
-      }else{
+        nextCheckEl.innerHTML =
+          "<div class=\"coach-date\">" + fmtUSDate(nxt.ds) + "</div>" +
+          "<div class=\"tiny muted\" style=\"margin-top:6px;\">Next weigh-in checkpoint</div>";
+      } else {
         nextCheckEl.textContent = "-";
       }
     }
 
-    // ===== Primary guidance logic =====
-    let primary="Log calories consistently";
-    let secondary="";
-    let cls="warn";
-    let pillText="Log data";
-
-    const dietPct = (d7.adh===null) ? null : d7.adh;
-    const sleepTarget = Number(state.settings.sleepTarget || 7.0);
-
-    // A bit of trend awareness
-    const tr = computeWeightTrend(21); // lb/week (negative means losing)
-    const avgDef = (d7.avgNetDeficit!==null && d7.avgNetDeficit!==undefined) ? d7.avgNetDeficit : d7.avgDeficit; // kcal/day, positive means deficit (net if burn logged)
-
-    if(dietPct===null){
-      primary = "Log calories to unlock accurate guidance";
-      cls="warn";
-      pillText="Log data";
-    }else if(dietPct < 0.75){
-      const pct = Math.round(dietPct*100);
-      const win = (d7.window!==null && d7.window!==undefined) ? d7.window : Number(state.settings.adhWindow || 150);
-      const onDays = (d7.onTargetDays!==null && d7.onTargetDays!==undefined) ? d7.onTargetDays : Math.round(dietPct * (d7.loggedDays||0));
-
-      primary = `Diet off-target (${pct}% within ±${win} kcal)`;
-      cls = (dietPct < 0.50) ? "bad" : "warn";
-      pillText = "Action needed";
-
-      const loggedDays = d7.loggedDays || 0;
-      secondary = `Logged ${loggedDays}/7 days. On-target ${onDays}/${loggedDays}.`;
-      if(d7.avgAbsOffTarget!==null && d7.avgAbsOffTarget!==undefined){
-        secondary += ` Avg off-target: ${Math.round(d7.avgAbsOffTarget)} kcal/day (net).`;
-      }
-      secondary += " Fix calories toward target before changing the plan.";
-
-      // DNA: external motivation nudges accountability
-      if(state.settings.dnaEnabled && state.settings.dnaProfile?.motivation === "external"){
-        secondary += " Use external accountability: a simple daily checklist and a hard stop meal plan.";
-      }
-    }else{
-      // Diet is decent. Next lever is sleep (if we have it).
-      if(d7.avgSleep!==null && isFinite(sleepTarget) && d7.avgSleep < sleepTarget){
-        primary = "Increase sleep consistency";
-        cls = "warn";
-        pillText = "Sleep";
-
-        if(state.settings.dnaEnabled && state.settings.dnaProfile?.chronotype === "mod_evening"){
-          secondary = "You skew night-owl: anchor a consistent wake time first, then pull bedtime earlier in 15 minute steps.";
-        }
-      }else{
-        // Diet and sleep decent: look at deficit / trend.
-        if(avgDef!==null && avgDef < 250){
-          const burnAvg = (d7.avgBurned!==null && d7.avgBurned!==undefined) ? d7.avgBurned : null;
-          if(burnAvg!==null && burnAvg >= 200){
-            primary = `Tighten intake slightly (you are already burning ~${Math.round(burnAvg)} kcal/day)`;
-          }else if(burnAvg!==null){
-            primary = `Create a clearer deficit: add activity (~${Math.round(burnAvg)} kcal/day now) or trim intake`;
-          }else{
-            primary = "Create a clearer deficit (or add cardio) for the next 7 days";
-          }
-          cls = "warn";
-          pillText = "Tighten";
-
-          if(state.settings.dnaEnabled && state.settings.dnaProfile?.bestExercise === "cardio_mixed_strength"){
-            secondary = "DNA favors cardio mixed strength: add 3 to 5 low intensity sessions (20 to 40 min) before cutting more calories.";
-          }
-        }else{
-          primary = (dietPct>=0.90) ? "Stay the course" : "Tighten adherence";
-          cls = (dietPct>=0.90) ? "good" : "warn";
-          pillText = (dietPct>=0.90) ? "On track" : "Adjust";
-
-          if(state.settings.dnaEnabled && state.settings.dnaProfile?.carbResponse === "higher"){
-            // Nudge carbs when they're way under target
-            if(d7.avgCarbs!==null && d7.avgCarbs < Number(state.settings.carbTarget || 0)*0.60){
-              secondary = "Your DNA handles carbs well: consider shifting some calories into complex carbs around training for performance and adherence.";
-            }
-          }
-        }
-      }
+    // --- Quote of the day ---
+    const q = quoteOfDay();
+    if(q){
+      const qt = document.getElementById("quoteText");
+      const qa = document.getElementById("quoteBy");
+      if(qt) qt.textContent = "“" + q.t + "”";
+      if(qa) qa.textContent = q.a + " • " + (q.idx+1) + "/" + q.total;
     }
 
-    // Safety/long-term nudges (DNA-based, but lightweight)
-    if(state.settings.dnaEnabled){
-      const bone = state.settings.dnaProfile?.boneRisk;
-      const cog  = state.settings.dnaProfile?.cognitiveRisk;
-      const stress = state.settings.dnaProfile?.stress;
-
-      const nudges = [];
-      if(bone === "above_avg") nudges.push("Keep strength and impact work (walks, loaded carries). Prioritize calcium/vit D.");
-      if(cog === "above_avg") nudges.push("Prioritize sleep + cardio for long-term brain health.");
-      if(stress === "average") nudges.push("Keep changes simple: one lever at a time to avoid burnout.");
-
-      if(nudges.length){
-        secondary = secondary ? (secondary + " " + nudges.join(" ")) : nudges.join(" ");
-      }
-    }
-
-    const pEl = document.getElementById("coachPrimary");
-    if(pEl){
-      pEl.innerHTML = `
-        <div>${primary}</div>
-        ${secondary ? `<div class="coach-sub">${secondary}</div>` : ``}
-      `;
-    }
-
-    setPill("coachPill", cls, `<b>Guidance:</b> ${pillText}`);
-    setPill("onTrackPill", cls, `<b>On track:</b> ${primary}`);
+    setPill("coachPill", cls, "<b>Guidance:</b> " + pill);
+    setPill("onTrackPill", cls, "<b>On track:</b> " + focus);
   }
-
   function renderAll(){
     enforceDnaProfile();
     buildTabs();
