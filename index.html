@@ -937,7 +937,7 @@
           </div>
         </div>
 
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;">
+        <div id="weighFields" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;">
           <div>
             <label>Scale weight (lbs)</label>
             <input id="weight" type="number" step="0.1" placeholder="Mon/Thu"/>
@@ -1648,11 +1648,12 @@ Attempts remaining before lockout: ${remaining}`);
     let best = null;
     for(const k in state.days){
       const rec = state.days[k];
-      if(rec && rec.weight!==null && rec.weight!==undefined){
-        const kd = parseYMD(k);
-        if(kd <= target){
-          if(!best || kd > best.d) best = {d: kd, w: Number(rec.weight)};
-        }
+      if(!rec) continue;
+      if(rec.weight===null || rec.weight===undefined || rec.weight==="") continue;
+      const kd = parseYMD(k);
+      if(!isWeighDay(kd)) continue;
+      if(kd <= target){
+        if(!best || kd > best.d) best = {d: kd, w: Number(rec.weight)};
       }
     }
     if(best) return best.w;
@@ -1885,18 +1886,20 @@ Attempts remaining before lockout: ${remaining}`);
         burnLine.innerHTML = `Burned: <b>${Math.round(burnVal)}</b>` + (net!==null ? ` <span class="mono">Net ${Math.round(net)}</span>` : ``);
         cell.appendChild(burnLine);
       }
+      // Weight/BF only on weigh-in days (Mon/Thu), or if legacy data exists
+      if(isWeighDay(d) || (rec.weight!==null && rec.weight!==undefined) || (rec.bf!==null && rec.bf!==undefined)){
+        const wtLine=document.createElement("div");
+        wtLine.className="line";
+        const wt = (rec.weight===null || rec.weight===undefined) ? "-" : Number(rec.weight).toFixed(1);
+        wtLine.innerHTML = `Weight: <b>${wt}</b>`;
+        cell.appendChild(wtLine);
 
-      const wtLine=document.createElement("div");
-      wtLine.className="line";
-      const wt = (rec.weight===null || rec.weight===undefined) ? "-" : Number(rec.weight).toFixed(1);
-      wtLine.innerHTML = `Weight: <b>${wt}</b>`;
-      cell.appendChild(wtLine);
-
-      const bfLine=document.createElement("div");
-      bfLine.className="line";
-      const bfVal = (rec.bf===null || rec.bf===undefined) ? "-" : Number(rec.bf).toFixed(1) + "%";
-      bfLine.innerHTML = `BF%: <b>${bfVal}</b>`;
-      cell.appendChild(bfLine);
+        const bfLine=document.createElement("div");
+        bfLine.className="line";
+        const bfVal = (rec.bf===null || rec.bf===undefined) ? "-" : Number(rec.bf).toFixed(1) + "%";
+        bfLine.innerHTML = `BF%: <b>${bfVal}</b>`;
+        cell.appendChild(bfLine);
+      }
 
       // Sleep (optional)
       if(rec.sleepHours!==null && rec.sleepHours!==undefined && rec.sleepHours!==""){
@@ -1994,6 +1997,7 @@ Attempts remaining before lockout: ${remaining}`);
   const workout = document.getElementById("workout");
   const weight = document.getElementById("weight");
   const bf = document.getElementById("bf");
+  const weighFields = document.getElementById("weighFields");
   const protein = document.getElementById("protein");
   const carbs = document.getElementById("carbs");
   const fat = document.getElementById("fat");
@@ -2075,7 +2079,13 @@ Attempts remaining before lockout: ${remaining}`);
     activeDate = ds;
     const d = parseYMD(ds);
     modalTitle.textContent = `${weekdayName(d)} - ${ds}`;
-    modalSub.textContent = isWeighDay(d) ? "Weigh-in day (Mon/Thu). Log before food or water." : "Calories + workout + notes.";
+    const weighDay = isWeighDay(d);
+    modalSub.textContent = weighDay ? "Weigh-in day (Mon/Thu). Log before food or water." : "Calories + workout + notes.";
+    if(weighFields){
+      weighFields.style.display = weighDay ? "grid" : "none";
+    }
+    if(weight) weight.disabled = !weighDay;
+    if(bf) bf.disabled = !weighDay;
 
     const tgt = targetFor(ds);
     dayTarget.value = tgt;
@@ -2131,12 +2141,13 @@ Attempts remaining before lockout: ${remaining}`);
     if(_timer) clearTimeout(_timer);
     setSaveIndicator("Saving...", "warn");
     _timer = setTimeout(()=>{
+      const weighDay = isWeighDay(parseYMD(activeDate));
       const rec = {
         calories: calories.value==="" ? null : Number(calories.value),
         burned: burned.value==="" ? null : Number(burned.value),
         workout: workout.value || "",
-        weight: weight.value==="" ? null : Number(weight.value),
-        bf: bf.value==="" ? null : Number(bf.value),
+        weight: (!weighDay) ? null : (weight.value==="" ? null : Number(weight.value)),
+        bf: (!weighDay) ? null : (bf.value==="" ? null : Number(bf.value)),
 
         protein: protein.value==="" ? null : Number(protein.value),
         carbs: carbs.value==="" ? null : Number(carbs.value),
@@ -2160,12 +2171,13 @@ Attempts remaining before lockout: ${remaining}`);
   // Flush the current day record immediately (used on modal close so last edits aren't lost)
   function saveActiveDayImmediate(){
     if(!activeDate) return;
+    const weighDay = isWeighDay(parseYMD(activeDate));
     const rec = {
       calories: calories.value==="" ? null : Number(calories.value),
       burned: burned.value==="" ? null : Number(burned.value),
       workout: workout.value || "",
-      weight: weight.value==="" ? null : Number(weight.value),
-      bf: bf.value==="" ? null : Number(bf.value),
+      weight: (!weighDay) ? null : (weight.value==="" ? null : Number(weight.value)),
+      bf: (!weighDay) ? null : (bf.value==="" ? null : Number(bf.value)),
 
       protein: protein.value==="" ? null : Number(protein.value),
       carbs: carbs.value==="" ? null : Number(carbs.value),
@@ -2349,8 +2361,11 @@ Attempts remaining before lockout: ${remaining}`);
     const out=[];
     for(const ds in state.days){
       const rec = state.days[ds];
-      if(rec && rec.weight!==null && rec.weight!==undefined){
-        out.push({ ds, d: parseYMD(ds), w: Number(rec.weight) });
+      if(!rec) continue;
+      const d = parseYMD(ds);
+      if(!isWeighDay(d)) continue;
+      if(rec.weight!==null && rec.weight!==undefined && rec.weight!==""){
+        out.push({ ds, d, w: Number(rec.weight) });
       }
     }
     out.sort((a,b)=>a.d-b.d);
@@ -2360,8 +2375,11 @@ Attempts remaining before lockout: ${remaining}`);
     const out=[];
     for(const ds in state.days){
       const rec = state.days[ds];
-      if(rec && rec.bf!==null && rec.bf!==undefined){
-        out.push({ ds, d: parseYMD(ds), bf: Number(rec.bf) });
+      if(!rec) continue;
+      const d = parseYMD(ds);
+      if(!isWeighDay(d)) continue;
+      if(rec.bf!==null && rec.bf!==undefined && rec.bf!==""){
+        out.push({ ds, d, bf: Number(rec.bf) });
       }
     }
     out.sort((a,b)=>a.d-b.d);
@@ -2384,6 +2402,7 @@ Attempts remaining before lockout: ${remaining}`);
     const win = Number(state.settings.adhWindow || 150);
 
     let calSum=0, calCount=0, on=0, logged=0;
+    let absDiffSum=0;
     let deficitSum=0, deficitCount=0;
 
     let burnSum=0;
@@ -2407,20 +2426,23 @@ Attempts remaining before lockout: ${remaining}`);
         cal = 0;
         hasCalories = true;
       }
-
       if(hasCalories && isFinite(cal)){
         calSum += cal; calCount++;
         const tgt = targetFor(ds);
-        const diff = Math.abs(cal - tgt);
-        logged++;
-        if(diff <= win) on++;
 
-        deficitSum += (tgt - cal);
-        deficitCount++;
         const burn = (rec.burned!==null && rec.burned!==undefined && rec.burned!=="") ? Number(rec.burned) : 0;
         const burnSafe = (isFinite(burn) ? burn : 0);
         burnSum += burnSafe;
+
         const net = cal - burnSafe;
+        const diff = Math.abs(net - tgt);
+        logged++;
+        if(diff <= win) on++;
+        absDiffSum += diff;
+
+        deficitSum += (tgt - cal);
+        deficitCount++;
+
         netDefSum += (tgt - net);
         netDefCount++;
 
@@ -2463,6 +2485,9 @@ Attempts remaining before lockout: ${remaining}`);
       avgCal: calCount ? (calSum/calCount) : null,
       adh: logged ? (on/logged) : null,
       loggedDays: logged,
+      onTargetDays: on,
+      window: win,
+      avgAbsOffTarget: logged ? (absDiffSum/logged) : null,
 
       avgDeficit: avgDeficit,
       estLossPerWeek: estLossPerWeek,
@@ -2490,7 +2515,10 @@ Attempts remaining before lockout: ${remaining}`);
 
     const pts = [];
     for(let i=0;i<days.length;i++){
-      const rec = state.days[days[i]];
+      const ds = days[i];
+      const d = parseYMD(ds);
+      if(!isWeighDay(d)) continue;
+      const rec = state.days[ds];
       const w = (rec && rec.weight!==null && rec.weight!==undefined && rec.weight!=="") ? Number(rec.weight) : null;
       if(w!==null && isFinite(w)) pts.push({x:i, y:w});
     }
@@ -3056,13 +3084,24 @@ function renderCoach(){
       cls="warn";
       pillText="Log data";
     }else if(dietPct < 0.75){
-      primary = "Fix compliance first";
+      const pct = Math.round(dietPct*100);
+      const win = (d7.window!==null && d7.window!==undefined) ? d7.window : Number(state.settings.adhWindow || 150);
+      const onDays = (d7.onTargetDays!==null && d7.onTargetDays!==undefined) ? d7.onTargetDays : Math.round(dietPct * (d7.loggedDays||0));
+
+      primary = `Diet off-target (${pct}% within ±${win} kcal)`;
       cls = (dietPct < 0.50) ? "bad" : "warn";
       pillText = "Action needed";
 
+      const loggedDays = d7.loggedDays || 0;
+      secondary = `Logged ${loggedDays}/7 days. On-target ${onDays}/${loggedDays}.`;
+      if(d7.avgAbsOffTarget!==null && d7.avgAbsOffTarget!==undefined){
+        secondary += ` Avg off-target: ${Math.round(d7.avgAbsOffTarget)} kcal/day (net).`;
+      }
+      secondary += " Fix calories toward target before changing the plan.";
+
       // DNA: external motivation nudges accountability
       if(state.settings.dnaEnabled && state.settings.dnaProfile?.motivation === "external"){
-        secondary = "Use external accountability: a simple daily checklist and a hard stop meal plan.";
+        secondary += " Use external accountability: a simple daily checklist and a hard stop meal plan.";
       }
     }else{
       // Diet is decent. Next lever is sleep (if we have it).
