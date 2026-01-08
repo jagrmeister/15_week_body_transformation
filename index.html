@@ -3440,6 +3440,15 @@ function latestWeighCompare(){
       pill = "On track";
     }
 
+    // Write focus + mini pace
+    setText("coachFocusTitle", focus);
+    if(estLoss!==null && isFinite(estLoss)){
+      const pace = (estLoss>0?"+":"") + estLoss.toFixed(2) + " lb/wk";
+      setText("coachMini", "Est. pace " + pace);
+    } else {
+      setText("coachMini", "-");
+    }
+
     // --- Recap rows (clean, grouped) ---
     let latestTokens = [];
     let weekTokens = [];
