@@ -1887,7 +1887,8 @@ Attempts remaining before lockout: ${remaining}`);
         cell.appendChild(burnLine);
       }
       // Weight/BF only on weigh-in days (Mon/Thu), or if legacy data exists
-      if(isWeighDay(d) || (rec.weight!==null && rec.weight!==undefined) || (rec.bf!==null && rec.bf!==undefined)){
+      // NOTE: `day` is the Date object for this calendar cell.
+      if(isWeighDay(day) || (rec.weight!==null && rec.weight!==undefined) || (rec.bf!==null && rec.bf!==undefined)){
         const wtLine=document.createElement("div");
         wtLine.className="line";
         const wt = (rec.weight===null || rec.weight===undefined) ? "-" : Number(rec.weight).toFixed(1);
