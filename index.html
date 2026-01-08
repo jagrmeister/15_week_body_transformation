@@ -464,8 +464,49 @@
   }
   .coachRecap{
     margin-top:10px;
-    color: rgba(255,255,255,.88);
-    line-height:1.45;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .recapRow{
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+  .recapTag{
+    font-size:11px;
+    color: var(--muted);
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    padding-top:2px;
+    min-width:88px;
+  }
+  .recapItems{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  .recapTok{
+    font-size:12px;
+    padding:6px 10px;
+    border-radius:999px;
+    border:1px solid rgba(255,255,255,.10);
+    background: rgba(0,0,0,.18);
+    color: rgba(255,255,255,.92);
+    white-space:nowrap;
+  }
+  .recapTok.strong{
+    border-color: rgba(59,130,246,.35);
+    background: rgba(59,130,246,.12);
+  }
+  .recapTok.warn{
+    border-color: rgba(245,158,11,.35);
+    background: rgba(245,158,11,.12);
+  }
+  .recapTok.bad{
+    border-color: rgba(239,68,68,.35);
+    background: rgba(239,68,68,.12);
   }
   .coachChips{
     margin-top:10px;
@@ -660,7 +701,16 @@
           <div class="coachMini" id="coachMini">-</div>
         </div>
 
-        <div class="coachRecap" id="coachRecapText">-</div>
+        <div class="coachRecap" id="coachRecap">
+          <div class="recapRow">
+            <div class="recapTag">Latest</div>
+            <div class="recapItems" id="coachLatestItems"></div>
+          </div>
+          <div class="recapRow">
+            <div class="recapTag">Last 7 days</div>
+            <div class="recapItems" id="coachWeekItems"></div>
+          </div>
+        </div>
 
         <div class="coachChips" id="coachChips"></div>
 
@@ -3245,7 +3295,29 @@ Attempts remaining before lockout: ${remaining}`);
       el.textContent = (val===null || val===undefined || val==="") ? "-" : String(val);
     }
 
-    function latestWeighCompare(){
+    
+    function setTokens(id, tokens, clsFn){
+      const el = document.getElementById(id);
+      if(!el) return;
+      el.innerHTML = "";
+      const arr = Array.isArray(tokens) ? tokens : [];
+      if(arr.length === 0){
+        const s = document.createElement("span");
+        s.className = "recapTok";
+        s.textContent = "-";
+        el.appendChild(s);
+        return;
+      }
+      for(const t of arr){
+        const s = document.createElement("span");
+        const extra = clsFn ? clsFn(t) : "";
+        s.className = "recapTok" + (extra ? (" " + extra) : "");
+        s.textContent = t;
+        el.appendChild(s);
+      }
+    }
+
+function latestWeighCompare(){
       const ws = getWeighIns();
       for(let i=ws.length-1;i>=0;i--){
         const ds = ws[i].ds;
@@ -3368,8 +3440,9 @@ Attempts remaining before lockout: ${remaining}`);
       pill = "On track";
     }
 
-    // --- Recap line (compact, data-first) ---
-    const parts = [];
+    // --- Recap rows (clean, grouped) ---
+    let latestTokens = [];
+    let weekTokens = [];
 
     // Latest logged day snapshot (within last 7 days)
     try{
@@ -3387,35 +3460,39 @@ Attempts remaining before lockout: ${remaining}`);
           const tgt = targetFor(ds);
           const delta = Math.round(net - tgt);
           const sign = delta>0 ? "+" : "";
-          parts.push("Latest: " + fmtUSDate(ds) + " net " + Math.round(net) + " vs tgt " + Math.round(tgt) + " (" + sign + delta + ")");
+          latestTokens = [
+            fmtUSDate(ds),
+            "Net " + Math.round(net),
+            "Target " + Math.round(tgt),
+            "Δ " + sign + delta
+          ];
           break;
         }
       }
     }catch(e){}
 
-    if(logged) parts.push("Logged " + logged + "/7");
-    if(logged) parts.push("Diet " + on + "/" + logged + " within ±" + win);
+    if(latestTokens.length === 0){
+      latestTokens = ["No logged calories in last 7 days"];
+    }
+
+    if(logged){
+      weekTokens.push("Logged " + logged + "/7");
+      weekTokens.push("On-target " + on + "/" + logged + " (±" + win + ")");
+    }
     if(avgNetDef!==null && isFinite(avgNetDef)){
       const sign = avgNetDef >= 0 ? "deficit" : "surplus";
-      parts.push("Avg net " + sign + " " + Math.round(Math.abs(avgNetDef)) + " kcal/day");
+      weekTokens.push("Avg net " + sign + " " + Math.round(Math.abs(avgNetDef)) + " kcal/day");
     }
-    if(d7.avgBurned!==null && isFinite(d7.avgBurned)) parts.push("Burned " + Math.round(d7.avgBurned) + " kcal/day");
-    if(d7.avgSleep!==null && isFinite(d7.avgSleep)) parts.push("Sleep " + d7.avgSleep.toFixed(1) + "h");
-    if(d7.avgProtein!==null && isFinite(d7.avgProtein)) parts.push("Protein " + Math.round(d7.avgProtein) + "g");
-    if(trend!==null && isFinite(trend)) parts.push("Trend " + (trend>0?"+":"") + trend.toFixed(1) + " lb/wk");
-    recap = parts.join(" • ");
+    if(trend!==null && isFinite(trend)){
+      weekTokens.push("Trend " + (trend>0?"+":"") + trend.toFixed(1) + " lb/wk");
+    }
+
+    // Write recap rows
+    setTokens("coachLatestItems", latestTokens, (t)=> t.startsWith("Δ ") ? ((t.includes("+") ? "warn" : "strong")) : "");
+    setTokens("coachWeekItems", weekTokens);
 
     // --- Mini header stat ---
-    let mini = "";
-    if(estLoss!==null && isFinite(estLoss)){
-      mini = "Est. pace " + (estLoss>0?"+":"") + estLoss.toFixed(2) + " lb/wk";
-    } else {
-      mini = "On-target " + Math.round(onPct*100) + "%";
-    }
 
-    setText("coachFocusTitle", focus);
-    setText("coachMini", mini);
-    setText("coachRecapText", recap);
     setText("coachWhyText", why);
     setSteps(steps);
 
