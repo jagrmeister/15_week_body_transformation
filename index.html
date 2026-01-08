@@ -608,6 +608,17 @@
         <div class="v" id="kpiAvgDeficit">-</div>
         <div class="s">Target minus intake (planned fasts count as 0)</div>
       </div>
+
+      <div class="kpi">
+        <div class="k">7-day avg calories burned</div>
+        <div class="v" id="kpiAvgBurned">-</div>
+        <div class="s">From logged burn (active calories)</div>
+      </div>
+      <div class="kpi">
+        <div class="k">7-day avg net deficit</div>
+        <div class="v" id="kpiAvgNetDeficit">-</div>
+        <div class="s">Target minus (intake minus burn)</div>
+      </div>
       <div class="kpi">
         <div class="k">Estimated loss pace</div>
         <div class="v" id="kpiEstLoss">-</div>
@@ -655,7 +666,7 @@
         <div class="s" id="sparkWeightNote">-</div>
       </div>
       <div class="kpi">
-        <div class="k">Calories vs target (14 days)</div>
+        <div class="k">Net calories vs target (14 days)</div>
         <div class="spark" id="sparkCalories">-</div>
         <div class="s" id="sparkCaloriesNote">-</div>
       </div>
@@ -904,6 +915,13 @@
             <input id="calories" type="number" step="10" placeholder="e.g., 2200"/>
           </div>
           <div>
+            <label>Calories burned (active)</label>
+            <input id="burned" type="number" step="10" min="0" placeholder="e.g., 450"/>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;">
+          <div>
             <label>Workout</label>
             <select id="workout">
               <option value="">Not logged</option>
@@ -912,6 +930,10 @@
               <option value="walk">Walk</option>
               <option value="rest">Rest Day</option>
             </select>
+          </div>
+          <div>
+            <label>Net calories (intake minus burn)</label>
+            <input id="netCalories" type="text" disabled placeholder="-"/>
           </div>
         </div>
 
@@ -1730,7 +1752,7 @@ Attempts remaining before lockout: ${remaining}`);
     for(const ds in state.days){
       const rec = state.days[ds];
       const hasAny = rec && (
-        rec.calories!==null || rec.weight!==null || rec.bf!==null ||
+        rec.calories!==null || rec.burned!==null || rec.weight!==null || rec.bf!==null ||
         rec.protein!==null || rec.carbs!==null || rec.fat!==null || rec.fiber!==null ||
         rec.sleepHours!==null || rec.sleepQuality!==null ||
         (rec.workout && rec.workout !== "") || (rec.notes && rec.notes.trim().length)
@@ -1854,6 +1876,16 @@ Attempts remaining before lockout: ${remaining}`);
       calLine.innerHTML = `Calories: <b>${cal}</b> <span class="mono">/ ${tgt}</span>`;
       cell.appendChild(calLine);
 
+      const burnVal = (rec.burned===null || rec.burned===undefined || rec.burned==="") ? null : Number(rec.burned);
+      if(burnVal!==null && isFinite(burnVal)) {
+        const burnLine=document.createElement("div");
+        burnLine.className="line";
+        const calNum = (rec.calories===null || rec.calories===undefined || rec.calories==="") ? null : Number(rec.calories);
+        const net = (calNum!==null && isFinite(calNum)) ? (calNum - burnVal) : null;
+        burnLine.innerHTML = `Burned: <b>${Math.round(burnVal)}</b>` + (net!==null ? ` <span class="mono">Net ${Math.round(net)}</span>` : ``);
+        cell.appendChild(burnLine);
+      }
+
       const wtLine=document.createElement("div");
       wtLine.className="line";
       const wt = (rec.weight===null || rec.weight===undefined) ? "-" : Number(rec.weight).toFixed(1);
@@ -1957,6 +1989,8 @@ Attempts remaining before lockout: ${remaining}`);
   const lbmBase = document.getElementById("lbmBase");
 
   const calories = document.getElementById("calories");
+  const burned = document.getElementById("burned");
+  const netCalories = document.getElementById("netCalories");
   const workout = document.getElementById("workout");
   const weight = document.getElementById("weight");
   const bf = document.getElementById("bf");
@@ -1988,34 +2022,51 @@ Attempts remaining before lockout: ${remaining}`);
     const w = (weight.value==="" ? null : Number(weight.value));
     const b = (bf.value==="" ? null : Number(bf.value));
 
+    let msgParts = [];
+
     if(!exp){
       expectedWeight.value = "";
       expectedBf.value = "";
-      vsExpectedNote.textContent = "No expected target for this day (not a weigh-in day).";
-      return null;
-    }
-
-    expectedWeight.value = fmtRange(exp);
-    const eb = expectedBfRange(ds);
-    expectedBf.value = eb ? fmtBfRange(eb) : "";
-
-    let msgParts = [];
-    if(w===null || Number.isNaN(w)){
-      msgParts.push("Enter weight to compare against expected range.");
+      msgParts.push("Not a weigh-in day.");
     } else {
-      if(w < exp.low) msgParts.push(`Below expected by ${(exp.low - w).toFixed(1)} lb (fine).`);
-      else if(w > exp.high) msgParts.push(`Above expected by ${(w - exp.high).toFixed(1)} lb (likely water unless persistent).`);
-      else msgParts.push("Within expected weight range.");
+      expectedWeight.value = fmtRange(exp);
+      const eb = expectedBfRange(ds);
+      expectedBf.value = eb ? fmtBfRange(eb) : "";
+
+      if(w===null || Number.isNaN(w)){
+        msgParts.push("Enter weight to compare against expected range.");
+      } else {
+        if(w < exp.low) msgParts.push(`Below expected by ${(exp.low - w).toFixed(1)} lb (fine).`);
+        else if(w > exp.high) msgParts.push(`Above expected by ${(w - exp.high).toFixed(1)} lb (likely water unless persistent).`);
+        else msgParts.push("Within expected weight range.");
+      }
+
+      const eb2 = expectedBfRange(ds);
+      if(eb2 && b!==null && !Number.isNaN(b)){
+        if(b < eb2.low) msgParts.push(`BF% is below expected range by ${(eb2.low - b).toFixed(1)}%.`);
+        else if(b > eb2.high) msgParts.push(`BF% is above expected range by ${(b - eb2.high).toFixed(1)}%.`);
+        else msgParts.push("BF% is within expected range.");
+      } else if(eb2) {
+        msgParts.push("BF% is optional. Enter it if you want a second anchor.");
+      }
     }
 
-    if(eb && b!==null && !Number.isNaN(b)){
-      if(b < eb.low) msgParts.push(`BF% is below expected range by ${(eb.low - b).toFixed(1)}%.`);
-      else if(b > eb.high) msgParts.push(`BF% is above expected range by ${(b - eb.high).toFixed(1)}%.`);
-      else msgParts.push("BF% is within expected range.");
-    } else if(eb) {
-      msgParts.push("BF% is optional. Enter it if you want a second anchor.");
-    }
 
+    // Calories summary (intake, burn, and net vs target)
+    const tgt = targetFor(ds);
+    const calRaw = (calories.value==="") ? null : Number(calories.value);
+    const calForCalc = (calRaw===null && isFastDay(ds)) ? 0 : calRaw;
+    const burnForCalc = (burned && burned.value!=="") ? Number(burned.value) : 0;
+    if(netCalories){
+      if(calForCalc===null || !isFinite(calForCalc) || !isFinite(burnForCalc)) netCalories.value = "";
+      else netCalories.value = String(Math.round(calForCalc - burnForCalc));
+    }
+    if(calForCalc!==null && isFinite(calForCalc) && isFinite(burnForCalc)){
+      const net = calForCalc - burnForCalc;
+      const netDelta = tgt - net;
+      const netSign = netDelta >= 0 ? "Deficit" : "Surplus";
+      msgParts.push(`Net vs target: ${netSign} ${Math.round(Math.abs(netDelta))} kcal (net ${Math.round(net)}).`);
+    }
     vsExpectedNote.textContent = msgParts.join(" ");
     return {status:"good"};
   }
@@ -2039,6 +2090,16 @@ Attempts remaining before lockout: ${remaining}`);
 
     const rec = state.days[ds] || {};
     calories.value = (rec.calories===null || rec.calories===undefined) ? "" : rec.calories;
+    burned.value = (rec.burned===null || rec.burned===undefined) ? "" : rec.burned;
+    // Net calories is derived
+    (function(){
+      const calV = (calories.value==="") ? (isFastDay(ds) ? 0 : null) : Number(calories.value);
+      const burnV = (burned.value==="") ? 0 : Number(burned.value);
+      if(netCalories){
+        if(calV===null || !isFinite(calV) || !isFinite(burnV)) netCalories.value = "";
+        else netCalories.value = String(Math.round(calV - burnV));
+      }
+    })();
     workout.value = rec.workout || "";
     weight.value = (rec.weight===null || rec.weight===undefined) ? "" : rec.weight;
     bf.value = (rec.bf===null || rec.bf===undefined) ? "" : rec.bf;
@@ -2072,6 +2133,7 @@ Attempts remaining before lockout: ${remaining}`);
     _timer = setTimeout(()=>{
       const rec = {
         calories: calories.value==="" ? null : Number(calories.value),
+        burned: burned.value==="" ? null : Number(burned.value),
         workout: workout.value || "",
         weight: weight.value==="" ? null : Number(weight.value),
         bf: bf.value==="" ? null : Number(bf.value),
@@ -2100,6 +2162,7 @@ Attempts remaining before lockout: ${remaining}`);
     if(!activeDate) return;
     const rec = {
       calories: calories.value==="" ? null : Number(calories.value),
+      burned: burned.value==="" ? null : Number(burned.value),
       workout: workout.value || "",
       weight: weight.value==="" ? null : Number(weight.value),
       bf: bf.value==="" ? null : Number(bf.value),
@@ -2120,7 +2183,7 @@ Attempts remaining before lockout: ${remaining}`);
     setSaveIndicator("Saved", "good");
   }
 
-[calories, workout, weight, bf, protein, carbs, fat, fiber, notes, sleepHours, sleepQuality, bedtime, waketime].forEach(el=>{
+[calories, burned, workout, weight, bf, protein, carbs, fat, fiber, notes, sleepHours, sleepQuality, bedtime, waketime].forEach(el=>{
     el.addEventListener("input", ()=>{ if(activeDate) updateVsExpected(activeDate); autosaveDebounced(); });
     el.addEventListener("change", ()=>{ if(activeDate) updateVsExpected(activeDate); autosaveDebounced(); });
   });
@@ -2323,6 +2386,9 @@ Attempts remaining before lockout: ${remaining}`);
     let calSum=0, calCount=0, on=0, logged=0;
     let deficitSum=0, deficitCount=0;
 
+    let burnSum=0;
+    let netDefSum=0, netDefCount=0;
+
     let sleepSum=0, sleepCount=0, sleepOn=0;
     const sleepTarget = Number(state.settings.sleepTarget || 7.0);
 
@@ -2351,6 +2417,13 @@ Attempts remaining before lockout: ${remaining}`);
 
         deficitSum += (tgt - cal);
         deficitCount++;
+        const burn = (rec.burned!==null && rec.burned!==undefined && rec.burned!=="") ? Number(rec.burned) : 0;
+        const burnSafe = (isFinite(burn) ? burn : 0);
+        burnSum += burnSafe;
+        const net = cal - burnSafe;
+        netDefSum += (tgt - net);
+        netDefCount++;
+
       }
 
       if(rec.sleepHours!==null && rec.sleepHours!==undefined && rec.sleepHours!==""){
@@ -2382,6 +2455,10 @@ Attempts remaining before lockout: ${remaining}`);
     const avgDeficit = deficitCount ? (deficitSum/deficitCount) : null; // kcal/day (positive is deficit)
     const estLossPerWeek = (avgDeficit===null) ? null : ((avgDeficit*7)/3500);
 
+    const avgBurned = netDefCount ? (burnSum/netDefCount) : null;
+    const avgNetDeficit = netDefCount ? (netDefSum/netDefCount) : null;
+    const estNetLossPerWeek = (avgNetDeficit===null) ? null : ((avgNetDeficit*7)/3500);
+
     return {
       avgCal: calCount ? (calSum/calCount) : null,
       adh: logged ? (on/logged) : null,
@@ -2389,6 +2466,10 @@ Attempts remaining before lockout: ${remaining}`);
 
       avgDeficit: avgDeficit,
       estLossPerWeek: estLossPerWeek,
+
+      avgBurned: avgBurned,
+      avgNetDeficit: avgNetDeficit,
+      estNetLossPerWeek: estNetLossPerWeek,
 
       avgSleep: sleepCount ? (sleepSum/sleepCount) : null,
       sleepLogged: sleepCount,
@@ -2492,13 +2573,30 @@ Attempts remaining before lockout: ${remaining}`);
       }
     }
 
+
+    const elBurn = document.getElementById("kpiAvgBurned");
+    if(elBurn){
+      elBurn.textContent = (d7.avgBurned===null || d7.avgBurned===undefined) ? "-" : `${Math.round(d7.avgBurned)} kcal/day`;
+    }
+
+    const elNet = document.getElementById("kpiAvgNetDeficit");
+    if(elNet){
+      if(d7.avgNetDeficit===null){
+        elNet.textContent = "-";
+      }else{
+        const v = Math.round(Math.abs(d7.avgNetDeficit));
+        elNet.textContent = (d7.avgNetDeficit >= 0) ? `Deficit ${v} kcal/day` : `Surplus ${v} kcal/day`;
+      }
+    }
+
     const elPace = document.getElementById("kpiEstLoss");
     if(elPace){
-      if(d7.estLossPerWeek===null){
+      const paceVal = (d7.estNetLossPerWeek!==null && d7.estNetLossPerWeek!==undefined) ? d7.estNetLossPerWeek : d7.estLossPerWeek;
+      if(paceVal===null){
         elPace.textContent = "-";
       }else{
-        const v = Math.abs(d7.estLossPerWeek);
-        elPace.textContent = (d7.estLossPerWeek >= 0) ? `${v.toFixed(2)} lb/week loss` : `${v.toFixed(2)} lb/week gain`;
+        const v = Math.abs(paceVal);
+        elPace.textContent = (paceVal >= 0) ? `${v.toFixed(2)} lb/week loss` : `${v.toFixed(2)} lb/week gain`;
       }
     }
 
@@ -2773,11 +2871,17 @@ Attempts remaining before lockout: ${remaining}`);
     const cDays = lastNDays(today, 14);
     const cSeries = cDays.map(ds=>{
       const rec = state.days[ds];
-      if(!rec || rec.calories===null || rec.calories===undefined) return null;
+      if(!rec) return null;
+      // Treat planned fast day with missing calories as 0
+      const hasCal = rec.calories!==null && rec.calories!==undefined && rec.calories!=="";
+      const cal = hasCal ? Number(rec.calories) : (isFastDay(ds) ? 0 : null);
+      if(cal===null || !isFinite(cal)) return null;
+      const burn = (rec.burned!==null && rec.burned!==undefined && rec.burned!=="") ? Number(rec.burned) : 0;
+      const net = cal - (isFinite(burn) ? burn : 0);
       const tgt = targetFor(ds);
-      return Number(rec.calories) - tgt;
+      return net - tgt;
     });
-    elC.innerHTML = barSpark(cSeries, {unit:"kcal", yLabel:"kcal vs tgt", xLabels:[fmtMD(cDays[0]), fmtMD(cDays[Math.floor(cDays.length/2)]), fmtMD(cDays[cDays.length-1])]});
+    elC.innerHTML = barSpark(cSeries, {unit:"kcal", yLabel:"net kcal vs tgt", xLabels:[fmtMD(cDays[0]), fmtMD(cDays[Math.floor(cDays.length/2)]), fmtMD(cDays[cDays.length-1])]});
 
     const sSeries = cDays.map(ds=>{
       const rec = state.days[ds];
@@ -2945,7 +3049,7 @@ function renderCoach(){
 
     // A bit of trend awareness
     const tr = computeWeightTrend(21); // lb/week (negative means losing)
-    const avgDef = d7.avgDeficit; // kcal/day, positive means deficit
+    const avgDef = (d7.avgNetDeficit!==null && d7.avgNetDeficit!==undefined) ? d7.avgNetDeficit : d7.avgDeficit; // kcal/day, positive means deficit (net if burn logged)
 
     if(dietPct===null){
       primary = "Log calories to unlock accurate guidance";
@@ -2973,7 +3077,14 @@ function renderCoach(){
       }else{
         // Diet and sleep decent: look at deficit / trend.
         if(avgDef!==null && avgDef < 250){
-          primary = "Create a clearer deficit (or add cardio) for the next 7 days";
+          const burnAvg = (d7.avgBurned!==null && d7.avgBurned!==undefined) ? d7.avgBurned : null;
+          if(burnAvg!==null && burnAvg >= 200){
+            primary = `Tighten intake slightly (you are already burning ~${Math.round(burnAvg)} kcal/day)`;
+          }else if(burnAvg!==null){
+            primary = `Create a clearer deficit: add activity (~${Math.round(burnAvg)} kcal/day now) or trim intake`;
+          }else{
+            primary = "Create a clearer deficit (or add cardio) for the next 7 days";
+          }
           cls = "warn";
           pillText = "Tighten";
 
