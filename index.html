@@ -116,6 +116,20 @@
   @media(max-width:1100px){ .kpis{grid-template-columns: repeat(2,1fr);} }
   @media(max-width:620px){ .kpis{grid-template-columns: 1fr;} }
 
+
+  /* Snapshot grouping */
+  .snapSectionHead{
+    padding:14px 16px 0;
+    font-size:12px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--muted);
+    font-weight:950;
+  }
+  .kpis.snapKpis{padding-top:10px;}
+  .snapDivider{height:1px; background:var(--line); margin:0 16px;}
+
+
   
 .trendGrid{display:grid; grid-template-columns: repeat(3, 1fr); gap:12px; padding:16px;}
 @media(max-width:1100px){ .trendGrid{grid-template-columns: repeat(2,1fr);} }
@@ -852,7 +866,11 @@
         <div class="pill dot" id="onTrackPill"><b>On track:</b> -</div>
       </div>
     </div>
-    <div class="kpis">
+    
+    <div class="snapSection">
+      <div class="snapSectionHead">Body</div>
+      <div class="kpis snapKpis">
+
       <div class="kpi">
         <div class="k">Start weight (official)</div>
         <div class="v" id="kpiStartW">-</div>
@@ -873,42 +891,19 @@
         <div class="v" id="kpiCurrentBf">-</div>
         <div class="s" id="kpiDeltaBf">Change since start: -</div>
       </div>
+      </div>
+    </div>
+
+    <div class="snapDivider"></div>
+
+    <div class="snapSection">
+      <div class="snapSectionHead">Nutrition</div>
+      <div class="kpis snapKpis">
+
       <div class="kpi">
         <div class="k">7-day avg calories</div>
         <div class="v" id="kpiAvgCal">-</div>
         <div class="s">From logged calories</div>
-      </div>
-
-      <div class="kpi">
-        <div class="k">7-day avg deficit</div>
-        <div class="v" id="kpiAvgDeficit">-</div>
-        <div class="s">Target minus intake (planned fasts count as 0)</div>
-      </div>
-
-      <div class="kpi">
-        <div class="k">7-day avg calories burned</div>
-        <div class="v" id="kpiAvgBurned">-</div>
-        <div class="s">From logged burn (active calories)</div>
-      </div>
-      <div class="kpi">
-        <div class="k">7-day avg net deficit</div>
-        <div class="v" id="kpiAvgNetDeficit">-</div>
-        <div class="s">Target minus (intake minus burn)</div>
-      </div>
-      <div class="kpi">
-        <div class="k">Estimated loss pace</div>
-        <div class="v" id="kpiEstLoss">-</div>
-        <div class="s">From avg deficit (3500 kcal ≈ 1 lb)</div>
-      </div>
-      <div class="kpi">
-        <div class="k">7-day adherence</div>
-        <div class="v" id="kpiAdh">-</div>
-        <div class="s">Within ± window</div>
-      </div>
-      <div class="kpi">
-        <div class="k">7-day avg sleep</div>
-        <div class="v" id="kpiAvgSleep">-</div>
-        <div class="s">From logged sleep</div>
       </div>
       <div class="kpi">
         <div class="k">7-day avg protein</div>
@@ -925,7 +920,36 @@
         <div class="v" id="kpiAvgFat">-</div>
         <div class="s">From logged macros</div>
       </div>
+      </div>
+    </div>
 
+    <div class="snapDivider"></div>
+
+    <div class="snapSection">
+      <div class="snapSectionHead">Exercise</div>
+      <div class="kpis snapKpis">
+
+      <div class="kpi">
+        <div class="k">7-day avg calories burned</div>
+        <div class="v" id="kpiAvgBurned">-</div>
+        <div class="s">From logged burn (active calories)</div>
+      </div>
+      <div class="kpi">
+        <div class="k">7-day avg net deficit</div>
+        <div class="v" id="kpiAvgNetDeficit">-</div>
+        <div class="s">Target minus (intake minus burn)</div>
+      </div>
+      <div class="kpi">
+        <div class="k">Estimated loss pace</div>
+        <div class="v" id="kpiEstLoss">-</div>
+        <div class="s">From net deficit (3500 kcal ≈ 1 lb)</div>
+      </div>
+      <div class="kpi">
+        <div class="k">7-day avg sleep</div>
+        <div class="v" id="kpiAvgSleep">-</div>
+        <div class="s">From logged sleep</div>
+      </div>
+      </div>
     </div>
   </section>
 
@@ -2936,7 +2960,8 @@ if(rec.muscleMass!==null && rec.muscleMass!==undefined){
       }
     }
 
-    document.getElementById("kpiAdh").textContent = (d7.adh===null) ? "-" : `${Math.round(d7.adh*100)}%`;
+    const kAdh = document.getElementById("kpiAdh");
+    if(kAdh) kAdh.textContent = (d7.adh===null) ? "-" : `${Math.round(d7.adh*100)}%`;
     const kSleep = document.getElementById("kpiAvgSleep");
     if(kSleep) kSleep.textContent = (d7.avgSleep===null) ? "-" : `${d7.avgSleep.toFixed(1)} h`;
     const kP = document.getElementById("kpiAvgProtein");
