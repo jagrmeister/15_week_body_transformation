@@ -116,7 +116,12 @@
   @media(max-width:1100px){ .kpis{grid-template-columns: repeat(2,1fr);} }
   @media(max-width:620px){ .kpis{grid-template-columns: 1fr;} }
 
-  .kpi{
+  
+.trendGrid{display:grid; grid-template-columns: repeat(3, 1fr); gap:12px; padding:16px;}
+@media(max-width:1100px){ .trendGrid{grid-template-columns: repeat(2,1fr);} }
+@media(max-width:620px){ .trendGrid{grid-template-columns: 1fr;} }
+
+.kpi{
     border:1px solid var(--line);
     border-radius:16px; padding:14px;
     background:linear-gradient(180deg, rgba(148,163,184,.08), transparent 75%);
@@ -376,17 +381,18 @@
   }
   .brandRow{ display:flex; gap:14px; align-items:center; }
   .logoMark{
-    width:56px; height:56px;
-    border-radius:14px;
-    background: rgba(255,255,255,.06);
-    border:1px solid rgba(255,255,255,.10);
+    width:74px; height:74px;
+    border-radius:20px;
+    background: rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.16);
     display:flex;
     align-items:center;
     justify-content:center;
-    box-shadow: 0 10px 30px rgba(0,0,0,.18);
+    box-shadow: 0 14px 38px rgba(0,0,0,.22);
   }
-  .heroTitle{ font-size:22px; font-weight:800; letter-spacing:.2px; }
-  .heroTag{ font-size:13px; opacity:.85; margin-top:2px; }
+  .logoMark svg{ width:40px; height:40px; }
+  .heroTitle{ font-size:34px; font-weight:950; letter-spacing:.25px; }
+  .heroTag{ font-size:14px; opacity:.88; margin-top:4px; font-weight:750; }
   .heroSub{ margin-top:10px; font-size:13px; opacity:.85; max-width:760px; line-height:1.45; }
   .heroRight{
     min-width:280px;
@@ -415,6 +421,9 @@
   @media (max-width: 800px){
     .heroRight{ align-items:stretch; }
     .heroStats{ grid-template-columns: repeat(2, minmax(120px, 1fr)); }
+    .heroTitle{ font-size:28px; }
+    .logoMark{ width:62px; height:62px; border-radius:18px; }
+    .logoMark svg{ width:34px; height:34px; }
   }
 
 
@@ -526,6 +535,86 @@
   .chip.warn{ border-color: rgba(245,158,11,.35); background: rgba(245,158,11,.10); }
   .chip.bad{ border-color: rgba(239,68,68,.35); background: rgba(239,68,68,.10); }
 
+
+  /* Allow tooltips to overflow the card edges cleanly */
+  .card.coach-card{ overflow: visible; }
+
+  /* Hover tooltips for coach chips / recap tokens */
+  .chip[data-tooltip], .recapTok[data-tooltip]{ position:relative; cursor:help; }
+
+  .chip[data-tooltip]::after, .recapTok[data-tooltip]::after{
+    content: attr(data-tooltip);
+    position:absolute;
+    left:50%;
+    top:calc(100% + 10px);
+    transform: translateX(-50%) translateY(-4px);
+    min-width: 220px;
+    max-width: 360px;
+    width: max-content;
+    padding:10px 12px;
+    border-radius:12px;
+    background: rgba(2,6,23,.96);
+    border:1px solid rgba(148,163,184,.24);
+    color: rgba(255,255,255,.95);
+    font-size:12px;
+    line-height:1.35;
+    box-shadow: 0 18px 40px rgba(0,0,0,.38);
+    z-index:9999;
+    pointer-events:none;
+    opacity:0;
+    visibility:hidden;
+    white-space: normal;
+  }
+  .chip[data-tooltip]::before, .recapTok[data-tooltip]::before{
+    content:"";
+    position:absolute;
+    left:50%;
+    top:calc(100% + 4px);
+    transform:translateX(-50%);
+    border:7px solid transparent;
+    border-bottom-color: rgba(2,6,23,.96);
+    z-index:9999;
+    pointer-events:none;
+    opacity:0;
+    visibility:hidden;
+  }
+  .chip[data-tooltip]:hover::after, .recapTok[data-tooltip]:hover::after{
+    opacity:1;
+    visibility:visible;
+    transform: translateX(-50%) translateY(0);
+  }
+  .chip[data-tooltip]:hover::before, .recapTok[data-tooltip]:hover::before{
+    opacity:1;
+    visibility:visible;
+  }
+
+  /* Quote hero card */
+  .quoteHeroCard{ overflow:hidden; }
+  .quoteHero{
+    padding:18px 18px;
+    background:
+      radial-gradient(1200px 520px at 20% 0%, rgba(59,130,246,.22), transparent 58%),
+      radial-gradient(900px 520px at 92% 100%, rgba(34,197,94,.14), transparent 60%),
+      rgba(255,255,255,.03);
+  }
+  .quoteHeroLabel{
+    font-size:12px;
+    color: var(--muted);
+    letter-spacing:.08em;
+    text-transform:uppercase;
+  }
+  .quoteHeroText{
+    margin-top:10px;
+    font-size: clamp(22px, 2.1vw, 38px);
+    font-weight:950;
+    line-height:1.12;
+  }
+  .quoteHeroBy{
+    margin-top:12px;
+    font-size:13px;
+    color: var(--muted);
+  }
+
   .coachSubhead{
     margin-top:12px;
     font-size:12px;
@@ -618,11 +707,7 @@
           </div>
 
           <div class="heroSub">
-            Fast highlighted: <span class="mono">2026-01-02</span> to <span class="mono">2026-01-03</span> only.
-            <b>Jan 4 is a standard day</b> (not fasting).
-            High-carb schedule: <b>Week 3+</b> Sundays, and <b>Week 10+</b> Sundays + Wednesdays.
-            Dynamic calories adjust automatically as your weight drops (BMR adjustment).
-            Reverse diet is built in for <b>Apr 20 through May 14</b> to ramp toward <b>2700</b>.
+            Targets, schedule rules, and special phases are listed in the footer under <b>Program notes</b>.
           </div>
         </div>
 
@@ -684,6 +769,15 @@
   </section>
 
 
+  <section class="card quoteHeroCard" id="quoteCard" style="margin-bottom:18px;">
+    <div class="quoteHero">
+      <div class="quoteHeroLabel">Quote of the day</div>
+      <div class="quoteHeroText" id="quoteText">-</div>
+      <div class="quoteHeroBy" id="quoteBy">-</div>
+    </div>
+  </section>
+
+
   <section class="card coach-card" style="margin-bottom:18px;">
   <div class="head">
     <div class="t">Daily Coach</div>
@@ -718,12 +812,6 @@
         <ul class="coachSteps" id="coachSteps"></ul>
 
         <div class="coachWhy" id="coachWhyText"></div>
-      </div>
-
-      <div class="coachPanel quotePanel">
-        <div class="coachSubhead">Quote of the day</div>
-        <div class="quoteText" id="quoteText">-</div>
-        <div class="quoteBy" id="quoteBy"></div>
       </div>
     </div>
 
@@ -842,35 +930,30 @@
   </section>
 
   
-  <section class="card" style="margin-bottom:18px;">
-    <div class="head">
-      <div class="t">Trends & Insights</div>
-      <div class="pill dot" id="insightsPill"><b>Insights:</b> -</div>
+  
+<section class="card" style="margin-bottom:18px;">
+  <div class="head">
+    <div class="t">Trends & Insights</div>
+    <div class="pill dot" id="insightsPill"><b>Insights:</b> -</div>
+  </div>
+  <div class="trendGrid">
+    <div class="kpi">
+      <div class="k">Weight trend (30 days)</div>
+      <div class="spark" id="sparkWeight" style="min-height:140px;">-</div>
+      <div class="s" id="sparkWeightNote">-</div>
     </div>
-    <div class="kpis">
-      <div class="kpi">
-        <div class="k">Weight trend (21 days)</div>
-        <div class="spark" id="sparkWeight">-</div>
-        <div class="s" id="sparkWeightNote">-</div>
-      </div>
-      <div class="kpi">
-        <div class="k">Net calories vs target (14 days)</div>
-        <div class="spark" id="sparkCalories">-</div>
-        <div class="s" id="sparkCaloriesNote">-</div>
-      </div>
-      <div class="kpi">
-        <div class="k">Sleep (14 days)</div>
-        <div class="spark" id="sparkSleep">-</div>
-        <div class="s" id="sparkSleepNote">-</div>
-      </div>
-      <div class="kpi">
-        <div class="k">Weekday consistency (8 weeks)</div>
-        <div class="miniTable" id="weekdayTable">-</div>
-        <div class="s">Best and worst weekdays update as you log more data.</div>
-      </div>
+    <div class="kpi">
+      <div class="k">Body composition (latest)</div>
+      <div class="spark" id="sparkBodyComp" style="min-height:140px;">-</div>
+      <div class="s" id="sparkBodyCompNote">-</div>
     </div>
-  </section>
-
+    <div class="kpi">
+      <div class="k">Sleep (7 days)</div>
+      <div class="spark" id="sparkSleepWeek" style="min-height:140px;">-</div>
+      <div class="s" id="sparkSleepWeekNote">-</div>
+    </div>
+  </div>
+</section>
 <section class="card" style="margin-bottom:18px;">
     <div class="head">
       <div class="t">Advanced Settings</div>
@@ -1134,7 +1217,12 @@
             <label>Body fat % (Fitdays)</label>
             <input id="bf" type="number" step="0.1" placeholder="Mon/Thu optional"/>
           </div>
-        </div>
+        
+<div>
+  <label>Muscle mass (lbs) (Fitdays)</label>
+  <input id="muscleMass" type="number" step="0.1" placeholder="Mon/Thu optional"/>
+</div>
+
 
         
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;">
@@ -1206,6 +1294,23 @@
     </div>
   </div>
 </div>
+
+
+  <section class="card" id="programNotes" style="margin:18px 0 18px;">
+    <div class="head">
+      <div class="t">Program notes</div>
+      <div class="pill dot" style="opacity:.9;"><b>Reference:</b> rules & phases</div>
+    </div>
+    <div style="padding:14px 16px 16px;">
+      <div class="tiny" style="line-height:1.65;">
+        <div><b>Fast highlighted:</b> <span class="mono">2026-01-02</span> to <span class="mono">2026-01-03</span> only. <b>Jan 4</b> is a standard day (not fasting).</div>
+        <div><b>High-carb schedule:</b> <b>Week 3+</b> Sundays, and <b>Week 10+</b> Sundays + Wednesdays.</div>
+        <div><b>Dynamic calories:</b> targets adjust automatically as your weight drops (BMR adjustment).</div>
+        <div><b>Reverse diet:</b> <b>Apr 20 through May 14</b>, ramping toward <b>2700</b>.</div>
+      </div>
+    </div>
+  </section>
+
 
 <!-- Correct Supabase JS library -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -2076,7 +2181,7 @@ Attempts remaining before lockout: ${remaining}`);
       }
       // Weight/BF only on weigh-in days (Mon/Thu), or if legacy data exists
       // NOTE: `day` is the Date object for this calendar cell.
-      if(isWeighDay(day) || (rec.weight!==null && rec.weight!==undefined) || (rec.bf!==null && rec.bf!==undefined)){
+      if(isWeighDay(day) || (rec.weight!==null && rec.weight!==undefined) || (rec.bf!==null && rec.bf!==undefined) || (rec.muscleMass!==null && rec.muscleMass!==undefined)){
         const wtLine=document.createElement("div");
         wtLine.className="line";
         const wt = (rec.weight===null || rec.weight===undefined) ? "-" : Number(rec.weight).toFixed(1);
@@ -2088,6 +2193,15 @@ Attempts remaining before lockout: ${remaining}`);
         const bfVal = (rec.bf===null || rec.bf===undefined) ? "-" : Number(rec.bf).toFixed(1) + "%";
         bfLine.innerHTML = `BF%: <b>${bfVal}</b>`;
         cell.appendChild(bfLine);
+
+
+if(rec.muscleMass!==null && rec.muscleMass!==undefined){
+  const mmLine=document.createElement("div");
+  mmLine.className="line";
+  const mmVal = Number(rec.muscleMass).toFixed(1) + " lb";
+  mmLine.innerHTML = `Muscle: <b>${mmVal}</b>`;
+  cell.appendChild(mmLine);
+}
       }
 
       // Sleep (optional)
@@ -2186,6 +2300,7 @@ Attempts remaining before lockout: ${remaining}`);
   const workout = document.getElementById("workout");
   const weight = document.getElementById("weight");
   const bf = document.getElementById("bf");
+  const muscleMass = document.getElementById("muscleMass");
   const weighFields = document.getElementById("weighFields");
   const protein = document.getElementById("protein");
   const carbs = document.getElementById("carbs");
@@ -2275,6 +2390,7 @@ Attempts remaining before lockout: ${remaining}`);
     }
     if(weight) weight.disabled = !weighDay;
     if(bf) bf.disabled = !weighDay;
+    if(muscleMass) muscleMass.disabled = !weighDay;
 
     const tgt = targetFor(ds);
     dayTarget.value = tgt;
@@ -2302,6 +2418,7 @@ Attempts remaining before lockout: ${remaining}`);
     workout.value = rec.workout || "";
     weight.value = (rec.weight===null || rec.weight===undefined) ? "" : rec.weight;
     bf.value = (rec.bf===null || rec.bf===undefined) ? "" : rec.bf;
+    if(muscleMass) muscleMass.value = (rec.muscleMass===null || rec.muscleMass===undefined) ? "" : rec.muscleMass;
 
     protein.value = (rec.protein===null || rec.protein===undefined) ? "" : rec.protein;
     carbs.value   = (rec.carbs===null || rec.carbs===undefined) ? "" : rec.carbs;
@@ -2337,6 +2454,7 @@ Attempts remaining before lockout: ${remaining}`);
         workout: workout.value || "",
         weight: (!weighDay) ? null : (weight.value==="" ? null : Number(weight.value)),
         bf: (!weighDay) ? null : (bf.value==="" ? null : Number(bf.value)),
+        muscleMass: (!weighDay) ? null : (muscleMass && muscleMass.value==="" ? null : (muscleMass ? Number(muscleMass.value) : null)),
 
         protein: protein.value==="" ? null : Number(protein.value),
         carbs: carbs.value==="" ? null : Number(carbs.value),
@@ -2367,6 +2485,7 @@ Attempts remaining before lockout: ${remaining}`);
       workout: workout.value || "",
       weight: (!weighDay) ? null : (weight.value==="" ? null : Number(weight.value)),
       bf: (!weighDay) ? null : (bf.value==="" ? null : Number(bf.value)),
+      muscleMass: (!weighDay) ? null : (muscleMass && muscleMass.value==="" ? null : (muscleMass ? Number(muscleMass.value) : null)),
 
       protein: protein.value==="" ? null : Number(protein.value),
       carbs: carbs.value==="" ? null : Number(carbs.value),
@@ -2384,7 +2503,7 @@ Attempts remaining before lockout: ${remaining}`);
     setSaveIndicator("Saved", "good");
   }
 
-[calories, burned, workout, weight, bf, protein, carbs, fat, fiber, notes, sleepHours, sleepQuality, bedtime, waketime].forEach(el=>{
+[calories, burned, workout, weight, bf, muscleMass, protein, carbs, fat, fiber, notes, sleepHours, sleepQuality, bedtime, waketime].forEach(el=>{
     el.addEventListener("input", ()=>{ if(activeDate) updateVsExpected(activeDate); autosaveDebounced(); });
     el.addEventListener("change", ()=>{ if(activeDate) updateVsExpected(activeDate); autosaveDebounced(); });
   });
@@ -2508,7 +2627,7 @@ Attempts remaining before lockout: ${remaining}`);
         const items = parseCSV(String(r.result||""));
         if(!items.length){ alert("No rows found. CSV should be: date,calories (YYYY-MM-DD)."); return; }
         for(const it of items){
-          if(!state.days[it.date]) state.days[it.date] = {calories:null, workout:"", weight:null, bf:null, notes:""};
+          if(!state.days[it.date]) state.days[it.date] = {calories:null, workout:"", weight:null, bf:null, muscleMass:null, notes:""};
           state.days[it.date].calories = it.calories;
         }
         saveState(); renderAll();
@@ -3067,132 +3186,256 @@ Attempts remaining before lockout: ${remaining}`);
   }
 
 
+    function donutSpark(segments, opts={}){
+    const w = opts.w ?? 320;
+    const h = opts.h ?? 140;
+
+    const cx = opts.cx ?? 72;
+    const cy = opts.cy ?? 70;
+    const r  = opts.r ?? 42;
+    const sw = opts.sw ?? 14;
+
+    const title = opts.title ?? "";
+    const center = opts.center ?? "";
+
+    const clean = (segments || []).filter(s => s && isFinite(s.pct) && s.pct > 0.001);
+    const total = clean.reduce((a,s)=>a+s.pct, 0);
+
+    if(!clean.length || total <= 0){
+      return `<div class="tiny muted" style="padding:10px;">Not enough data yet.</div>`;
+    }
+
+    // Normalize to 100 for clean arcs
+    const norm = clean.map(s => ({...s, pct: (s.pct/total)*100}));
+
+    const C = 2 * Math.PI * r;
+    let acc = 0;
+
+    const rings = norm.map((s)=>{
+      const dash = C * (s.pct/100);
+      const el = `
+        <circle
+          cx="${cx}" cy="${cy}" r="${r}"
+          fill="none"
+          stroke="${s.color}"
+          stroke-width="${sw}"
+          stroke-linecap="round"
+          stroke-dasharray="${dash.toFixed(2)} ${(C-dash).toFixed(2)}"
+          stroke-dashoffset="${(-acc).toFixed(2)}"
+        ></circle>
+      `;
+      acc += dash;
+      return el;
+    }).join("");
+
+    // Legend
+    const legendX = 130;
+    let legendY = 38;
+    const legend = norm.map((s)=>{
+      const row = `
+        <rect x="${legendX}" y="${legendY-10}" width="10" height="10" rx="2" fill="${s.color}" opacity="0.9"></rect>
+        <text class="legendText" x="${legendX+16}" y="${legendY-2}">${s.label}: ${s.pct.toFixed(1)}%</text>
+      `;
+      legendY += 16;
+      return row;
+    }).join("");
+
+    return `
+      <svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true">
+        ${title ? `<text class="titleText" x="10" y="16">${title}</text>` : ``}
+
+        <!-- Donut -->
+        <g transform="rotate(-90 ${cx} ${cy})">
+          <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="rgba(148,163,184,.18)" stroke-width="${sw}"></circle>
+          ${rings}
+        </g>
+
+        ${center ? `<text class="titleText" x="${cx}" y="${cy+4}" text-anchor="middle">${center}</text>` : ``}
+
+        <!-- Legend -->
+        ${legend}
+      </svg>
+    `;
+  }
+
   function renderTrends(){
     const elW = safeEl("sparkWeight");
-    const elC = safeEl("sparkCalories");
-    const elS = safeEl("sparkSleep");
-    const elWT = safeEl("weekdayTable");
-    if(!elW || !elC || !elS || !elWT) return;
+    const elBC = safeEl("sparkBodyComp");
+    const elSW = safeEl("sparkSleepWeek");
+    if(!elW || !elBC || !elSW) return;
 
     const today = ymd(new Date());
-    const win = Number(state.settings.adhWindow || 150);
     const sleepTarget = Number(state.settings.sleepTarget || 7.0);
 
-    const wDays = lastNDays(today, 21);
+    // Weight trend (30 days)
+    const wDays = lastNDays(today, 30);
     const wSeries = wDays.map(ds=>{
       const rec = state.days[ds];
       return rec && rec.weight!==null && rec.weight!==undefined ? Number(rec.weight) : null;
     });
-    elW.innerHTML = sparkline(wSeries, {unit:"lb", yLabel:"lb", xLabels:[fmtMD(wDays[0]), fmtMD(wDays[Math.floor(wDays.length/2)]), fmtMD(wDays[wDays.length-1])], autoColor:true});
-
-    const cDays = lastNDays(today, 14);
-    const cSeries = cDays.map(ds=>{
-      const rec = state.days[ds];
-      if(!rec) return null;
-      // Treat planned fast day with missing calories as 0
-      const hasCal = rec.calories!==null && rec.calories!==undefined && rec.calories!=="";
-      const cal = hasCal ? Number(rec.calories) : (isFastDay(ds) ? 0 : null);
-      if(cal===null || !isFinite(cal)) return null;
-      const burn = (rec.burned!==null && rec.burned!==undefined && rec.burned!=="") ? Number(rec.burned) : 0;
-      const net = cal - (isFinite(burn) ? burn : 0);
-      const tgt = targetFor(ds);
-      return net - tgt;
+    elW.innerHTML = sparkline(wSeries, {
+      unit:"lb",
+      yLabel:"lb",
+      xLabels:[fmtMD(wDays[0]), fmtMD(wDays[Math.floor(wDays.length/2)]), fmtMD(wDays[wDays.length-1])],
+      autoColor:true,
+      h:140
     });
-    elC.innerHTML = barSpark(cSeries, {unit:"kcal", yLabel:"net kcal vs tgt", xLabels:[fmtMD(cDays[0]), fmtMD(cDays[Math.floor(cDays.length/2)]), fmtMD(cDays[cDays.length-1])]});
 
-    const sSeries = cDays.map(ds=>{
+    const wNote = safeEl("sparkWeightNote");
+    if(wNote){
+      const vals = wSeries.filter(v=>v!==null && isFinite(v));
+      const first = vals.length ? vals[0] : null;
+      const last  = vals.length ? vals[vals.length-1] : null;
+      const mn = vals.length ? Math.min(...vals) : null;
+      const mx = vals.length ? Math.max(...vals) : null;
+
+      if(last===null){
+        wNote.textContent = "Log a weigh-in (Mon/Thu) to start this chart.";
+      }else{
+        const delta = (first!==null && isFinite(first)) ? (last-first) : null;
+        const sign = (delta!==null && delta>=0) ? "+" : "";
+        wNote.textContent = `Latest: ${last.toFixed(1)} lb` +
+          (delta!==null ? ` • Change: ${sign}${delta.toFixed(1)} lb` : ``) +
+          (mn!==null && mx!==null ? ` • Range: ${mn.toFixed(1)}-${mx.toFixed(1)}` : ``);
+      }
+    }
+
+    // Sleep (7 days)
+    const sDays = lastNDays(today, 7);
+    const sSeries = sDays.map(ds=>{
       const rec = state.days[ds];
       return rec && rec.sleepHours!==null && rec.sleepHours!==undefined ? Number(rec.sleepHours) : null;
     });
-    const sValsForColor = sSeries.filter(v=>v!==null);
-    const sAvgForColor = sValsForColor.length ? (sValsForColor.reduce((a,b)=>a+b,0)/sValsForColor.length) : null;
-    const sColor = (sAvgForColor===null) ? "var(--accent)" : (sAvgForColor>=sleepTarget ? "var(--good)" : (sAvgForColor>=sleepTarget-0.5 ? "var(--warn)" : "var(--bad)"));
-    elS.innerHTML = sparkline(sSeries, {unit:"h", yLabel:"hrs", xLabels:[fmtMD(cDays[0]), fmtMD(cDays[Math.floor(cDays.length/2)]), fmtMD(cDays[cDays.length-1])], goal:sleepTarget, goalLabel:`Goal ${sleepTarget.toFixed(1)}h`, color:sColor});
+    const sVals = sSeries.filter(v=>v!==null && isFinite(v));
+    const sAvg = sVals.length ? (sVals.reduce((a,b)=>a+b,0)/sVals.length) : null;
+    const sColor = (sAvg===null) ? "var(--accent)" : (sAvg>=sleepTarget ? "var(--good)" : (sAvg>=sleepTarget-0.5 ? "var(--warn)" : "var(--bad)"));
+    elSW.innerHTML = sparkline(sSeries, {
+      unit:"h",
+      yLabel:"hrs",
+      xLabels:[fmtMD(sDays[0]), fmtMD(sDays[Math.floor(sDays.length/2)]), fmtMD(sDays[sDays.length-1])],
+      goal:sleepTarget,
+      goalLabel:`Goal ${sleepTarget.toFixed(1)}h`,
+      color:sColor,
+      h:140
+    });
 
-    // Notes
-    const wNote = safeEl("sparkWeightNote");
-    const cNote = safeEl("sparkCaloriesNote");
-    const sNote = safeEl("sparkSleepNote");
-    if(wNote){
-      const last = [...wSeries].reverse().find(v=>v!==null);
-      if(last===undefined){ wNote.textContent = "-"; }
-      else {
-        const vv = wSeries.filter(v=>v!==null);
-        const mn = vv.length ? Math.min(...vv) : null;
-        const mx = vv.length ? Math.max(...vv) : null;
-        wNote.textContent = `Latest: ${last.toFixed(1)} lb` + (mn!==null && mx!==null ? ` • Range: ${mn.toFixed(1)}-${mx.toFixed(1)}` : "");
-      }
-    }
-    if(cNote){
-      const diffs = cSeries.filter(v=>v!==null);
-      if(!diffs.length){ cNote.textContent = "-"; }
-      else {
-        const avg = diffs.reduce((a,b)=>a+b,0)/diffs.length;
-        const absAvg = diffs.reduce((a,b)=>a+Math.abs(b),0)/diffs.length;
-        const sign = avg>=0 ? "+" : "";
-        cNote.textContent = `Avg: ${sign}${Math.round(avg)} kcal (abs ${Math.round(absAvg)})`;
-      }
-    }
+    const sNote = safeEl("sparkSleepWeekNote");
     if(sNote){
-      const sVals = sSeries.filter(v=>v!==null);
-      if(!sVals.length) sNote.textContent = "-";
-      else {
-        const avg = sVals.reduce((a,b)=>a+b,0)/sVals.length;
-        sNote.textContent = `Avg: ${avg.toFixed(1)} h (14 days)`;
+      if(sAvg===null){
+        sNote.textContent = "Log sleep hours to populate this chart.";
+      }else{
+        const onTarget = sVals.filter(v=>v>=sleepTarget).length;
+        const pct = sVals.length ? Math.round(100*onTarget/sVals.length) : 0;
+        sNote.textContent = `Avg: ${sAvg.toFixed(1)} h (7 days) • On target: ${pct}%`;
       }
     }
 
-    // Weekday consistency table (8 weeks)
-    const weeks = 8*7;
-    const dList = lastNDays(today, weeks);
+    // Body composition (latest)
+    const comp = (function(){
+      const items = [];
+      for(const ds in state.days){
+        const rec = state.days[ds];
+        if(!rec) continue;
 
-    const agg = Array.from({length:7}, ()=>({calOn:0, calLogged:0, sleepOn:0, sleepLogged:0}));
-    for(const ds of dList){
-      const d = parseYMD(ds);
-      const dow = d.getDay();
-      const rec = state.days[ds];
-      if(rec && rec.calories!==null && rec.calories!==undefined){
-        agg[dow].calLogged++;
-        const tgt = targetFor(ds);
-        if(Math.abs(Number(rec.calories)-tgt) <= win) agg[dow].calOn++;
+        const wOk = rec.weight!==null && rec.weight!==undefined && rec.weight!=="" && isFinite(rec.weight);
+        if(!wOk) continue;
+
+        const bfOk = rec.bf!==null && rec.bf!==undefined && rec.bf!=="" && isFinite(rec.bf);
+        const mmOk = rec.muscleMass!==null && rec.muscleMass!==undefined && rec.muscleMass!=="" && isFinite(rec.muscleMass);
+
+        if(!bfOk && !mmOk) continue;
+
+        items.push({
+          ds,
+          d: parseYMD(ds),
+          w: Number(rec.weight),
+          bf: bfOk ? Number(rec.bf) : null,
+          mm: mmOk ? Number(rec.muscleMass) : null
+        });
       }
-      if(rec && rec.sleepHours!==null && rec.sleepHours!==undefined){
-        agg[dow].sleepLogged++;
-        if(Number(rec.sleepHours) >= sleepTarget) agg[dow].sleepOn++;
+      items.sort((a,b)=>a.d-b.d);
+      return items.length ? items[items.length-1] : null;
+    })();
+
+    const bcNote = safeEl("sparkBodyCompNote");
+
+    if(!comp){
+      elBC.innerHTML = `<div class="tiny muted" style="padding:10px;">Log BF% and optionally muscle mass on weigh-in days to see this chart.</div>`;
+      if(bcNote) bcNote.textContent = "-";
+    }else{
+      const clamp = (x, lo, hi) => Math.max(lo, Math.min(hi, x));
+
+      let fatPct = (comp.bf===null) ? null : clamp(comp.bf, 0, 100);
+
+      let musclePct = null;
+      let muscleLabel = "Muscle";
+      let muscleInfo = "";
+
+      if(comp.mm!==null && isFinite(comp.mm) && comp.w > 0){
+        musclePct = clamp((comp.mm / comp.w) * 100, 0, 100);
+        muscleInfo = ` • Muscle: ${comp.mm.toFixed(1)} lb`;
+      }else if(fatPct!==null){
+        musclePct = clamp(100 - fatPct, 0, 100);
+        muscleLabel = "Lean (est.)";
+      }
+
+      // If both exist, normalize when they exceed 100
+      let otherPct = 0;
+      if(fatPct!==null && musclePct!==null){
+        if(fatPct + musclePct > 100){
+          const scale = 100 / (fatPct + musclePct);
+          fatPct *= scale;
+          musclePct *= scale;
+        }
+        otherPct = Math.max(0, 100 - (fatPct + musclePct));
+      }else if(fatPct!==null){
+        otherPct = Math.max(0, 100 - fatPct);
+      }else if(musclePct!==null){
+        otherPct = Math.max(0, 100 - musclePct);
+      }
+
+      const segments = [];
+      if(fatPct!==null) segments.push({label:"Body fat", pct:fatPct, color:"var(--bad)"});
+      if(musclePct!==null) segments.push({label:muscleLabel, pct:musclePct, color:"var(--good)"});
+      if(otherPct > 0.01) segments.push({label:"Other", pct:otherPct, color:"rgba(148,163,184,.35)"});
+
+      elBC.innerHTML = donutSpark(segments, {w:320, h:140, title:"Latest", center:`${comp.w.toFixed(1)} lb`});
+
+      if(bcNote){
+        const bfTxt = (comp.bf===null) ? "" : `BF: ${comp.bf.toFixed(1)}%`;
+        bcNote.textContent = `Date: ${fmtMD(comp.ds)} • ${bfTxt}${muscleInfo}`.trim();
       }
     }
 
-    const rows = [];
-    rows.push(`<div class="miniRow"><b>Day</b><b>Diet</b><b>Sleep</b></div>`);
-    for(let dow=0; dow<7; dow++){
-      const dName = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][dow];
-      const a = agg[dow];
-      const dietPct = a.calLogged ? Math.round(100*a.calOn/a.calLogged) : null;
-      const sleepPct = a.sleepLogged ? Math.round(100*a.sleepOn/a.sleepLogged) : null;
-      rows.push(`<div class="miniRow"><div><b>${dName}</b></div><div>${dietPct===null? "-" : dietPct+"%"}</div><div>${sleepPct===null? "-" : sleepPct+"%"}</div></div>`);
-    }
-    elWT.innerHTML = rows.join("");
-
-    // Insights pill quick summary
+    // Insights pill: compact headline summary
     const insPill = safeEl("insightsPill");
     if(insPill){
-      const d7 = compute7Day();
-      let msg = "Log more data";
+      const vals = wSeries.filter(v=>v!==null && isFinite(v));
+      const first = vals.length ? vals[0] : null;
+      const last  = vals.length ? vals[vals.length-1] : null;
+      const delta = (first!==null && last!==null) ? (last-first) : null;
+      const dTxt = (delta===null) ? "" : `Wt ${delta<=0 ? "" : "+"}${delta.toFixed(1)} lb`;
+
+      const bfTxt = (comp && comp.bf!==null && isFinite(comp.bf)) ? `BF ${comp.bf.toFixed(1)}%` : "";
+      const slTxt = (sAvg!==null) ? `Sleep ${sAvg.toFixed(1)}h` : "";
+
+      const parts = [dTxt, bfTxt, slTxt].filter(Boolean);
+      const msg = parts.length ? parts.join(" • ") : "Log more data";
+
+      // Simple status
       let cls = "warn";
-      if(d7.adh!==null && d7.avgSleep!==null){
-        const diet = Math.round(d7.adh*100);
-        const sl = d7.avgSleep.toFixed(1);
-        msg = `Diet ${diet}% • Sleep ${sl}h`;
-        cls = (diet>=75 && d7.avgSleep>=sleepTarget) ? "good" : (diet>=50 ? "warn" : "bad");
-      } else if(d7.adh!==null){
-        msg = `Diet ${Math.round(d7.adh*100)}%`;
-        cls = (d7.adh>=0.75) ? "good" : (d7.adh>=0.50 ? "warn" : "bad");
-      }
+      const weightGood = (delta!==null) ? (delta <= 0) : false;
+      const sleepGood = (sAvg!==null) ? (sAvg >= sleepTarget) : false;
+      if(weightGood && sleepGood) cls = "good";
+      else if(weightGood || sleepGood) cls = "warn";
+      else if(delta!==null || sAvg!==null) cls = "bad";
+
       setPill("insightsPill", cls, `<b>Insights:</b> ${msg}`);
     }
   }
 
-  const QUOTES_60 = [
+  const QUOTES_60
+ = [
     {t:"Build the habit, then let the habit build you.", a:"Weight Journey"},
     {t:"Today’s win is a boring decision repeated on purpose.", a:"Weight Journey"},
     {t:"Your body keeps score, so write a better story with your actions.", a:"Weight Journey"},
@@ -3295,8 +3538,29 @@ Attempts remaining before lockout: ${remaining}`);
       el.textContent = (val===null || val===undefined || val==="") ? "-" : String(val);
     }
 
-    
-    function setTokens(id, tokens, clsFn){
+
+    function tokenTip(rowId, tok){
+      try{
+        // Latest row
+        if(rowId === "coachLatestItems"){
+          if(/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(tok)) return "Most recent day (within the last 7) that has net calories available.";
+          if(tok.startsWith("Net ")) return "Net calories for that day: calories eaten minus calories burned (active).";
+          if(tok.startsWith("Target ")) return "Your target calories for that date (includes dynamic adjustment and any schedule rules).";
+          if(tok.startsWith("Δ ")) return "Net minus target. Negative means under target; positive means over target.";
+        }
+
+        // Week row
+        if(rowId === "coachWeekItems"){
+          if(tok.startsWith("Logged ")) return "How many of the last 7 days have calories logged (planned fast days count as 0 if left blank).";
+          if(tok.startsWith("On-target ")) return "Count of logged days where net calories fell within the target window (±" + win + " kcal).";
+          if(tok.includes("Avg net")) return "Average net deficit/surplus: (target - net). Net is intake minus burn. Positive means deficit.";
+          if(tok.startsWith("Trend ")) return "Estimated weight change rate from your weigh-ins (about the last 3 weeks). Negative is losing.";
+        }
+      }catch(e){}
+      return "";
+    }
+
+function setTokens(id, tokens, clsFn){
       const el = document.getElementById(id);
       if(!el) return;
       el.innerHTML = "";
@@ -3313,6 +3577,14 @@ Attempts remaining before lockout: ${remaining}`);
         const extra = clsFn ? clsFn(t) : "";
         s.className = "recapTok" + (extra ? (" " + extra) : "");
         s.textContent = t;
+
+        const tip = tokenTip(id, t);
+        if(tip){
+          s.setAttribute("data-tooltip", tip);
+          s.setAttribute("aria-label", tip);
+          s.title = tip;
+        }
+
         el.appendChild(s);
       }
     }
@@ -3349,6 +3621,11 @@ function latestWeighCompare(){
         const sp = document.createElement("span");
         sp.className = "chip " + (c.cls || "");
         sp.textContent = c.text;
+        if(c.tip){
+          sp.setAttribute("data-tooltip", c.tip);
+          sp.setAttribute("aria-label", c.tip);
+          sp.title = c.tip;
+        }
         wrap.appendChild(sp);
       }
     }
@@ -3509,36 +3786,36 @@ function latestWeighCompare(){
     const chips = [];
     if(logged){
       const dietCls = (onPct >= 0.75) ? "good" : (onPct >= 0.50 ? "warn" : "bad");
-      chips.push({text:"Diet: " + on + "/" + logged + " within ±" + win, cls:dietCls});
+      chips.push({text:"Diet: " + on + "/" + logged + " within ±" + win, cls:dietCls, tip:"Days in the last 7 with net calories inside the window (net = intake minus burn)."});
     }
     if(d7.avgAbsOffTarget!==null && isFinite(d7.avgAbsOffTarget)){
       const off = Math.round(d7.avgAbsOffTarget);
       const offCls = (off <= win) ? "good" : (off <= win*2 ? "warn" : "bad");
-      chips.push({text:"Avg off-target: " + off + " kcal/day", cls:offCls});
+      chips.push({text:"Avg off-target: " + off + " kcal/day", cls:offCls, tip:"Average absolute distance from target (|net - target|) across logged days."});
     }
     if(avgNetDef!==null && isFinite(avgNetDef)){
       const sign = avgNetDef >= 0 ? "deficit" : "surplus";
       const cls2 = avgNetDef >= 0 ? "good" : "warn";
-      chips.push({text:"Net " + sign + ": " + Math.round(Math.abs(avgNetDef)) + " kcal/day", cls:cls2});
+      chips.push({text:"Net " + sign + ": " + Math.round(Math.abs(avgNetDef)) + " kcal/day", cls:cls2, tip:"Average net deficit/surplus per day: (target - net). Positive = deficit. Net is intake minus burn."});
     }
     if(d7.avgBurned!==null && isFinite(d7.avgBurned)){
-      chips.push({text:"Burned: " + Math.round(d7.avgBurned) + " kcal/day", cls:""}); 
+      chips.push({text:"Burned: " + Math.round(d7.avgBurned) + " kcal/day", cls:"", tip:"Average active calories burned (from your logged burn values) across the last 7 days."}); 
     }
     if(d7.avgSleep!==null && isFinite(d7.avgSleep)){
       const scls = (d7.avgSleep >= sleepTarget) ? "good" : "warn";
-      chips.push({text:"Sleep: " + d7.avgSleep.toFixed(1) + "h", cls:scls});
+      chips.push({text:"Sleep: " + d7.avgSleep.toFixed(1) + "h", cls:scls, tip:"Average sleep hours across days with sleep logged. Target: " + sleepTarget.toFixed(1) + "h."});
     }
     if(d7.avgProtein!==null && isFinite(d7.avgProtein)){
       const pcl = (d7.avgProtein >= pTarget) ? "good" : "warn";
-      chips.push({text:"Protein: " + Math.round(d7.avgProtein) + "g", cls:pcl});
+      chips.push({text:"Protein: " + Math.round(d7.avgProtein) + "g", cls:pcl, tip:"Average protein across days with protein logged. Target: " + pTarget + "g."});
     }
     if(trend!==null && isFinite(trend)){
       const tcls = (trend <= -0.5) ? "good" : (trend < 0 ? "warn" : "bad");
-      chips.push({text:"Trend: " + (trend>0?"+":"") + trend.toFixed(1) + " lb/wk", cls:tcls});
+      chips.push({text:"Trend: " + (trend>0?"+":"") + trend.toFixed(1) + " lb/wk", cls:tcls, tip:"Weight trend estimate from your weigh-ins (about the last 21 days). Negative means losing."});
     }
     if(wc){
       const wcls = (wc.status === "in range") ? "good" : (wc.status === "below range" ? "warn" : "warn");
-      chips.push({text:"Weigh-in: " + wc.status, cls:wcls});
+      chips.push({text:"Weigh-in: " + wc.status, cls:wcls, tip:"Your latest weigh-in compared to the expected range for that date. \"Above range\" means heavier than the upper bound."});
     }
     setChips(chips);
 
