@@ -298,6 +298,10 @@
   .panelHead .t2{margin-top:4px; color:var(--muted); font-size:12px;}
   .panelBody{padding:16px; display:grid; grid-template-columns: 1fr 1fr; gap:14px;}
   @media(max-width:900px){ .panelBody{grid-template-columns:1fr;} }
+  /* Weigh-in fields layout */
+  #weighFields{grid-template-columns:repeat(3,1fr)!important;}
+  @media(max-width:900px){ #weighFields{grid-template-columns:1fr!important;} }
+
   .box{border:1px solid var(--line); border-radius:18px; padding:14px; background:linear-gradient(180deg, rgba(148,163,184,.08), rgba(148,163,184,.03));}
   .box h3{margin:0 0 10px; font-size:13px; font-weight:950;}
   .panelFoot{
@@ -871,25 +875,28 @@
       <div class="snapSectionHead">Body</div>
       <div class="kpis snapKpis">
 
+      
       <div class="kpi">
-        <div class="k">Start weight (official)</div>
-        <div class="v" id="kpiStartW">-</div>
-        <div class="s">Baseline for deltas</div>
+        <div class="k">Weight (start → current)</div>
+        <div class="v" id="kpiWeightPair">-</div>
+        <div class="s" id="kpiWeightDelta">-</div>
       </div>
       <div class="kpi">
-        <div class="k">Start BF% (official)</div>
-        <div class="v" id="kpiStartBf">-</div>
-        <div class="s">Baseline for deltas</div>
+        <div class="k">Body fat (start → current)</div>
+        <div class="v" id="kpiBfPair">-</div>
+        <div class="s" id="kpiBfDelta">-</div>
       </div>
       <div class="kpi">
-        <div class="k">Current weight (latest)</div>
-        <div class="v" id="kpiCurrent">-</div>
-        <div class="s" id="kpiDeltaW">Change since start: -</div>
+        <div class="k">Average weight</div>
+        <div class="v" id="kpiAvgWeightWM">-</div>
+        <div class="s" id="kpiAvgWeightWMNote">Based on weigh-ins</div>
       </div>
       <div class="kpi">
-        <div class="k">Current BF% (latest)</div>
-        <div class="v" id="kpiCurrentBf">-</div>
-        <div class="s" id="kpiDeltaBf">Change since start: -</div>
+        <div class="k">Weigh-in continuity (4 weeks)</div>
+        <div class="v" id="kpiWeighContinuity">-</div>
+        <div class="s" id="kpiWeighContinuityNote">Mon/Thu completion</div>
+      </div>
+
       </div>
       </div>
     </div>
@@ -1232,7 +1239,7 @@
           </div>
         </div>
 
-        <div id="weighFields" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;">
+        <div id="weighFields" style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:10px;">
           <div>
             <label>Scale weight (lbs)</label>
             <input id="weight" type="number" step="0.1" placeholder="Mon/Thu"/>
@@ -1249,6 +1256,9 @@
 
 
         
+
+        </div>
+
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;">
           <div>
             <label>Protein (g)</label>
@@ -2408,7 +2418,8 @@ if(rec.muscleMass!==null && rec.muscleMass!==undefined){
     const d = parseYMD(ds);
     modalTitle.textContent = `${weekdayName(d)} - ${ds}`;
     const weighDay = isWeighDay(d);
-    modalSub.textContent = weighDay ? "Weigh-in day (Mon/Thu). Log before food or water." : "Calories + workout + notes.";
+    modalSub.textContent = weighDay ? "Weigh-in day (Mon/Thu). Log before food or water." : "Calories + macros + sleep + notes.";
+
     if(weighFields){
       weighFields.style.display = weighDay ? "grid" : "none";
     }
@@ -2476,10 +2487,10 @@ if(rec.muscleMass!==null && rec.muscleMass!==undefined){
         calories: calories.value==="" ? null : Number(calories.value),
         burned: burned.value==="" ? null : Number(burned.value),
         workout: workout.value || "",
-        weight: (!weighDay) ? null : (weight.value==="" ? null : Number(weight.value)),
-        bf: (!weighDay) ? null : (bf.value==="" ? null : Number(bf.value)),
-        muscleMass: (!weighDay) ? null : (muscleMass && muscleMass.value==="" ? null : (muscleMass ? Number(muscleMass.value) : null)),
-
+        // Preserve any legacy non-weigh-day entries instead of wiping them
+        weight: (weighDay) ? (weight.value==="" ? null : Number(weight.value)) : ((state.days[activeDate]||{}).weight ?? null),
+        bf: (weighDay) ? (bf.value==="" ? null : Number(bf.value)) : ((state.days[activeDate]||{}).bf ?? null),
+        muscleMass: (weighDay) ? (muscleMass && muscleMass.value==="" ? null : (muscleMass ? Number(muscleMass.value) : null)) : ((state.days[activeDate]||{}).muscleMass ?? null),
         protein: protein.value==="" ? null : Number(protein.value),
         carbs: carbs.value==="" ? null : Number(carbs.value),
         fat: fat.value==="" ? null : Number(fat.value),
@@ -2507,10 +2518,10 @@ if(rec.muscleMass!==null && rec.muscleMass!==undefined){
       calories: calories.value==="" ? null : Number(calories.value),
       burned: burned.value==="" ? null : Number(burned.value),
       workout: workout.value || "",
-      weight: (!weighDay) ? null : (weight.value==="" ? null : Number(weight.value)),
-      bf: (!weighDay) ? null : (bf.value==="" ? null : Number(bf.value)),
-      muscleMass: (!weighDay) ? null : (muscleMass && muscleMass.value==="" ? null : (muscleMass ? Number(muscleMass.value) : null)),
-
+        // Preserve any legacy non-weigh-day entries instead of wiping them
+        weight: (weighDay) ? (weight.value==="" ? null : Number(weight.value)) : ((state.days[activeDate]||{}).weight ?? null),
+        bf: (weighDay) ? (bf.value==="" ? null : Number(bf.value)) : ((state.days[activeDate]||{}).bf ?? null),
+        muscleMass: (weighDay) ? (muscleMass && muscleMass.value==="" ? null : (muscleMass ? Number(muscleMass.value) : null)) : ((state.days[activeDate]||{}).muscleMass ?? null),
       protein: protein.value==="" ? null : Number(protein.value),
       carbs: carbs.value==="" ? null : Number(carbs.value),
       fat: fat.value==="" ? null : Number(fat.value),
@@ -2879,48 +2890,140 @@ if(rec.muscleMass!==null && rec.muscleMass!==undefined){
   }
 
   function renderKpis(){
+
     const ws = getWeighIns();
     const current = ws.length ? ws[ws.length-1] : null;
-    document.getElementById("kpiCurrent").textContent = current ? `${current.w.toFixed(1)} lbs` : "-";
 
     const bfs = getBfIns();
     const currentBf = bfs.length ? bfs[bfs.length-1] : null;
-    document.getElementById("kpiCurrentBf").textContent = currentBf ? `${currentBf.bf.toFixed(1)}%` : "-";
 
-    // Start baselines + deltas (if elements exist)
     const startW = Number(state.settings.startWeight || 0);
     const startBf = Number(state.settings.startBf || 0);
 
-    const elStartW = document.getElementById("kpiStartW");
-    if(elStartW) elStartW.textContent = startW ? `${startW.toFixed(1)} lbs` : "-";
-
-    const elStartBf = document.getElementById("kpiStartBf");
-    if(elStartBf) elStartBf.textContent = startBf ? `${startBf.toFixed(1)}%` : "-";
-
-    const elDeltaW = document.getElementById("kpiDeltaW");
-    if(elDeltaW){
-      if(current && startW){
+    // Weight (start → current)
+    const wPair = document.getElementById("kpiWeightPair");
+    const wDelta = document.getElementById("kpiWeightDelta");
+    if(wPair){
+      if(startW && current){
+        wPair.textContent = `${startW.toFixed(1)} → ${current.w.toFixed(1)} lbs`;
+      }else if(current){
+        wPair.textContent = `${current.w.toFixed(1)} lbs`;
+      }else if(startW){
+        wPair.textContent = `${startW.toFixed(1)} lbs`;
+      }else{
+        wPair.textContent = "-";
+      }
+    }
+    if(wDelta){
+      if(startW && current){
         const dw = current.w - startW;
         const sign = dw >= 0 ? "+" : "";
-        elDeltaW.textContent = `Change since start: ${sign}${dw.toFixed(1)} lbs`;
+        wDelta.textContent = `Change since start: ${sign}${dw.toFixed(1)} lbs`;
       }else{
-        elDeltaW.textContent = "Change since start: -";
+        wDelta.textContent = "Change since start: -";
       }
     }
 
-    const elDeltaBf = document.getElementById("kpiDeltaBf");
-    if(elDeltaBf){
-      if(currentBf && startBf){
+    // Body fat (start → current)
+    const bfPair = document.getElementById("kpiBfPair");
+    const bfDelta = document.getElementById("kpiBfDelta");
+    if(bfPair){
+      if(startBf && currentBf){
+        bfPair.textContent = `${startBf.toFixed(1)}% → ${currentBf.bf.toFixed(1)}%`;
+      }else if(currentBf){
+        bfPair.textContent = `${currentBf.bf.toFixed(1)}%`;
+      }else if(startBf){
+        bfPair.textContent = `${startBf.toFixed(1)}%`;
+      }else{
+        bfPair.textContent = "-";
+      }
+    }
+    if(bfDelta){
+      if(startBf && currentBf){
         const db = currentBf.bf - startBf;
         const sign = db >= 0 ? "+" : "";
-        elDeltaBf.textContent = `Change since start: ${sign}${db.toFixed(1)}%`;
+        bfDelta.textContent = `Change since start: ${sign}${db.toFixed(1)}%`;
       }else{
-        elDeltaBf.textContent = "Change since start: -";
+        bfDelta.textContent = "Change since start: -";
       }
     }
 
+    // Average weight (rolling windows, weigh-ins only)
+    function avgWeight(daysBack){
+      const end = new Date();
+      const start = addDays(end, -(daysBack-1));
+      let sum=0, n=0;
+      for(let d=new Date(start); d<=end; d=addDays(d,1)){
+        const ds = ymd(d);
+        const rec = state.days[ds];
+        const w = (rec && rec.weight!==null && rec.weight!==undefined && rec.weight!=="") ? Number(rec.weight) : null;
+        if(w!==null && isFinite(w)){
+          sum += w; n++;
+        }
+      }
+      return n ? {avg: sum/n, n} : {avg:null, n:0};
+    }
 
-    const d7 = compute7Day();
+    const w7 = avgWeight(7);
+    const w30 = avgWeight(30);
+
+    const avgWM = document.getElementById("kpiAvgWeightWM");
+    const avgWMNote = document.getElementById("kpiAvgWeightWMNote");
+    if(avgWM){
+      if(w7.avg===null && w30.avg===null){
+        avgWM.textContent = "-";
+      }else{
+        const a7 = (w7.avg===null) ? "-" : `${w7.avg.toFixed(1)} (n=${w7.n})`;
+        const a30 = (w30.avg===null) ? "-" : `${w30.avg.toFixed(1)} (n=${w30.n})`;
+        avgWM.textContent = `Week ${a7} • Month ${a30}`;
+      }
+    }
+    if(avgWMNote){
+      avgWMNote.textContent = "Week = last 7 days, Month = last 30 days (weigh-ins logged).";
+    }
+
+    // Weigh-in continuity: scheduled Mon/Thu completion in last 4 weeks
+    function weighInContinuity(daysBack=28){
+      const end = new Date();
+      const start = addDays(end, -(daysBack-1));
+      let expected=0, logged=0;
+      for(let d=new Date(start); d<=end; d=addDays(d,1)){
+        if(!isWeighDay(d)) continue;
+        expected++;
+        const ds = ymd(d);
+        const rec = state.days[ds];
+        const has = rec && rec.weight!==null && rec.weight!==undefined && rec.weight!=="";
+        if(has) logged++;
+      }
+      let streak=0;
+      for(let offset=0; offset<84; offset++){
+        const d = addDays(new Date(), -offset);
+        if(!isWeighDay(d)) continue;
+        const ds = ymd(d);
+        const rec = state.days[ds];
+        const has = rec && rec.weight!==null && rec.weight!==undefined && rec.weight!=="";
+        if(has) streak++;
+        else break;
+      }
+      return {expected, logged, streak};
+    }
+
+    const cont = weighInContinuity(28);
+    const contEl = document.getElementById("kpiWeighContinuity");
+    const contNoteEl = document.getElementById("kpiWeighContinuityNote");
+    if(contEl){
+      if(cont.expected===0){
+        contEl.textContent = "-";
+      }else{
+        const pct = Math.round((cont.logged/cont.expected)*100);
+        contEl.textContent = `${cont.logged}/${cont.expected} (${pct}%)`;
+      }
+    }
+    if(contNoteEl){
+      contNoteEl.textContent = `Last 4 weeks. Streak: ${cont.streak} weigh-in${cont.streak===1?"":"s"} in a row.`;
+    }
+
+const d7 = compute7Day();
     document.getElementById("kpiAvgCal").textContent = (d7.avgCal===null) ? "-" : `${Math.round(d7.avgCal)} kcal`;
 
     const elDef = document.getElementById("kpiAvgDeficit");
