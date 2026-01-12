@@ -302,6 +302,11 @@
   #weighFields{grid-template-columns:repeat(3,1fr)!important;}
   @media(max-width:900px){ #weighFields{grid-template-columns:1fr!important;} }
 
+  /* Tape measurement fields layout */
+  #tapeFields{grid-template-columns:repeat(3,1fr)!important;}
+  @media(max-width:900px){ #tapeFields{grid-template-columns:1fr!important;} }
+
+
   .box{border:1px solid var(--line); border-radius:18px; padding:14px; background:linear-gradient(180deg, rgba(148,163,184,.08), rgba(148,163,184,.03));}
   .box h3{margin:0 0 10px; font-size:13px; font-weight:950;}
   .panelFoot{
@@ -1256,6 +1261,39 @@
 
         
 
+        
+        <div class="tiny" style="margin-top:10px; color:var(--muted);">
+          Tape measurements (inches, optional). Best on weigh-in days, same time of day, same tape tension.
+        </div>
+
+        <div id="tapeFields" style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:6px;">
+          <div>
+            <label>Waist (navel)</label>
+            <input id="waist" type="number" step="0.1" min="0" placeholder="e.g., 38.5"/>
+          </div>
+          <div>
+            <label>Neck</label>
+            <input id="neck" type="number" step="0.1" min="0" placeholder="e.g., 16.5"/>
+          </div>
+          <div>
+            <label>Hips (optional)</label>
+            <input id="hips" type="number" step="0.1" min="0" placeholder="e.g., 40.0"/>
+          </div>
+          <div>
+            <label>Chest (optional)</label>
+            <input id="chest" type="number" step="0.1" min="0" placeholder="e.g., 44.0"/>
+          </div>
+          <div>
+            <label>Thigh (optional)</label>
+            <input id="thigh" type="number" step="0.1" min="0" placeholder="e.g., 24.5"/>
+          </div>
+          <div>
+            <label>Arm (optional)</label>
+            <input id="arm" type="number" step="0.1" min="0" placeholder="e.g., 16.0"/>
+          </div>
+        </div>
+
+
         </div>
 
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;">
@@ -2079,7 +2117,7 @@ Attempts remaining before lockout: ${remaining}`);
     for(const ds in state.days){
       const rec = state.days[ds];
       const hasAny = rec && (
-        rec.calories!==null || rec.burned!==null || rec.weight!==null || rec.bf!==null ||
+        rec.calories!==null || rec.burned!==null || rec.weight!==null || rec.bf!==null || rec.muscleMass!==null || rec.waist!==null || rec.neck!==null || rec.hips!==null || rec.chest!==null || rec.thigh!==null || rec.arm!==null ||
         rec.protein!==null || rec.carbs!==null || rec.fat!==null || rec.fiber!==null ||
         rec.sleepHours!==null || rec.sleepQuality!==null ||
         (rec.workout && rec.workout !== "") || (rec.notes && rec.notes.trim().length)
@@ -2235,6 +2273,15 @@ if(rec.muscleMass!==null && rec.muscleMass!==undefined){
   mmLine.innerHTML = `Muscle: <b>${mmVal}</b>`;
   cell.appendChild(mmLine);
 }
+
+
+if(rec.waist!==null && rec.waist!==undefined){
+  const wsLine=document.createElement("div");
+  wsLine.className="line";
+  const wsVal = Number(rec.waist).toFixed(1) + " in";
+  wsLine.innerHTML = `Waist: <b>${wsVal}</b>`;
+  cell.appendChild(wsLine);
+}
       }
 
       // Sleep (optional)
@@ -2334,6 +2381,13 @@ if(rec.muscleMass!==null && rec.muscleMass!==undefined){
   const weight = document.getElementById("weight");
   const bf = document.getElementById("bf");
   const muscleMass = document.getElementById("muscleMass");
+  const waist = document.getElementById("waist");
+  const neck = document.getElementById("neck");
+  const hips = document.getElementById("hips");
+  const chest = document.getElementById("chest");
+  const thigh = document.getElementById("thigh");
+  const arm = document.getElementById("arm");
+  const tapeFields = document.getElementById("tapeFields");
   const weighFields = document.getElementById("weighFields");
   const protein = document.getElementById("protein");
   const carbs = document.getElementById("carbs");
@@ -2454,6 +2508,13 @@ if(rec.muscleMass!==null && rec.muscleMass!==undefined){
     bf.value = (rec.bf===null || rec.bf===undefined) ? "" : rec.bf;
     if(muscleMass) muscleMass.value = (rec.muscleMass===null || rec.muscleMass===undefined) ? "" : rec.muscleMass;
 
+    if(waist) waist.value = (rec.waist===null || rec.waist===undefined) ? "" : rec.waist;
+    if(neck) neck.value = (rec.neck===null || rec.neck===undefined) ? "" : rec.neck;
+    if(hips) hips.value = (rec.hips===null || rec.hips===undefined) ? "" : rec.hips;
+    if(chest) chest.value = (rec.chest===null || rec.chest===undefined) ? "" : rec.chest;
+    if(thigh) thigh.value = (rec.thigh===null || rec.thigh===undefined) ? "" : rec.thigh;
+    if(arm) arm.value = (rec.arm===null || rec.arm===undefined) ? "" : rec.arm;
+
     protein.value = (rec.protein===null || rec.protein===undefined) ? "" : rec.protein;
     carbs.value   = (rec.carbs===null || rec.carbs===undefined) ? "" : rec.carbs;
     fat.value     = (rec.fat===null || rec.fat===undefined) ? "" : rec.fat;
@@ -2490,6 +2551,12 @@ if(rec.muscleMass!==null && rec.muscleMass!==undefined){
         weight: (weighDay) ? (weight.value==="" ? null : Number(weight.value)) : ((state.days[activeDate]||{}).weight ?? null),
         bf: (weighDay) ? (bf.value==="" ? null : Number(bf.value)) : ((state.days[activeDate]||{}).bf ?? null),
         muscleMass: (weighDay) ? (muscleMass && muscleMass.value==="" ? null : (muscleMass ? Number(muscleMass.value) : null)) : ((state.days[activeDate]||{}).muscleMass ?? null),
+        waist: (weighDay) ? (waist && waist.value==="" ? null : (waist ? Number(waist.value) : null)) : ((state.days[activeDate]||{}).waist ?? null),
+        neck: (weighDay) ? (neck && neck.value==="" ? null : (neck ? Number(neck.value) : null)) : ((state.days[activeDate]||{}).neck ?? null),
+        hips: (weighDay) ? (hips && hips.value==="" ? null : (hips ? Number(hips.value) : null)) : ((state.days[activeDate]||{}).hips ?? null),
+        chest: (weighDay) ? (chest && chest.value==="" ? null : (chest ? Number(chest.value) : null)) : ((state.days[activeDate]||{}).chest ?? null),
+        thigh: (weighDay) ? (thigh && thigh.value==="" ? null : (thigh ? Number(thigh.value) : null)) : ((state.days[activeDate]||{}).thigh ?? null),
+        arm: (weighDay) ? (arm && arm.value==="" ? null : (arm ? Number(arm.value) : null)) : ((state.days[activeDate]||{}).arm ?? null),
         protein: protein.value==="" ? null : Number(protein.value),
         carbs: carbs.value==="" ? null : Number(carbs.value),
         fat: fat.value==="" ? null : Number(fat.value),
@@ -2521,6 +2588,12 @@ if(rec.muscleMass!==null && rec.muscleMass!==undefined){
         weight: (weighDay) ? (weight.value==="" ? null : Number(weight.value)) : ((state.days[activeDate]||{}).weight ?? null),
         bf: (weighDay) ? (bf.value==="" ? null : Number(bf.value)) : ((state.days[activeDate]||{}).bf ?? null),
         muscleMass: (weighDay) ? (muscleMass && muscleMass.value==="" ? null : (muscleMass ? Number(muscleMass.value) : null)) : ((state.days[activeDate]||{}).muscleMass ?? null),
+        waist: (weighDay) ? (waist && waist.value==="" ? null : (waist ? Number(waist.value) : null)) : ((state.days[activeDate]||{}).waist ?? null),
+        neck: (weighDay) ? (neck && neck.value==="" ? null : (neck ? Number(neck.value) : null)) : ((state.days[activeDate]||{}).neck ?? null),
+        hips: (weighDay) ? (hips && hips.value==="" ? null : (hips ? Number(hips.value) : null)) : ((state.days[activeDate]||{}).hips ?? null),
+        chest: (weighDay) ? (chest && chest.value==="" ? null : (chest ? Number(chest.value) : null)) : ((state.days[activeDate]||{}).chest ?? null),
+        thigh: (weighDay) ? (thigh && thigh.value==="" ? null : (thigh ? Number(thigh.value) : null)) : ((state.days[activeDate]||{}).thigh ?? null),
+        arm: (weighDay) ? (arm && arm.value==="" ? null : (arm ? Number(arm.value) : null)) : ((state.days[activeDate]||{}).arm ?? null),
       protein: protein.value==="" ? null : Number(protein.value),
       carbs: carbs.value==="" ? null : Number(carbs.value),
       fat: fat.value==="" ? null : Number(fat.value),
@@ -2537,7 +2610,7 @@ if(rec.muscleMass!==null && rec.muscleMass!==undefined){
     setSaveIndicator("Saved", "good");
   }
 
-[calories, burned, workout, weight, bf, muscleMass, protein, carbs, fat, fiber, notes, sleepHours, sleepQuality, bedtime, waketime].forEach(el=>{
+[calories, burned, workout, weight, bf, muscleMass, waist, neck, hips, chest, thigh, arm, protein, carbs, fat, fiber, notes, sleepHours, sleepQuality, bedtime, waketime].forEach(el=>{
     el.addEventListener("input", ()=>{ if(activeDate) updateVsExpected(activeDate); autosaveDebounced(); });
     el.addEventListener("change", ()=>{ if(activeDate) updateVsExpected(activeDate); autosaveDebounced(); });
   });
