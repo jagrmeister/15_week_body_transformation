@@ -1978,71 +1978,90 @@ Attempts remaining before lockout: ${remaining}`);
     return ymd(thu) === ds;
   }
 
-  function expectedRange(ds){
-    const d = parseYMD(ds);
-    const start = parseYMD(state.settings.startDate);
-    if(d < start) return null;
-
-    const sw = Number(state.settings.startWeight);
-    const baseline = {low: sw-0.5, high: sw+0.5};
-
-    // Baseline window on the start date
-    if(ymd(start) === ds){
-      return {low: baseline.low, high: baseline.high, kind:"baseline"};
-    }
-
-    const wi = weekIndexForDate(ds);
-    if(!wi || wi < 1) return null;
-
-    function thuDate(weekIndex){
-      return addDays(start, (weekIndex-1)*7 + 3);
-    }
-
-    let prevDate, prevRange, prevKind;
-    let nextDate, nextRange, nextKind;
-
-    const thuThis = thuDate(wi);
-
-    if(d <= thuThis){
-      if(wi === 1){
-        prevDate = start;
-        prevRange = baseline;
-        prevKind = "baseline";
+    function expectedRange(ds){
+      const d = parseYMD(ds);
+      const start = parseYMD(state.settings.startDate);
+      if(d < start) return null;
+  
+      const sw = Number(state.settings.startWeight);
+      const baseline = {low: sw-0.5, high: sw+0.5};
+  
+      // Baseline window on the start date
+      if(ymd(start) === ds){
+        return {low: baseline.low, high: baseline.high, kind:"baseline"};
+      }
+  
+      const wiRaw = weekIndexForDate(ds);
+      if(!wiRaw || wiRaw < 1) return null;
+  
+      const maxW = THU_WEEK_RANGES.length;
+      if(maxW < 1){
+        return {low: baseline.low, high: baseline.high, kind:"baseline"};
+      }
+  
+      function thuDate(weekIndex){
+        return addDays(start, (weekIndex-1)*7 + 3);
+      }
+  
+      // After the last checkpoint week: treat as maintenance at final target range.
+      if(wiRaw > maxW){
+        const last = THU_WEEK_RANGES[maxW-1];
+        return {low:last.low, high:last.high, kind:"maint"};
+      }
+  
+      const wi = wiRaw;
+      const thuThis = thuDate(wi);
+  
+      let prevDate, prevRange, prevKind;
+      let nextDate, nextRange, nextKind;
+  
+      if(d <= thuThis){
+        if(wi === 1){
+          prevDate = start;
+          prevRange = baseline;
+          prevKind = "baseline";
+        }else{
+          prevDate = thuDate(wi-1);
+          prevRange = THU_WEEK_RANGES[wi-2] || THU_WEEK_RANGES[maxW-1];
+          prevKind = "thu";
+        }
+        nextDate = thuThis;
+        nextRange = THU_WEEK_RANGES[wi-1] || THU_WEEK_RANGES[maxW-1];
+        nextKind = "thu";
       }else{
-        prevDate = thuDate(wi-1);
-        prevRange = THU_WEEK_RANGES[wi-2];
+        prevDate = thuThis;
+        prevRange = THU_WEEK_RANGES[wi-1] || THU_WEEK_RANGES[maxW-1];
         prevKind = "thu";
+  
+        // In the final checkpoint week (or if next is missing), hold maintenance.
+        if(wi >= maxW){
+          return {low: prevRange.low, high: prevRange.high, kind:"maint"};
+        }
+  
+        nextDate = thuDate(wi+1);
+        nextRange = THU_WEEK_RANGES[wi] || THU_WEEK_RANGES[maxW-1];
+        nextKind = "thu";
       }
-      nextDate = thuThis;
-      nextRange = THU_WEEK_RANGES[wi-1];
-      nextKind = "thu";
-    }else{
-      prevDate = thuThis;
-      prevRange = THU_WEEK_RANGES[wi-1];
-      prevKind = "thu";
-
-      if(wi >= 15){
-        return {low: prevRange.low, high: prevRange.high, kind:"thu"};
+  
+      // Defensive fallback: never crash calendar rendering.
+      if(!prevRange || !nextRange){
+        const last = THU_WEEK_RANGES[maxW-1];
+        return {low:last.low, high:last.high, kind:"maint"};
       }
-
-      nextDate = thuDate(wi+1);
-      nextRange = THU_WEEK_RANGES[wi];
-      nextKind = "thu";
+  
+      const dayMs = 86400000;
+      const spanDays = Math.max(1, Math.round((nextDate - prevDate)/dayMs));
+      const t = Math.min(1, Math.max(0, (d - prevDate) / (spanDays*dayMs)));
+  
+      const low  = prevRange.low  + (nextRange.low  - prevRange.low ) * t;
+      const high = prevRange.high + (nextRange.high - prevRange.high) * t;
+  
+      let kind = "interp";
+      if(ds === ymd(prevDate)) kind = prevKind;
+      if(ds === ymd(nextDate)) kind = nextKind;
+  
+      return {low, high, kind};
     }
-
-    const dayMs = 86400000;
-    const spanDays = Math.max(1, Math.round((nextDate - prevDate)/dayMs));
-    const t = Math.min(1, Math.max(0, (d - prevDate) / (spanDays*dayMs)));
-
-    const low  = prevRange.low  + (nextRange.low  - prevRange.low ) * t;
-    const high = prevRange.high + (nextRange.high - prevRange.high) * t;
-
-    let kind = "interp";
-    if(ds === ymd(prevDate)) kind = prevKind;
-    if(ds === ymd(nextDate)) kind = nextKind;
-
-    return {low, high, kind};
-  }
 
   function fmtRange(r){
     if(!r) return "";
