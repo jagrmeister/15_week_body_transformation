@@ -1978,43 +1978,70 @@ Attempts remaining before lockout: ${remaining}`);
     return ymd(thu) === ds;
   }
 
-    function expectedRange(ds){
+  function _rangeFallback(){
+    const sw = Number(state?.settings?.startWeight);
+    const baseLow = (isFinite(sw) ? sw - 0.5 : 0);
+    const baseHigh = (isFinite(sw) ? sw + 0.5 : 0);
+    return {low: baseLow, high: baseHigh, kind:"baseline"};
+  }
+  function _validRange(r){
+    if(!r || typeof r !== "object") return false;
+    const lo = Number(r.low), hi = Number(r.high);
+    return isFinite(lo) && isFinite(hi);
+  }
+
+  function expectedRange(ds){
+    // Defensive: this function should never crash rendering.
+    try{
+      const fb = _rangeFallback();
+
+      const startStr = state?.settings?.startDate;
+      if(!startStr || typeof startStr !== "string") return fb;
+
+      const start = parseYMD(startStr);
       const d = parseYMD(ds);
-      const start = parseYMD(state.settings.startDate);
+
+      if(!(start instanceof Date) || isNaN(start)) return fb;
+      if(!(d instanceof Date) || isNaN(d)) return null;
       if(d < start) return null;
-  
-      const sw = Number(state.settings.startWeight);
-      const baseline = {low: sw-0.5, high: sw+0.5};
-  
+
+      const baseline = {low: fb.low, high: fb.high};
+
       // Baseline window on the start date
       if(ymd(start) === ds){
         return {low: baseline.low, high: baseline.high, kind:"baseline"};
       }
-  
+
       const wiRaw = weekIndexForDate(ds);
-      if(!wiRaw || wiRaw < 1) return null;
-  
-      const maxW = THU_WEEK_RANGES.length;
-      if(maxW < 1){
-        return {low: baseline.low, high: baseline.high, kind:"baseline"};
+      const maxW = Array.isArray(THU_WEEK_RANGES) ? THU_WEEK_RANGES.length : 0;
+
+      const lastRange = (maxW > 0 && _validRange(THU_WEEK_RANGES[maxW-1])) ? THU_WEEK_RANGES[maxW-1] : baseline;
+
+      // If week index is invalid, fall back to baseline (never undefined)
+      if(!isFinite(wiRaw) || wiRaw < 1){
+        return {low: Number(baseline.low), high: Number(baseline.high), kind:"baseline"};
       }
-  
+
       function thuDate(weekIndex){
         return addDays(start, (weekIndex-1)*7 + 3);
       }
-  
-      // After the last checkpoint week: treat as maintenance at final target range.
-      if(wiRaw > maxW){
-        const last = THU_WEEK_RANGES[maxW-1];
-        return {low:last.low, high:last.high, kind:"maint"};
+
+      // After the last checkpoint week: maintenance at final target range.
+      if(wiRaw > maxW && maxW > 0){
+        return {low: Number(lastRange.low), high: Number(lastRange.high), kind:"maint"};
       }
-  
-      const wi = wiRaw;
+
+      // If there are no ranges defined, just use baseline.
+      if(maxW < 1){
+        return {low: Number(baseline.low), high: Number(baseline.high), kind:"baseline"};
+      }
+
+      const wi = Math.max(1, Math.floor(wiRaw));
       const thuThis = thuDate(wi);
-  
-      let prevDate, prevRange, prevKind;
-      let nextDate, nextRange, nextKind;
-  
+
+      let prevDate, prevRange, prevKind = "thu";
+      let nextDate, nextRange, nextKind = "thu";
+
       if(d <= thuThis){
         if(wi === 1){
           prevDate = start;
@@ -2022,51 +2049,51 @@ Attempts remaining before lockout: ${remaining}`);
           prevKind = "baseline";
         }else{
           prevDate = thuDate(wi-1);
-          prevRange = THU_WEEK_RANGES[wi-2] || THU_WEEK_RANGES[maxW-1];
-          prevKind = "thu";
+          prevRange = THU_WEEK_RANGES[wi-2];
         }
         nextDate = thuThis;
-        nextRange = THU_WEEK_RANGES[wi-1] || THU_WEEK_RANGES[maxW-1];
-        nextKind = "thu";
+        nextRange = THU_WEEK_RANGES[wi-1];
       }else{
         prevDate = thuThis;
-        prevRange = THU_WEEK_RANGES[wi-1] || THU_WEEK_RANGES[maxW-1];
-        prevKind = "thu";
-  
-        // In the final checkpoint week (or if next is missing), hold maintenance.
+        prevRange = THU_WEEK_RANGES[wi-1];
+
+        // In the final checkpoint week (or missing next), hold maintenance.
         if(wi >= maxW){
-          return {low: prevRange.low, high: prevRange.high, kind:"maint"};
+          const pr = _validRange(prevRange) ? prevRange : lastRange;
+          return {low: Number(pr.low), high: Number(pr.high), kind:"maint"};
         }
-  
+
         nextDate = thuDate(wi+1);
-        nextRange = THU_WEEK_RANGES[wi] || THU_WEEK_RANGES[maxW-1];
-        nextKind = "thu";
+        nextRange = THU_WEEK_RANGES[wi];
       }
-  
-      // Defensive fallback: never crash calendar rendering.
-      if(!prevRange || !nextRange){
-        const last = THU_WEEK_RANGES[maxW-1];
-        return {low:last.low, high:last.high, kind:"maint"};
-      }
-  
+
+      if(!_validRange(prevRange)) prevRange = lastRange;
+      if(!_validRange(nextRange)) nextRange = lastRange;
+
       const dayMs = 86400000;
-      const spanDays = Math.max(1, Math.round((nextDate - prevDate)/dayMs));
-      const t = Math.min(1, Math.max(0, (d - prevDate) / (spanDays*dayMs)));
-  
-      const low  = prevRange.low  + (nextRange.low  - prevRange.low ) * t;
-      const high = prevRange.high + (nextRange.high - prevRange.high) * t;
-  
-      let kind = "interp";
-      if(ds === ymd(prevDate)) kind = prevKind;
-      if(ds === ymd(nextDate)) kind = nextKind;
-  
-      return {low, high, kind};
+      const spanDays = Math.max(1, Math.round((nextDate - prevDate) / dayMs));
+      const t = Math.min(1, Math.max(0, (d - prevDate) / (spanDays * dayMs)));
+
+      const low  = Number(prevRange.low)  + (Number(nextRange.low)  - Number(prevRange.low))  * t;
+      const high = Number(prevRange.high) + (Number(nextRange.high) - Number(prevRange.high)) * t;
+
+      const out = {low, high, kind:"interp"};
+      if(ds === ymd(prevDate)) out.kind = prevKind;
+      if(ds === ymd(nextDate)) out.kind = nextKind;
+
+      return _validRange(out) ? out : {low: Number(lastRange.low), high: Number(lastRange.high), kind:"maint"};
+    }catch(e){
+      // Never crash UI rendering
+      return _rangeFallback();
     }
+  }
 
   function fmtRange(r){
-    if(!r) return "";
-    return `${r.low.toFixed(1)} to ${r.high.toFixed(1)}`;
+    if(!_validRange(r)) return "";
+    return `${Number(r.low).toFixed(1)} to ${Number(r.high).toFixed(1)}`;
   }
+
+
 
   function getWeightBefore(ds){
     const target = parseYMD(ds);
@@ -2143,17 +2170,17 @@ Attempts remaining before lockout: ${remaining}`);
   }
   function expectedBfRange(ds){
     const r = expectedRange(ds);
-    if(!r) return null;
+    if(!_validRange(r)) return null;
     const lbm = lbmBaseline();
-    const bfHigh = (1 - (lbm / r.high)) * 100;
-    const bfLow  = (1 - (lbm / r.low )) * 100;
+    const bfHigh = (1 - (lbm / Number(r.high))) * 100;
+    const bfLow  = (1 - (lbm / Number(r.low ))) * 100;
     const lo = Math.min(bfLow, bfHigh);
     const hi = Math.max(bfLow, bfHigh);
     return {low: lo, high: hi};
   }
   function fmtBfRange(b){
-    if(!b) return "";
-    return `${b.low.toFixed(1)}% to ${b.high.toFixed(1)}%`;
+    if(!_validRange(b)) return "";
+    return `${Number(b.low).toFixed(1)}% to ${Number(b.high).toFixed(1)}%`;
   }
 
   const monthsSpec = [
@@ -2495,7 +2522,7 @@ const wb = workoutBadgeText(rec.workout);
 
     let msgParts = [];
 
-    if(!exp){
+    if(!_validRange(exp)){
       expectedWeight.value = "";
       expectedBf.value = "";
       msgParts.push("No target range for this date.");
@@ -2513,11 +2540,11 @@ const wb = workoutBadgeText(rec.workout);
       }
 
       const eb2 = expectedBfRange(ds);
-      if(eb2 && b!==null && !Number.isNaN(b)){
+      if(_validRange(eb2) && b!==null && !Number.isNaN(b)){
         if(b < eb2.low) msgParts.push(`BF% is below expected range by ${(eb2.low - b).toFixed(1)}%.`);
         else if(b > eb2.high) msgParts.push(`BF% is above expected range by ${(b - eb2.high).toFixed(1)}%.`);
         else msgParts.push("BF% is within expected range.");
-      } else if(eb2) {
+      } else if(_validRange(eb2)) {
         msgParts.push("BF% is optional. Enter it if you want a second anchor.");
       }
     }
@@ -3278,7 +3305,7 @@ const d7 = compute7Day();
       const ds = ymd(d);
       if(isCheckpointDay(d)){
         const exp = expectedRange(ds);
-        if(exp) return {ds, range: fmtRange(exp), bfRange: fmtBfRange(expectedBfRange(ds))};
+        if(_validRange(exp)) return {ds, range: fmtRange(exp), bfRange: fmtBfRange(expectedBfRange(ds))};
         return {ds, range:"Checkpoint", bfRange:""};
       }
     }
@@ -3887,7 +3914,7 @@ function latestWeighCompare(){
       for(let i=ws.length-1;i>=0;i--){
         const ds = ws[i].ds;
         const r = expectedRange(ds);
-        if(!r) continue;
+        if(!_validRange(r)) continue;
         const w = ws[i].w;
         const status = (w < r.low) ? "below range" : (w > r.high ? "above range" : "in range");
         return {ds, w, r, status};
