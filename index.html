@@ -37,8 +37,7 @@
     --tileMinH: 220px;
   }
 
-  @media (prefers-color-scheme: light){
-    :root{
+    html[data-theme="light"]{
       --bg:#f6f8fb;
       --bg2:#eef2ff;
       --card:#ffffff;
@@ -59,10 +58,13 @@
 
       --tileBorder:rgba(15,23,42,.12);
       --tileBorderHover:rgba(37,99,235,.30);
-    }
+    
   }
 
-  *{box-sizing:border-box}
+  html[data-theme="dark"]{ color-scheme: dark; }
+  html[data-theme="light"]{ color-scheme: light; }
+
+*{box-sizing:border-box}
   body{
     margin:0;
     font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
@@ -686,6 +688,81 @@
     line-height:1.35;
   }
 
+
+
+  /* === UI refresh v2 (Jan 2026) === */
+  .head{ position:relative; padding:16px 18px; }
+  .head::before{
+    content:"";
+    position:absolute;
+    left:0; top:0; bottom:0;
+    width:4px;
+    background:linear-gradient(180deg, rgba(59,130,246,.85), rgba(34,197,94,.65));
+    opacity:.85;
+  }
+  .head .t{ font-weight:950; font-size:16px; letter-spacing:.02em; }
+
+  .iconBtn{
+    width:40px; height:40px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:999px;
+    border:1px solid var(--line);
+    background:rgba(148,163,184,.10);
+    color:var(--ink);
+    cursor:pointer;
+    box-shadow:var(--shadow2);
+    transition: transform .12s ease, border-color .12s ease, background .12s ease;
+  }
+  .iconBtn:hover{ transform: translateY(-1px); border-color: rgba(59,130,246,.38); }
+
+  .quoteTile{
+    position:relative;
+    width:100%;
+    aspect-ratio: 1 / 1;
+    border-radius: var(--radius);
+    border:1px solid var(--line);
+    overflow:hidden;
+    background:
+      radial-gradient(1200px 520px at 20% 0%, rgba(59,130,246,.22), transparent 58%),
+      radial-gradient(900px 520px at 92% 100%, rgba(34,197,94,.14), transparent 60%),
+      rgba(255,255,255,.03);
+    background-size:cover;
+    background-position:center;
+    box-shadow: var(--shadow);
+  }
+  .quoteShade{
+    position:absolute;
+    inset:0;
+    background:linear-gradient(180deg, rgba(2,6,23,.10), rgba(2,6,23,.70));
+  }
+  .quoteContent{
+    position:absolute;
+    inset:0;
+    padding:18px;
+    display:flex;
+    flex-direction:column;
+    justify-content:flex-end;
+    gap:10px;
+  }
+  .quoteLabel{
+    font-size:12px;
+    color: rgba(255,255,255,.82);
+    letter-spacing:.10em;
+    text-transform:uppercase;
+  }
+  .quoteBig{
+    font-size: clamp(20px, 2.0vw, 34px);
+    font-weight:950;
+    line-height:1.12;
+    text-shadow: 0 12px 32px rgba(0,0,0,.35);
+  }
+  .quoteMeta{
+    font-size:13px;
+    color: rgba(255,255,255,.80);
+  }
+
 </style>
 </head>
 
@@ -738,6 +815,7 @@
           <div class="heroPills">
             <div class="pill dot" id="statusPill"><b>Status:</b> -</div>
             <div class="pill dot good" id="savePill"><b>Data:</b> Saved locally</div>
+            <button class="iconBtn" id="themeToggle" type="button" title="Toggle theme" aria-label="Toggle theme">☾</button>
           </div>
 
           <div class="heroStats">
@@ -792,11 +870,20 @@
   </section>
 
 
-  <section class="card quoteHeroCard" id="quoteCard" style="margin-bottom:18px;">
-    <div class="quoteHero">
-      <div class="quoteHeroLabel">Quote of the day</div>
-      <div class="quoteHeroText" id="quoteText">-</div>
-      <div class="quoteHeroBy" id="quoteBy">-</div>
+  <section class="card" id="quoteCard" style="margin-bottom:18px;">
+    <div class="head">
+      <div class="t">Motivation</div>
+      <div class="pill dot" id="quotePill"><b>Daily:</b> Rotates</div>
+    </div>
+    <div style="padding:16px;">
+      <div class="quoteTile" id="quoteTile" aria-label="Motivational quote">
+        <div class="quoteShade"></div>
+        <div class="quoteContent">
+          <div class="quoteLabel">Quote of the day</div>
+          <div class="quoteBig" id="quoteText">-</div>
+          <div class="quoteMeta" id="quoteBy">-</div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -1250,12 +1337,12 @@
           </div>
           <div>
             <label>Body fat % (Fitdays)</label>
-            <input id="bf" type="number" step="0.1" placeholder="Monday only (optional)"/>
+            <input id="bf" type="number" step="0.1" placeholder="Mon and Thu (optional)"/>
           </div>
         
 <div>
   <label>Muscle mass (lbs) (Fitdays)</label>
-  <input id="muscleMass" type="number" step="0.1" placeholder="Monday only (optional)"/>
+  <input id="muscleMass" type="number" step="0.1" placeholder="Mon and Thu (optional)"/>
 </div>
 
 
@@ -1436,6 +1523,37 @@
 
   const STORAGE_KEY = "diet_15wk_body_transformation_v5";
   const LOCAL_CACHE_KEY = "diet_15wk_cache_v1";
+
+  // UI auth gate (hide sensitive data unless signed in)
+  let authed = false;
+
+  // Theme (dark/light)
+  const THEME_KEY = "wj_theme_v1";
+  function _systemTheme(){
+    try{
+      return (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+    }catch(e){ return "dark"; }
+  }
+  function setTheme(theme){
+    const t = (theme === "light") ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", t);
+    try{ localStorage.setItem(THEME_KEY, t); }catch(e){}
+    const btn = document.getElementById("themeToggle");
+    if(btn) btn.textContent = (t === "light") ? "☀" : "☾";
+  }
+  function initTheme(){
+    let saved = null;
+    try{ saved = localStorage.getItem(THEME_KEY); }catch(e){}
+    setTheme(saved || _systemTheme());
+    const btn = document.getElementById("themeToggle");
+    if(btn){
+      btn.addEventListener("click", ()=>{
+        const cur = document.documentElement.getAttribute("data-theme") || _systemTheme();
+        setTheme(cur === "light" ? "dark" : "light");
+      });
+    }
+  }
+  initTheme();
 
   // Fast window: Jan 2 to Jan 3 only (Jan 4 is normal)
   const FAST_START = "2026-01-02";
@@ -1896,6 +2014,8 @@ Attempts remaining before lockout: ${remaining}`);
       return;
     }
 
+    authed = true;
+
     // Success: clear lock record for this email
     authClearLock(email);
 
@@ -1932,6 +2052,7 @@ Attempts remaining before lockout: ${remaining}`);
 
     try {
       const user = await getUser();
+      authed = !!user;
       if (user) {
         const cloud = await cloudLoadState();
         if (cloud) state = cloud;
@@ -1958,6 +2079,10 @@ Attempts remaining before lockout: ${remaining}`);
   function isBodyCompDay(d){
     // Body composition + tape metrics are logged on Mondays.
     return d.getDay()===1;
+  }
+  function isBfDay(d){
+    // Body fat is logged on Mondays and Thursdays.
+    return d.getDay()===1 || d.getDay()===4;
   }
   function isCheckpointDay(d){
     // Weight checkpoints are tracked weekly on Thursdays (used for target ranges).
@@ -2291,187 +2416,138 @@ Attempts remaining before lockout: ${remaining}`);
       const day = addDays(first, i);
       const ds = ymd(day);
       const inMonth = day.getMonth() === monthIndex;
+      const dow = day.getDay();
+      const bfDay = (dow===1 || dow===4); // Monday + Thursday
 
       try{
-      const cell = document.createElement("div");
-      cell.className = "day" + (inMonth ? "" : " muted");
-      if(ds===todayStr) cell.classList.add("today");
+        const cell = document.createElement("div");
+        cell.className = "day" + (inMonth ? "" : " muted");
+        if(ds===todayStr) cell.classList.add("today");
 
-      if(isFastDay(ds)) cell.classList.add("fast");
+        if(isFastDay(ds)) cell.classList.add("fast");
 
-      const isReverse = inReverseWindow(ds) && !isFastDay(ds);
-      if(isReverse) cell.classList.add("reverse");
+        const isReverse = inReverseWindow(ds) && !isFastDay(ds);
+        if(isReverse) cell.classList.add("reverse");
 
-      const isHigh = isHighCarbDay(ds) && !isFastDay(ds) && !isReverse;
-      if(isHigh) cell.classList.add("refeed");
+        const isHigh = isHighCarbDay(ds) && !isFastDay(ds) && !isReverse;
+        if(isHigh) cell.classList.add("refeed");
 
-      const rec = state.days[ds] || {};
-      const top = document.createElement("div");
-      top.className="topline";
+        const rec = state.days[ds] || {};
 
-      const num=document.createElement("div");
-      num.className="num";
-      num.textContent=String(day.getDate());
+        const top = document.createElement("div");
+        top.className="topline";
 
-      const badges=document.createElement("div");
-      badges.className="badges";
+        const num=document.createElement("div");
+        num.className="num";
+        num.textContent=String(day.getDate());
 
-      if(isFastDay(ds)){
-        const b=document.createElement("span"); b.className="badge warn"; b.textContent="FAST"; badges.appendChild(b);
-      }
-      if(isReverse){
-        const b=document.createElement("span"); b.className="badge"; b.textContent="Reverse"; badges.appendChild(b);
-      }
-      if(isHigh){
-        const b=document.createElement("span"); b.className="badge good"; b.textContent="High-carb"; badges.appendChild(b);
-      }      // Body comp badge (appears when any comp/tape metric is logged)
-      if(rec && (
-        (rec.bf!==null && rec.bf!==undefined && rec.bf!=="") ||
-        (rec.muscleMass!==null && rec.muscleMass!==undefined && rec.muscleMass!=="") ||
-        (rec.waist!==null && rec.waist!==undefined && rec.waist!=="") ||
-        (rec.neck!==null && rec.neck!==undefined && rec.neck!=="") ||
-        (rec.hips!==null && rec.hips!==undefined && rec.hips!=="") ||
-        (rec.chest!==null && rec.chest!==undefined && rec.chest!=="") ||
-        (rec.thigh!==null && rec.thigh!==undefined && rec.thigh!=="") ||
-        (rec.arm!==null && rec.arm!==undefined && rec.arm!=="")
-      )){
-        const b=document.createElement("span"); b.className="badge"; b.textContent="Comp"; badges.appendChild(b);
-      }
-const wb = workoutBadgeText(rec.workout);
-      if(wb){
-        const b=document.createElement("span");
-        b.className="badge " + workoutBadgeClass(rec.workout);
-        b.textContent=wb;
-        badges.appendChild(b);
-      }
+        const badges=document.createElement("div");
+        badges.className="badges";
 
-      top.appendChild(num); top.appendChild(badges);
-      cell.appendChild(top);
-
-      let tgt;
-      try { tgt = targetFor(ds); }
-      catch(e){ tgt = isFastDay(ds) ? 0 : (Number(state?.settings?.targetCal)||0); }
-
-      const calLine=document.createElement("div");
-      calLine.className="line";
-      const cal = (rec.calories===null || rec.calories===undefined) ? "-" : rec.calories;
-      calLine.innerHTML = `Calories: <b>${cal}</b> <span class="mono">/ ${tgt}</span>`;
-      cell.appendChild(calLine);
-
-      const burnVal = (rec.burned===null || rec.burned===undefined || rec.burned==="") ? null : Number(rec.burned);
-      if(burnVal!==null && isFinite(burnVal)) {
-        const burnLine=document.createElement("div");
-        burnLine.className="line";
-        const calNum = (rec.calories===null || rec.calories===undefined || rec.calories==="") ? null : Number(rec.calories);
-        const net = (calNum!==null && isFinite(calNum)) ? (calNum - burnVal) : null;
-        burnLine.innerHTML = `Burned: <b>${Math.round(burnVal)}</b>` + (net!==null ? ` <span class="mono">Net ${Math.round(net)}</span>` : ``);
-        cell.appendChild(burnLine);
-      }
-      // Weight + body composition (only show when logged)
-      if(rec){
-        const hasAny = (
-          (rec.weight!==null && rec.weight!==undefined && rec.weight!=='') ||
-          (rec.bf!==null && rec.bf!==undefined && rec.bf!=='') ||
-          (rec.muscleMass!==null && rec.muscleMass!==undefined && rec.muscleMass!=='') ||
-          (rec.waist!==null && rec.waist!==undefined && rec.waist!=='')
-        );
-
-        if(hasAny){
-          if(rec.weight!==null && rec.weight!==undefined && rec.weight!==''){
-            const wtLine=document.createElement('div');
-            wtLine.className='line';
-            wtLine.innerHTML = `Weight: <b>${Number(rec.weight).toFixed(1)}</b>`;
-            cell.appendChild(wtLine);
+        if(authed){
+          if(isFastDay(ds)){
+            const b=document.createElement("span"); b.className="badge warn"; b.textContent="FAST"; badges.appendChild(b);
           }
+          if(isReverse){
+            const b=document.createElement("span"); b.className="badge"; b.textContent="Reverse"; badges.appendChild(b);
+          }
+          if(isHigh){
+            const b=document.createElement("span"); b.className="badge good"; b.textContent="High-carb"; badges.appendChild(b);
+          }
+          const wb = workoutBadgeText(rec.workout);
+          if(wb){
+            const b=document.createElement("span");
+            b.className="badge " + workoutBadgeClass(rec.workout);
+            b.textContent=wb;
+            badges.appendChild(b);
+          }
+        }
 
-          if(rec.bf!==null && rec.bf!==undefined && rec.bf!==''){
-            const bfLine=document.createElement('div');
-            bfLine.className='line';
+        top.appendChild(num); top.appendChild(badges);
+        cell.appendChild(top);
+
+        // Privacy: no day details unless signed in
+        if(!authed){
+          if(inMonth){
+            cell.addEventListener("click", ()=>{
+              alert("Please sign in to view or edit entries.");
+              try{ document.getElementById("authEmail").focus(); }catch(e){}
+            });
+          }
+          monthGridEl.appendChild(cell);
+          continue;
+        }
+
+        // Visible calendar: ONLY calories, burned, sleep, macros, and BF + expected BF on Mon/Thu
+        let tgt;
+        try { tgt = targetFor(ds); }
+        catch(e){ tgt = isFastDay(ds) ? 0 : (Number(state?.settings?.targetCal)||0); }
+
+        const calVal = (rec.calories===null || rec.calories===undefined || rec.calories==="") ? null : Number(rec.calories);
+        const calForCalc = (calVal===null && isFastDay(ds)) ? 0 : calVal;
+        const calLine=document.createElement("div");
+        calLine.className="line" + ((calForCalc===null || !isFinite(calForCalc)) ? " muted" : "");
+        calLine.innerHTML = `Calories: <b>${(calForCalc===null || !isFinite(calForCalc)) ? "-" : Math.round(calForCalc)}</b> <span class="mono">/ ${Math.round(tgt)}</span>`;
+        cell.appendChild(calLine);
+
+        const burnVal = (rec.burned===null || rec.burned===undefined || rec.burned==="") ? null : Number(rec.burned);
+        if(burnVal!==null && isFinite(burnVal)){
+          const burnLine=document.createElement("div");
+          burnLine.className="line";
+          const net = (calForCalc!==null && isFinite(calForCalc)) ? (calForCalc - burnVal) : null;
+          burnLine.innerHTML = `Burned: <b>${Math.round(burnVal)}</b>` + (net!==null ? ` <span class="mono">Net ${Math.round(net)}</span>` : ``);
+          cell.appendChild(burnLine);
+        }
+
+        if(rec.sleepHours!==null && rec.sleepHours!==undefined && rec.sleepHours!==""){
+          const slLine=document.createElement("div");
+          slLine.className="line";
+          const sh = Number(rec.sleepHours).toFixed(1) + "h";
+          const sq = (rec.sleepQuality!==null && rec.sleepQuality!==undefined && rec.sleepQuality!=="") ? ` (Q${rec.sleepQuality})` : "";
+          slLine.innerHTML = `Sleep: <b>${sh}${sq}</b>`;
+          cell.appendChild(slLine);
+        }
+
+        const hasMacros = rec && (
+          (rec.protein!==null && rec.protein!==undefined) ||
+          (rec.carbs!==null && rec.carbs!==undefined) ||
+          (rec.fat!==null && rec.fat!==undefined) ||
+          (rec.fiber!==null && rec.fiber!==undefined)
+        );
+        if(hasMacros){
+          const mLine = document.createElement("div");
+          mLine.className = "tiny";
+          const p = (rec.protein===null || rec.protein===undefined) ? "-" : Math.round(rec.protein);
+          const c = (rec.carbs===null || rec.carbs===undefined) ? "-" : Math.round(rec.carbs);
+          const f = (rec.fat===null || rec.fat===undefined) ? "-" : Math.round(rec.fat);
+          const fi = (rec.fiber===null || rec.fiber===undefined) ? null : Math.round(rec.fiber);
+          mLine.innerHTML = `Macros: <b>P${p}</b> / <b>C${c}</b> / <b>F${f}</b>${fi!==null?` <span class="muted">(Fi${fi})</span>`:""}`;
+          cell.appendChild(mLine);
+        }
+
+        if(bfDay){
+          if(rec.bf!==null && rec.bf!==undefined && rec.bf!==""){
+            const bfLine=document.createElement("div");
+            bfLine.className="line";
             bfLine.innerHTML = `BF%: <b>${Number(rec.bf).toFixed(1)}%</b>`;
             cell.appendChild(bfLine);
           }
-
-          if(rec.muscleMass!==null && rec.muscleMass!==undefined && rec.muscleMass!==''){
-            const mmLine=document.createElement('div');
-            mmLine.className='line';
-            mmLine.innerHTML = `Muscle: <b>${Number(rec.muscleMass).toFixed(1)} lb</b>`;
-            cell.appendChild(mmLine);
-          }
-
-          if(rec.waist!==null && rec.waist!==undefined && rec.waist!==''){
-            const wsLine=document.createElement('div');
-            wsLine.className='line';
-            wsLine.innerHTML = `Waist: <b>${Number(rec.waist).toFixed(1)} in</b>`;
-            cell.appendChild(wsLine);
+          const eb = safeExpectedBfRange(ds);
+          if(eb){
+            const ebLine=document.createElement("div");
+            ebLine.className="line";
+            ebLine.innerHTML = `Exp BF%: <b>${fmtBfRange(eb)}</b>`;
+            cell.appendChild(ebLine);
           }
         }
-      }
 
-
-      // Sleep (optional)
-      if(rec.sleepHours!==null && rec.sleepHours!==undefined && rec.sleepHours!==""){
-        const slLine=document.createElement("div");
-        slLine.className="line";
-        const sh = Number(rec.sleepHours).toFixed(1) + "h";
-        const sq = (rec.sleepQuality!==null && rec.sleepQuality!==undefined && rec.sleepQuality!=="") ? ` (Q${rec.sleepQuality})` : "";
-        slLine.innerHTML = `Sleep: <b>${sh}${sq}</b>`;
-        cell.appendChild(slLine);
-      }
-
-      // Macros (optional)
-      const hasMacros = rec && (
-        rec.protein!==null && rec.protein!==undefined ||
-        rec.carbs!==null && rec.carbs!==undefined ||
-        rec.fat!==null && rec.fat!==undefined ||
-        rec.fiber!==null && rec.fiber!==undefined
-      );
-      if(hasMacros){
-        const mLine = document.createElement("div");
-        mLine.className = "tiny";
-        const p = (rec.protein===null || rec.protein===undefined) ? "-" : Math.round(rec.protein);
-        const c = (rec.carbs===null || rec.carbs===undefined) ? "-" : Math.round(rec.carbs);
-        const f = (rec.fat===null || rec.fat===undefined) ? "-" : Math.round(rec.fat);
-        const fi = (rec.fiber===null || rec.fiber===undefined) ? null : Math.round(rec.fiber);
-        mLine.innerHTML = `Macros: <b>P${p}</b> / <b>C${c}</b> / <b>F${f}</b>${fi!==null?` <span class="muted">(Fi${fi})</span>`:""}`;
-        cell.appendChild(mLine);
-      }
-
-      const exp = safeExpectedRange(ds);
-      if(exp){
-        const expLine=document.createElement("div");
-        expLine.className="line";
-        expLine.innerHTML = `Expected: <b>${fmtRange(exp)}</b>`;
-        cell.appendChild(expLine);
-
-        const eb = safeExpectedBfRange(ds);
-        if(eb){
-          const ebLine=document.createElement("div");
-          ebLine.className="line";
-          ebLine.innerHTML = `Exp BF%: <b>${fmtBfRange(eb)}</b>`;
-          cell.appendChild(ebLine);
+        if(inMonth){
+          cell.addEventListener("click", ()=> openModal(ds));
         }
-      }
+        monthGridEl.appendChild(cell);
 
-      if(rec.notes && rec.notes.trim().length){
-        const note=document.createElement("div");
-        note.className="line";
-        const sn = rec.notes.trim().slice(0, 56);
-        const safe = rec.notes.replaceAll('"','&quot;');
-        note.innerHTML = `Note: <b title="${safe}">${sn}${rec.notes.length>56 ? "…" : ""}</b>`;
-        cell.appendChild(note);
-      }else{
-        const spacer=document.createElement("div");
-        spacer.style.flex="1";
-        cell.appendChild(spacer);
-      }
-
-      if(inMonth){
-        cell.addEventListener("click", ()=> openModal(ds));
-      }
-      monthGridEl.appendChild(cell);
       }catch(err){
         console.error('Day render failed', ds, err);
-        // Fail-soft: still render a minimal cell so the grid stays intact
         const fallback = document.createElement('div');
         fallback.className = 'day' + (inMonth ? '' : ' muted');
         const top = document.createElement('div');
@@ -2481,15 +2557,11 @@ const wb = workoutBadgeText(rec.workout);
         num.textContent = String(day.getDate());
         top.appendChild(num);
         fallback.appendChild(top);
-        const msg = document.createElement('div');
-        msg.className = 'tiny muted';
-        msg.style.paddingTop = '6px';
-        msg.textContent = 'Render skipped';
-        fallback.appendChild(msg);
         monthGridEl.appendChild(fallback);
       }
     }
   }
+
 
   function renderActiveMonth(){
     const key = state.ui.activeMonthKey || "2026-0";
@@ -2612,32 +2684,42 @@ const wb = workoutBadgeText(rec.workout);
   }
 
   function openModal(ds){
+    if(!authed){
+      alert("Please sign in to view or edit entries.");
+      try{ document.getElementById("authEmail").focus(); }catch(e){}
+      return;
+    }
     activeDate = ds;
     const d = parseYMD(ds);
     modalTitle.textContent = `${weekdayName(d)} - ${ds}`;
-    const bodyCompDay = isBodyCompDay(d);
-    modalSub.textContent = bodyCompDay
-      ? "Daily log: weight (AM, fasted). Monday: also log body composition + tape metrics."
-      : "Daily log: weight (AM, fasted).";
+    const fullCompDay = isBodyCompDay(d); // Monday
+    const bfDay = isBfDay(d); // Monday + Thursday
+
+    if(fullCompDay){
+      modalSub.textContent = "Daily log: weight (AM, fasted). Monday: also log body fat, body composition, and tape metrics.";
+    }else if(bfDay){
+      modalSub.textContent = "Daily log: weight (AM, fasted). Thursday: also log body fat.";
+    }else{
+      modalSub.textContent = "Daily log: weight (AM, fasted).";
+    }
 
     if(weighFields){
-      // Weight is daily; body comp inputs are shown/used on Mondays.
       weighFields.style.display = "grid";
     }
     if(weight) weight.disabled = false;
-    if(bf) bf.disabled = !bodyCompDay;
-    if(muscleMass) muscleMass.disabled = !bodyCompDay;
+    if(bf) bf.disabled = !bfDay;
+    if(muscleMass) muscleMass.disabled = !fullCompDay;
 
-    // Keep the modal clean on non-Mondays
+    // Keep the modal clean on non-BF days
     try{
-      if(bf && bf.parentElement) bf.parentElement.style.display = bodyCompDay ? "" : "none";
-      if(muscleMass && muscleMass.parentElement) muscleMass.parentElement.style.display = bodyCompDay ? "" : "none";
+      if(bf && bf.parentElement) bf.parentElement.style.display = bfDay ? "" : "none";
+      if(muscleMass && muscleMass.parentElement) muscleMass.parentElement.style.display = fullCompDay ? "" : "none";
     }catch(e){}
 
     const tapeNote = document.getElementById("tapeNote");
     const tapeFieldsEl = document.getElementById("tapeFields");
-    if(tapeNote) tapeNote.style.display = bodyCompDay ? "block" : "none";
-    if(tapeFieldsEl) tapeFieldsEl.style.display = bodyCompDay ? "grid" : "none";
+    if(tapeNote) tapeNote.style.display = fullCompDay ? "block" : "none";
+    if(tapeFieldsEl) tapeFieldsEl.style.display = fullCompDay ? "grid" : "none";
 
 let tgt;
     try { tgt = targetFor(ds); }
@@ -2703,7 +2785,9 @@ let tgt;
     if(_timer) clearTimeout(_timer);
     setSaveIndicator("Saving...", "warn");
     _timer = setTimeout(()=>{
-      const bodyCompDay = isBodyCompDay(parseYMD(activeDate));
+      const _d = parseYMD(activeDate);
+      const fullCompDay = isBodyCompDay(_d);
+      const bfDay = isBfDay(_d);
       const prev = (state.days[activeDate] || {});
       const rec = {
         calories: calories.value==="" ? null : Number(calories.value),
@@ -2711,14 +2795,14 @@ let tgt;
         workout: workout.value || "",
         // Body comp + tape metrics are Monday-only; preserve prior values on other days
         weight: (weight.value==="" ? null : Number(weight.value)),
-        bf: (bodyCompDay ? (bf.value==="" ? null : Number(bf.value)) : (prev.bf ?? null)),
-        muscleMass: (bodyCompDay ? (muscleMass && muscleMass.value==="" ? null : (muscleMass ? Number(muscleMass.value) : null)) : (prev.muscleMass ?? null)),
-        waist: (bodyCompDay ? (waist && waist.value==="" ? null : (waist ? Number(waist.value) : null)) : (prev.waist ?? null)),
-        neck: (bodyCompDay ? (neck && neck.value==="" ? null : (neck ? Number(neck.value) : null)) : (prev.neck ?? null)),
-        hips: (bodyCompDay ? (hips && hips.value==="" ? null : (hips ? Number(hips.value) : null)) : (prev.hips ?? null)),
-        chest: (bodyCompDay ? (chest && chest.value==="" ? null : (chest ? Number(chest.value) : null)) : (prev.chest ?? null)),
-        thigh: (bodyCompDay ? (thigh && thigh.value==="" ? null : (thigh ? Number(thigh.value) : null)) : (prev.thigh ?? null)),
-        arm: (bodyCompDay ? (arm && arm.value==="" ? null : (arm ? Number(arm.value) : null)) : (prev.arm ?? null)),
+        bf: (bfDay ? (bf.value==="" ? null : Number(bf.value)) : (prev.bf ?? null)),
+        muscleMass: (fullCompDay ? (muscleMass && muscleMass.value==="" ? null : (muscleMass ? Number(muscleMass.value) : null)) : (prev.muscleMass ?? null)),
+        waist: (fullCompDay ? (waist && waist.value==="" ? null : (waist ? Number(waist.value) : null)) : (prev.waist ?? null)),
+        neck: (fullCompDay ? (neck && neck.value==="" ? null : (neck ? Number(neck.value) : null)) : (prev.neck ?? null)),
+        hips: (fullCompDay ? (hips && hips.value==="" ? null : (hips ? Number(hips.value) : null)) : (prev.hips ?? null)),
+        chest: (fullCompDay ? (chest && chest.value==="" ? null : (chest ? Number(chest.value) : null)) : (prev.chest ?? null)),
+        thigh: (fullCompDay ? (thigh && thigh.value==="" ? null : (thigh ? Number(thigh.value) : null)) : (prev.thigh ?? null)),
+        arm: (fullCompDay ? (arm && arm.value==="" ? null : (arm ? Number(arm.value) : null)) : (prev.arm ?? null)),
         protein: protein.value==="" ? null : Number(protein.value),
         carbs: carbs.value==="" ? null : Number(carbs.value),
         fat: fat.value==="" ? null : Number(fat.value),
@@ -2741,7 +2825,9 @@ let tgt;
   // Flush the current day record immediately (used on modal close so last edits aren't lost)
   function saveActiveDayImmediate(){
     if(!activeDate) return;
-    const bodyCompDay = isBodyCompDay(parseYMD(activeDate));
+    const _d = parseYMD(activeDate);
+    const fullCompDay = isBodyCompDay(_d);
+    const bfDay = isBfDay(_d);
       const prev = (state.days[activeDate] || {});
       const rec = {
       calories: calories.value==="" ? null : Number(calories.value),
@@ -2749,14 +2835,14 @@ let tgt;
       workout: workout.value || "",
         // Body comp + tape metrics are Monday-only; preserve prior values on other days
         weight: (weight.value==="" ? null : Number(weight.value)),
-        bf: (bodyCompDay ? (bf.value==="" ? null : Number(bf.value)) : (prev.bf ?? null)),
-        muscleMass: (bodyCompDay ? (muscleMass && muscleMass.value==="" ? null : (muscleMass ? Number(muscleMass.value) : null)) : (prev.muscleMass ?? null)),
-        waist: (bodyCompDay ? (waist && waist.value==="" ? null : (waist ? Number(waist.value) : null)) : (prev.waist ?? null)),
-        neck: (bodyCompDay ? (neck && neck.value==="" ? null : (neck ? Number(neck.value) : null)) : (prev.neck ?? null)),
-        hips: (bodyCompDay ? (hips && hips.value==="" ? null : (hips ? Number(hips.value) : null)) : (prev.hips ?? null)),
-        chest: (bodyCompDay ? (chest && chest.value==="" ? null : (chest ? Number(chest.value) : null)) : (prev.chest ?? null)),
-        thigh: (bodyCompDay ? (thigh && thigh.value==="" ? null : (thigh ? Number(thigh.value) : null)) : (prev.thigh ?? null)),
-        arm: (bodyCompDay ? (arm && arm.value==="" ? null : (arm ? Number(arm.value) : null)) : (prev.arm ?? null)),
+        bf: (bfDay ? (bf.value==="" ? null : Number(bf.value)) : (prev.bf ?? null)),
+        muscleMass: (fullCompDay ? (muscleMass && muscleMass.value==="" ? null : (muscleMass ? Number(muscleMass.value) : null)) : (prev.muscleMass ?? null)),
+        waist: (fullCompDay ? (waist && waist.value==="" ? null : (waist ? Number(waist.value) : null)) : (prev.waist ?? null)),
+        neck: (fullCompDay ? (neck && neck.value==="" ? null : (neck ? Number(neck.value) : null)) : (prev.neck ?? null)),
+        hips: (fullCompDay ? (hips && hips.value==="" ? null : (hips ? Number(hips.value) : null)) : (prev.hips ?? null)),
+        chest: (fullCompDay ? (chest && chest.value==="" ? null : (chest ? Number(chest.value) : null)) : (prev.chest ?? null)),
+        thigh: (fullCompDay ? (thigh && thigh.value==="" ? null : (thigh ? Number(thigh.value) : null)) : (prev.thigh ?? null)),
+        arm: (fullCompDay ? (arm && arm.value==="" ? null : (arm ? Number(arm.value) : null)) : (prev.arm ?? null)),
       protein: protein.value==="" ? null : Number(protein.value),
       carbs: carbs.value==="" ? null : Number(carbs.value),
       fat: fat.value==="" ? null : Number(fat.value),
@@ -3127,6 +3213,20 @@ let tgt;
   }
 
   function renderKpis(){
+
+    if(!authed){
+      setPill("statusPill","warn", "<b>Status:</b> Sign in to view");
+      const ids = [
+        "kpiWeightPair","kpiWeightDelta","kpiBfPair","kpiBfDelta","kpiAvgWeightWM","kpiAvgWeightWMNote",
+        "kpiWeighContinuity","kpiWeighContinuityNote","kpiAvgCal","kpiAvgDeficit","kpiAvgBurned","kpiAvgNetDeficit","kpiEstLoss",
+        "kpiAdh","kpiAvgSleep","kpiAvgProtein","kpiAvgCarbs","kpiAvgFat",
+        "heroTodayTarget","heroNextWeighInShort","heroDietShort"
+      ];
+      ids.forEach(id=>{ const el=document.getElementById(id); if(el) el.textContent = "-"; });
+      setPill("dietPill","warn", "<b>Diet:</b> Locked");
+      return;
+    }
+
 
     const ws = getWeighIns();
     const current = ws.length ? ws[ws.length-1] : null;
@@ -3627,6 +3727,20 @@ const d7 = compute7Day();
   }
 
   function renderTrends(){
+    if(!authed){
+      const elW = safeEl("sparkWeight");
+      const elBC = safeEl("sparkBodyComp");
+      const elSW = safeEl("sparkSleepWeek");
+      if(elW) elW.innerHTML = `<div class="tiny muted" style="padding:10px;">Sign in to view.</div>`;
+      if(elBC) elBC.innerHTML = `<div class="tiny muted" style="padding:10px;">Sign in to view.</div>`;
+      if(elSW) elSW.innerHTML = `<div class="tiny muted" style="padding:10px;">Sign in to view.</div>`;
+      const n1=safeEl("sparkWeightNote"); if(n1) n1.textContent="-";
+      const n2=safeEl("sparkBodyCompNote"); if(n2) n2.textContent="-";
+      const n3=safeEl("sparkSleepWeekNote"); if(n3) n3.textContent="-";
+      setPill("insightsPill","warn", "<b>Insights:</b> Locked");
+      return;
+    }
+
     const elW = safeEl("sparkWeight");
     const elBC = safeEl("sparkBodyComp");
     const elSW = safeEl("sparkSleepWeek");
@@ -3728,7 +3842,7 @@ const d7 = compute7Day();
     const bcNote = safeEl("sparkBodyCompNote");
 
     if(!comp){
-      elBC.innerHTML = `<div class="tiny muted" style="padding:10px;">Log BF% and optionally muscle mass on Mondays to see this chart.</div>`;
+      elBC.innerHTML = `<div class="tiny muted" style="padding:10px;">Log BF% on Mondays and Thursdays. Log muscle mass (optional) on Mondays to see this chart.</div>`;
       if(bcNote) bcNote.textContent = "-";
     }else{
       const clamp = (x, lo, hi) => Math.max(lo, Math.min(hi, x));
@@ -3883,6 +3997,8 @@ const d7 = compute7Day();
   }
 
   function renderCoach(){
+    // Quote always renders (not sensitive).
+
     const d7 = compute7Day();
     const nxt = nextWeighInTarget();
 
@@ -3904,6 +4020,38 @@ const d7 = compute7Day();
       const el = document.getElementById(id);
       if(!el) return;
       el.textContent = (val===null || val===undefined || val==="") ? "-" : String(val);
+    }
+
+
+    // Quote tile (daily rotating image)
+    (function(){
+      const q = quoteOfDay();
+      const qt = document.getElementById("quoteText");
+      const qa = document.getElementById("quoteBy");
+      if(q && qt && qa){
+        qt.textContent = q.t;
+        qa.textContent = q.a ? ("\u2014 " + q.a) : "";
+      }
+      const tile = document.getElementById("quoteTile");
+      if(tile){
+        const ds = ymd(new Date());
+        const seed = parseInt(ds.replace(/-/g, ""), 10) || 0;
+        const topics = ["mountain,sunrise","trail,forest","ocean,calm","gym,training","road,runner","lake,reflection","sky,clouds","desert,dawn"];
+        const topic = topics[seed % topics.length];
+        const sig = seed % 1000;
+        tile.style.backgroundImage = `url(https://source.unsplash.com/900x900/?${topic}&sig=${sig})`;
+      }
+    })();
+
+    if(!authed){
+      setText("coachFocusTitle", "Sign in to view coaching");
+      setText("coachMini", "-");
+      setText("coachWhyText", "Sign in above to unlock your data-driven coaching, calendar, and trends.");
+      setTokens("coachLatestItems", []);
+      setTokens("coachWeekItems", []);
+      setSteps(["Sign in using Cloud Sync.", "Then log today’s calories, burn, sleep, and macros."]);
+      setChips([{text:"Locked", cls:"warn", tip:"Data is hidden unless signed in."}]);
+      return;
     }
 
 
