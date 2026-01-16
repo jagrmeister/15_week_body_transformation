@@ -719,7 +719,8 @@
 
   .quoteTile{
     position:relative;
-    width:100%;
+    width:min(520px, 100%);
+    margin:0 auto;
     aspect-ratio: 1 / 1;
     border-radius: var(--radius);
     border:1px solid var(--line);
@@ -743,7 +744,7 @@
     padding:18px;
     display:flex;
     flex-direction:column;
-    justify-content:flex-end;
+    justify-content:space-between;
     gap:10px;
   }
   .quoteLabel{
@@ -844,7 +845,7 @@
       <div class="pill dot" id="cloudPill"><b>Cloud:</b> Not signed in</div>
     </div>
     <div class="tiny" style="padding:0 16px 10px;">
-      Use this to sync your tracker across devices. Calendar rendering does not depend on cloud sync.
+      Use this to sync your tracker across devices. Sign-in is required to view calendar details and data-driven coaching.
     </div>
     <div class="controls" style="padding-top:0;">
       <div>
@@ -4383,14 +4384,7 @@ function latestWeighCompare(){
       }
     }
 
-    // --- Quote of the day ---
-    const q = quoteOfDay();
-    if(q){
-      const qt = document.getElementById("quoteText");
-      const qa = document.getElementById("quoteBy");
-      if(qt) qt.textContent = "“" + q.t + "”";
-      if(qa) qa.textContent = q.a + " • " + (q.idx+1) + "/" + q.total;
-    }
+    // Quote already rendered above in renderCoach()
 
     setPill("coachPill", cls, "<b>Guidance:</b> " + pill);
     setPill("onTrackPill", cls, "<b>On track:</b> " + focus);
