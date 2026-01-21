@@ -1089,7 +1089,7 @@
   </div>
   <div class="trendGrid">
     <div class="kpi">
-      <div class="k">Weight trend (30 days)</div>
+      <div class="k">Weight trend (since 01/01)</div>
       <div class="spark" id="sparkWeight" style="min-height:140px;">-</div>
       <div class="s" id="sparkWeightNote">-</div>
     </div>
@@ -2507,7 +2507,7 @@ Attempts remaining before lockout: ${remaining}`);
           continue;
         }
 
-        // Visible calendar: ONLY calories, burned, sleep, macros, and BF + expected BF on Mon/Thu
+        // Visible calendar: ONLY calories, burned, sleep, macros, and BF + expected weight on Mon/Thu
         let tgt;
         try { tgt = targetFor(ds); }
         catch(e){ tgt = isFastDay(ds) ? 0 : (Number(state?.settings?.targetCal)||0); }
@@ -2561,12 +2561,12 @@ Attempts remaining before lockout: ${remaining}`);
             bfLine.innerHTML = `BF%: <b>${Number(rec.bf).toFixed(1)}%</b>`;
             cell.appendChild(bfLine);
           }
-          const eb = safeExpectedBfRange(ds);
-          if(eb){
-            const ebLine=document.createElement("div");
-            ebLine.className="line";
-            ebLine.innerHTML = `Exp BF%: <b>${fmtBfRange(eb)}</b>`;
-            cell.appendChild(ebLine);
+          const expW = safeExpectedRange(ds);
+          if(expW){
+            const expLine=document.createElement("div");
+            expLine.className="line";
+            expLine.innerHTML = `Exp Wt: <b>${fmtRange(expW)} lb</b>`;
+            cell.appendChild(expLine);
           }
         }
 
@@ -3089,6 +3089,17 @@ let tgt;
     return out;
   }
 
+  function daysBetweenYMD(startYmd, endYmd){
+    const s = parseYMD(startYmd);
+    const e = parseYMD(endYmd);
+    if(!(s instanceof Date) || isNaN(s) || !(e instanceof Date) || isNaN(e)) return [];
+    const out = [];
+    for(let d = new Date(s); d <= e; d = addDays(d, 1)){
+      out.push(ymd(d));
+    }
+    return out;
+  }
+
   function compute7Day(){
     const anchor = ymd(new Date());
     const days = lastNDays(anchor, 7);
@@ -3520,6 +3531,11 @@ const d7 = compute7Day();
       min = Math.min(min, goal);
       max = Math.max(max, goal);
     }
+    const hardMin = (opts.yMin!==undefined && opts.yMin!==null && isFinite(opts.yMin)) ? Number(opts.yMin) : null;
+    const hardMax = (opts.yMax!==undefined && opts.yMax!==null && isFinite(opts.yMax)) ? Number(opts.yMax) : null;
+    if(hardMin!==null) min = hardMin;
+    if(hardMax!==null) max = hardMax;
+    if(max <= min) max = min + 1;
     const span = (max-min) || 1;
 
     const padL = 42, padR = 10, padT = 10, padB = 34;
@@ -3778,17 +3794,26 @@ const d7 = compute7Day();
     const today = ymd(new Date());
     const sleepTarget = Number(state.settings.sleepTarget || 7.0);
 
-    // Weight trend (30 days)
-    const wDays = lastNDays(today, 30);
+    // Weight trend (since 01/01)
+    const nowD = parseYMD(today);
+    const yStart = ymd(new Date(nowD.getFullYear(), 0, 1));
+    const wDays = daysBetweenYMD(yStart, today);
     const wSeries = wDays.map(ds=>{
       const rec = state.days[ds];
       return rec && rec.weight!==null && rec.weight!==undefined ? Number(rec.weight) : null;
     });
+    const wValsForScale = wSeries.filter(v=>v!==null && isFinite(v));
+    const wYMin = 200;
+    const wYMax = wValsForScale.length ? Math.max(220, Math.ceil(Math.max(...wValsForScale))) : 220;
     elW.innerHTML = sparkline(wSeries, {
       unit:"lb",
       yLabel:"lb",
-      xLabels:[fmtMD(wDays[0]), fmtMD(wDays[Math.floor(wDays.length/2)]), fmtMD(wDays[wDays.length-1])],
+      xLabels:[fmtMD(wDays[0]||yStart), fmtMD(wDays[Math.floor(wDays.length/2)]||today), fmtMD(wDays[wDays.length-1]||today)],
       autoColor:true,
+      goal:200,
+      goalLabel:"Goal 200",
+      yMin:wYMin,
+      yMax:wYMax,
       h:140
     });
 
@@ -4059,7 +4084,7 @@ const d7 = compute7Day();
       const qa = document.getElementById("quoteBy");
       if(q && qt && qa){
         qt.textContent = q.t;
-        qa.textContent = q.a ? ("\u2014 " + q.a) : "";
+        qa.textContent = q.a ? ("- " + q.a) : "";
       }
       const tile = document.getElementById("quoteTile");
       if(tile){
@@ -4185,69 +4210,207 @@ function latestWeighCompare(){
     let cls = "warn";
     let pill = "Action needed";
 
-    // --- Focus selection (simple, predictable) ---
-    if(logged < 5){
+    // --- Focus selection (today-first, trend-aware) ---
+    const todayDs = ymd(new Date());
+
+    function getDayStats(ds){
+      const rec = state.days[ds] || {};
+      let hasCalories = rec.calories!==null && rec.calories!==undefined && rec.calories!=="";
+      let cal = hasCalories ? Number(rec.calories) : null;
+      const plannedFast = isFastDay(ds);
+      if(!hasCalories && plannedFast){
+        cal = 0;
+        hasCalories = true;
+      }
+      const burn = (rec.burned!==null && rec.burned!==undefined && rec.burned!=="") ? Number(rec.burned) : 0;
+      const burnSafe = isFinite(burn) ? burn : 0;
+      let tgt;
+      try{ tgt = targetFor(ds); }
+      catch(e){ tgt = plannedFast ? 0 : (Number(state?.settings?.targetCal)||0); }
+
+      const net = (hasCalories && isFinite(cal)) ? (cal - burnSafe) : null;
+      const delta = (net!==null && isFinite(tgt)) ? (net - tgt) : null;
+      const diff = (delta!==null && isFinite(delta)) ? Math.abs(delta) : null;
+
+      const sleep = (rec.sleepHours!==null && rec.sleepHours!==undefined && rec.sleepHours!=="") ? Number(rec.sleepHours) : null;
+      const sleepOk = (sleep!==null && isFinite(sleep)) ? sleep : null;
+
+      const protein = (rec.protein!==null && rec.protein!==undefined && rec.protein!=="") ? Number(rec.protein) : null;
+      const proteinOk = (protein!==null && isFinite(protein)) ? protein : null;
+
+      return {ds, rec, plannedFast, hasCalories, cal, burn: burnSafe, tgt, net, delta, diff, sleep: sleepOk, protein: proteinOk};
+    }
+
+    const t = getDayStats(todayDs);
+
+    const last3 = lastNDays(todayDs, 3);
+    const last3Stats = last3.map(getDayStats).filter(x => x.net!==null && isFinite(x.net) && x.tgt!==null && isFinite(x.tgt));
+    const out3 = last3Stats.filter(x => x.diff!==null && isFinite(x.diff) && x.diff > win);
+
+    const triggers = [];
+    if(!t.hasCalories && !t.plannedFast) triggers.push("Missing calories today");
+    if(t.diff!==null && isFinite(t.diff) && t.diff > win) triggers.push("Today off-target by " + Math.round(t.diff) + " kcal");
+    if(t.protein!==null && isFinite(t.protein) && (pTarget - t.protein) > 25) triggers.push("Protein -" + Math.round(pTarget - t.protein) + "g");
+    if(t.sleep!==null && isFinite(t.sleep) && (sleepTarget - t.sleep) > 0.7) triggers.push("Sleep low (" + t.sleep.toFixed(1) + "h)");
+    if(out3.length >= 2) triggers.push("2 of last 3 days off-target");
+
+    function kcalToMinutes(kcal){
+      // Rough mapping: 6-10 kcal/min depending on pace; use 8 kcal/min midpoint.
+      const mins = Math.round(kcal / 8);
+      return Math.max(10, mins);
+    }
+
+    function pick(arr, seed){
+      if(!Array.isArray(arr) || arr.length===0) return "";
+      const idx = Math.abs(seed) % arr.length;
+      return arr[idx];
+    }
+
+    const seed = parseInt(todayDs.replace(/-/g, ""), 10) || 0;
+    const phraseDiet = [
+      "Bring net calories within the target window",
+      "Keep today inside the window",
+      "Stay within the net target range"
+    ];
+    const phraseLog = [
+      "Log today before the day gets away from you",
+      "Get today logged first, then optimize",
+      "Log today now so coaching is real"
+    ];
+    const phraseProtein = [
+      "Close the protein gap today",
+      "Hit protein first, everything else second",
+      "Protein is the lever today"
+    ];
+    const phraseSleep = [
+      "Protect sleep tonight",
+      "Sleep is the multiplier tonight",
+      "Fix sleep to fix cravings and water"
+    ];
+    const phraseReset = [
+      "Run a 3-day reset",
+      "Reset the next 72 hours",
+      "Three-day consistency sprint"
+    ];
+
+    const deltaTxt = (t.delta===null || !isFinite(t.delta)) ? null : ((t.delta>0?"+":"") + Math.round(t.delta));
+
+    // 1) Missing today's calories (not a planned fast)
+    if(!t.hasCalories && !t.plannedFast){
+      focus = pick(phraseLog, seed);
+      steps = [
+        "Log calories for today now (even if rough).",
+        "If you burned calories, log that too so net is accurate.",
+        "Then aim to land within ±" + win + " kcal of target."
+      ];
+      why = "Why: without today logged, coaching cannot respond to what you are actually doing.";
+      cls = "warn";
+      pill = "Log";
+    }
+    // 2) Today off-target
+    else if(t.diff!==null && isFinite(t.diff) && t.diff > win){
+      focus = pick(phraseDiet, seed);
+      const over = (t.delta!==null && isFinite(t.delta) && t.delta > 0);
+      const gap = Math.round(t.diff);
+      const mins = kcalToMinutes(gap);
+
+      if(over){
+        steps = [
+          "You are over target by about " + gap + " kcal (Δ " + deltaTxt + ").",
+          "Pick one correction: cut " + gap + " kcal today, or add about " + mins + " min zone 2.",
+          "Keep protein at " + pTarget + "g and keep the rest simple."
+        ];
+      } else {
+        const add = Math.min(300, gap);
+        steps = [
+          "You are under target by about " + gap + " kcal (Δ " + deltaTxt + ").",
+          "If this was not intentional, add about " + add + " kcal (protein plus carbs) to land within the window.",
+          "Do not turn a good day into a crash day. Keep training steady."
+        ];
+      }
+
+      why = "Why: today is outside your ±" + win + " kcal window, which drives week-to-week progress.";
+      cls = "warn";
+      pill = "Diet";
+    }
+    // 3) Protein gap today
+    else if(t.protein===null || !isFinite(t.protein)){
+      focus = "Log macros so coaching can react";
+      steps = [
+        "Log protein for today (at minimum).",
+        "Target " + pTarget + "g protein total.",
+        "Once protein is logged, the coach will adjust action steps automatically."
+      ];
+      why = "Why: macros are missing, so the coach cannot protect muscle retention.";
+      cls = "warn";
+      pill = "Macros";
+    } else if((pTarget - t.protein) > 25){
+      focus = pick(phraseProtein, seed);
+      const gap = Math.round(pTarget - t.protein);
+      steps = [
+        "You are about " + gap + "g short on protein today.",
+        "Add one anchor: shake or lean meal (40 to 60g) and re-check.",
+        "Keep calories steady. Fix protein before making cuts."
+      ];
+      why = "Why: protein is the main protection for lean mass while cutting.";
+      cls = "warn";
+      pill = "Protein";
+    }
+    // 4) Sleep issue
+    else if(t.sleep!==null && isFinite(t.sleep) && t.sleep < sleepTarget - 0.7){
+      focus = pick(phraseSleep, seed);
+      steps = [
+        "Aim for a consistent bedtime tonight. No screens in the last 30 minutes.",
+        "Stop caffeine 8 hours before bed.",
+        "Keep training moderate tomorrow if sleep stays low."
+      ];
+      why = "Why: sleep was " + t.sleep.toFixed(1) + "h vs target " + sleepTarget.toFixed(1) + "h. Low sleep increases hunger and water retention.";
+      cls = "warn";
+      pill = "Sleep";
+    }
+    // 5) Short trend: 2 of last 3 days off-target
+    else if(out3.length >= 2){
+      focus = pick(phraseReset, seed);
+      steps = [
+        "Next 3 days: keep net within ±" + win + " kcal. No hero days.",
+        "Pre-log tomorrow's meals so the plan is automatic.",
+        "Protein stays at " + pTarget + "g. Sleep stays at " + sleepTarget.toFixed(1) + "h."
+      ];
+      why = "Why: recent consistency slipped (2 of last 3 days off-target). A short reset fixes it faster than big changes.";
+      cls = "warn";
+      pill = "Reset";
+    }
+    // 6) Fall back to weekly logic + weigh range
+    else if(logged < 5){
       focus = "Log the basics (6 of 7 days)";
       steps = [
-        "Log net calories today (intake and calories burned if available).",
-        "Log sleep hours tonight.",
+        "Log net calories today (intake and burn).",
+        "Log sleep hours.",
         "Hit protein target (" + pTarget + "g).",
-        "Keep plan targets unchanged while data stabilizes."
+        "Hold targets steady until data stabilizes."
       ];
       why = "Why: fewer than 5 logged days makes the 7-day stats unreliable.";
       cls = "warn";
       pill = "Log data";
     } else if(onPct < 0.75){
-      focus = "Bring net calories within the target window";
-      if(dnaEnabled && dna.motivation === "external"){
-        steps.push("Use a simple daily checklist and a hard-stop meal plan.");
-      }
-      steps.push(
+      focus = pick(phraseDiet, seed);
+      steps = [
         "Pre-log tomorrow so the day lands within ±" + win + " kcal of target.",
-        "Pull one lever only: reduce intake 150 to 250 kcal, or add 25 to 40 min zone 2.",
-        "Keep protein at " + pTarget + "g and keep training steady."
-      );
+        "Change one lever only: cut 150 to 250 kcal, or add 25 to 40 min zone 2.",
+        "Keep protein at " + pTarget + "g and training steady."
+      ];
       const off = (d7.avgAbsOffTarget!==null && isFinite(d7.avgAbsOffTarget)) ? Math.round(d7.avgAbsOffTarget) : null;
       why = "Why: diet is on-target " + on + "/" + logged + " days" + (off!==null ? (" (avg off-target " + off + " kcal/day).") : ".");
       cls = (onPct < 0.50) ? "bad" : "warn";
       pill = "Diet";
-    } else if(d7.sleepLogged >= 4 && d7.avgSleep!==null && isFinite(d7.avgSleep) && d7.avgSleep < sleepTarget){
-      focus = "Protect sleep (it multiplies fat loss and recovery)";
-      if(dnaEnabled && (dna.chronotype === "evening" || dna.chronotype === "mod_evening")){
-        steps = [
-          "Anchor wake time within a 60-minute window for 5 nights.",
-          "Set a caffeine cutoff 8 hours before bed.",
-          "Do a 10-minute wind-down: lights down, screens off."
-        ];
-      } else {
-        steps = [
-          "Target bedtime consistency for 5 nights.",
-          "Set a caffeine cutoff 8 hours before bed.",
-          "Keep training intensity steady until sleep rebounds."
-        ];
-      }
-      why = "Why: average sleep is " + d7.avgSleep.toFixed(1) + "h vs target " + sleepTarget.toFixed(1) + "h.";
-      cls = "warn";
-      pill = "Sleep";
-    } else if(d7.proteinAdh!==null && isFinite(d7.proteinAdh) && d7.proteinAdh < 0.70){
-      focus = "Hit protein target consistently";
-      steps = [
-        "Add one high-protein anchor daily (shake or lean meal).",
-        "Spread protein across 3 to 4 feedings.",
-        "Keep calories steady, fix protein first."
-      ];
-      why = "Why: protein target met on " + Math.round(d7.proteinAdh*100) + "% of logged days.";
-      cls = "warn";
-      pill = "Protein";
-    } else if(wc && wc.status === "above range" && onPct >= 0.75){
+    } else if(wc && wc.status === "above range"){
       focus = "Small adjustment: add movement before cutting food";
-      const cardioNudge = (dnaEnabled && (dna.bestExercise === "cardio_bias" || dna.bestExercise === "cardio_mixed"));
       steps = [
-        "Add " + (cardioNudge ? "3" : "2") + " zone-2 walks this week (30 to 45 min).",
+        "Add 2 zone-2 walks this week (30 to 45 min).",
         "Hold calories steady and stay within ±" + win + " kcal.",
         "Re-check at the next Mon or Thu weigh-in."
       ];
-      why = "Why: last weigh-in is above the expected range for that date.";
+      why = "Why: latest weigh-in is above the expected range for that date, despite decent adherence.";
       cls = "warn";
       pill = "Adjust";
     } else {
@@ -4257,9 +4420,13 @@ function latestWeighCompare(){
         "Maintain protein ≥" + pTarget + "g and sleep ≥" + sleepTarget.toFixed(1) + "h.",
         "Re-check on Mon or Thu weigh-in."
       ];
-      why = "Why: the last 7 days are inside the window and trending normally.";
+      why = "Why: recent days are inside the window and trends look normal.";
       cls = "good";
       pill = "On track";
+    }
+
+    if(triggers.length){
+      why += " Triggers: " + triggers.join(", ") + ".";
     }
 
     // Write focus + mini pace
