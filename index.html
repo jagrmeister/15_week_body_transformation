@@ -924,7 +924,7 @@
           <div class="tiny muted" style="margin-top:6px;">Shown on upcoming Mon or Thu</div>
         </div>
         <div class="coachPanel">
-          <div class="coachLabel">Week 15 Thursday target</div>
+          <div class="coachLabel">Plan end Thursday target</div>
           <div class="sideValue" id="coachWeek15">-</div>
           <div class="tiny muted" style="margin-top:6px;">End-of-block expectation</div>
         </div>
@@ -1129,6 +1129,24 @@
         <div>
           <label>Official start body fat (%)</label>
           <input type="number" id="startBf" step="0.1" value="26.0"/>
+        </div>
+
+        <div>
+          <label>Weekly loss target (lb/week)</label>
+          <input type="number" id="weeklyLossTarget" step="0.1" min="0" value="1.0"/>
+          <div class="tiny muted" style="margin-top:6px;">Drives expected weight tiers (Mon and Thu checkpoints)</div>
+        </div>
+      </div>
+
+      <div class="controls" style="padding-top:0;">
+        <div>
+          <label>Plan length (weeks)</label>
+          <input type="number" id="planWeeks" step="1" min="1" value="20"/>
+        </div>
+        <div>
+          <label>Expected range band (lb)</label>
+          <input type="number" id="expectedBand" step="0.1" min="0.2" value="1.0"/>
+          <div class="tiny muted" style="margin-top:6px;">Band width. Example: 1.0 means ±0.5 lb</div>
         </div>
         <div>
           <label>Base target calories (normal)</label>
@@ -1596,23 +1614,8 @@
   // No special targets
   const SPECIAL_TARGETS = {};
 
-  const THU_WEEK_RANGES = [
-    {low:219.7, high:220.7},
-    {low:218.0, high:219.0},
-    {low:216.8, high:217.8},
-    {low:215.6, high:216.6},
-    {low:214.4, high:215.4},
-    {low:213.2, high:214.2},
-    {low:212.0, high:213.0},
-    {low:210.7, high:211.7},
-    {low:212.2, high:214.2},
-    {low:209.1, high:210.6},
-    {low:207.9, high:209.4},
-    {low:206.7, high:208.2},
-    {low:205.6, high:207.1},
-    {low:204.4, high:205.9},
-    {low:203.3, high:204.8}
-  ];
+  var THU_WEEK_RANGES = []; // computed from settings (weekly loss target + plan weeks + band)
+
 
   function isFastDay(ds){ return ds>=FAST_START && ds<=FAST_END; }
   function inReverseWindow(ds){ return ds>=REVERSE_START && ds<=REVERSE_END; }
@@ -1685,6 +1688,9 @@
           startDate:"2026-01-05",
           startWeight:221.6,
           startBf:25.0,
+        weeklyLossTarget:1.0,
+        planWeeks:20,
+        expectedBand:1.0,
           targetCal:2200,
           highCal:2400,
           highStartWeek:3,
@@ -1710,6 +1716,9 @@
         startDate:"2026-01-05",
         startWeight:221.6,
         startBf:25.0,
+        weeklyLossTarget:1.0,
+          planWeeks:20,
+          expectedBand:1.0,
         targetCal:2200,
         highCal:2400,
         highStartWeek:3,
@@ -1761,6 +1770,27 @@
 
   let state = loadState(); // local fallback
 
+
+
+  // ===== Expected weight tiering (Mon/Thu checkpoints) =====
+  function round1(n){ return Math.round(Number(n) * 10) / 10; }
+  function rebuildThuWeekRanges(){
+    const sw = Number(state?.settings?.startWeight ?? 0);
+    const weekly = Number(state?.settings?.weeklyLossTarget ?? 1.0);
+    const weeks = Math.max(1, Math.floor(Number(state?.settings?.planWeeks ?? 20)));
+    const band = Math.max(0.2, Number(state?.settings?.expectedBand ?? 1.0));
+    const half = band / 2;
+
+    const arr = [];
+    for(let i=1;i<=weeks;i++){
+      const daysFromStart = (i-1)*7 + 3; // Thu of week i when startDate is a Monday
+      const mid = sw - weekly * (daysFromStart / 7);
+      arr.push({ low: round1(mid - half), high: round1(mid + half) });
+    }
+    THU_WEEK_RANGES = arr;
+  }
+
+  rebuildThuWeekRanges();
 
   // ===== DNA profile (from your report) =====
   // These are treated as read-only constants: they influence coaching priorities, not your calorie targets.
@@ -1832,6 +1862,9 @@
   const startDateEl = document.getElementById("startDate");
   const startWeightEl = document.getElementById("startWeight");
   const startBfEl = document.getElementById("startBf");
+  const weeklyLossTargetEl = document.getElementById("weeklyLossTarget");
+  const planWeeksEl = document.getElementById("planWeeks");
+  const expectedBandEl = document.getElementById("expectedBand");
   const targetCalEl   = document.getElementById("targetCal");
   const highCalEl     = document.getElementById("highCal");
   const highStartWeekEl = document.getElementById("highStartWeek");
@@ -1871,6 +1904,9 @@
     startDateEl.value  = state.settings.startDate;
     startWeightEl.value= state.settings.startWeight;
     startBfEl.value    = state.settings.startBf;
+    if(weeklyLossTargetEl) weeklyLossTargetEl.value = state.settings.weeklyLossTarget;
+    if(planWeeksEl) planWeeksEl.value = state.settings.planWeeks;
+    if(expectedBandEl) expectedBandEl.value = state.settings.expectedBand;
     targetCalEl.value  = state.settings.targetCal;
     highCalEl.value    = state.settings.highCal;
     highStartWeekEl.value = state.settings.highStartWeek;
@@ -1894,6 +1930,9 @@
       [startDateEl, v=>String(v||"")],
       [startWeightEl, v=>Number(v)],
       [startBfEl, v=>Number(v)],
+      [weeklyLossTargetEl, v=>Number(v)],
+      [planWeeksEl, v=>Number(v)],
+      [expectedBandEl, v=>Number(v)],
       [targetCalEl, v=>Number(v)],
       [highCalEl, v=>Number(v)],
       [highStartWeekEl, v=>Number(v)],
@@ -1918,6 +1957,10 @@
         if(startWeightEl && startWeightEl.value!=="") s.startWeight = Number(startWeightEl.value);
         if(startBfEl && startBfEl.value!=="") s.startBf = Number(startBfEl.value);
 
+        if(weeklyLossTargetEl && weeklyLossTargetEl.value!=="") s.weeklyLossTarget = Math.max(0, Number(weeklyLossTargetEl.value));
+        if(planWeeksEl && planWeeksEl.value!=="") s.planWeeks = Math.max(1, Math.floor(Number(planWeeksEl.value)));
+        if(expectedBandEl && expectedBandEl.value!=="") s.expectedBand = Math.max(0.2, Number(expectedBandEl.value));
+
         if(targetCalEl && !targetCalEl.disabled && targetCalEl.value!=="") s.targetCal = Number(targetCalEl.value);
         if(highCalEl && !highCalEl.disabled && highCalEl.value!=="") s.highCal = Number(highCalEl.value);
         if(highStartWeekEl && !highStartWeekEl.disabled && highStartWeekEl.value!=="") s.highStartWeek = Number(highStartWeekEl.value);
@@ -1930,12 +1973,13 @@
         if(fatTargetEl && fatTargetEl.value!=="") s.fatTarget = Math.max(0, Number(fatTargetEl.value));
         if(dnaEnabledEl) s.dnaEnabled = (dnaEnabledEl.value === "1");
 
+        rebuildThuWeekRanges();
         saveState();
         renderAll();
       }catch{}
     };
 
-    const els = [startDateEl,startWeightEl,startBfEl,targetCalEl,highCalEl,highStartWeekEl,secondHighStartWeekEl,kcalPerLbEl,minCalEl,adhWindowEl,
+    const els = [startDateEl,startWeightEl,startBfEl,weeklyLossTargetEl,planWeeksEl,expectedBandEl,targetCalEl,highCalEl,highStartWeekEl,secondHighStartWeekEl,kcalPerLbEl,minCalEl,adhWindowEl,
                  sleepTargetEl,proteinTargetEl,carbTargetEl,fatTargetEl,primaryHighDowEl,secondHighDowEl,dnaEnabledEl].filter(Boolean);
     els.forEach(el=>{
       el.addEventListener("change", apply);
@@ -2126,7 +2170,9 @@ Attempts remaining before lockout: ${remaining}`);
   }
   function isThursdayOfWeek(ds){
     const wi = weekIndexForDate(ds);
-    if(!wi || wi<1 || wi>15) return false;
+    const maxW = Array.isArray(THU_WEEK_RANGES) ? THU_WEEK_RANGES.length : 0;
+    if(!wi || wi < 1) return false;
+    if(maxW && wi > maxW) return false;
     const start = parseYMD(state.settings.startDate);
     const thu = addDays(start, (wi-1)*7 + 3);
     return ymd(thu) === ds;
@@ -4547,14 +4593,17 @@ function latestWeighCompare(){
     }
 
     const start = parseYMD(state.settings.startDate);
-    const week15Thu = addDays(start, (15-1)*7 + 3);
-    const week15Ds = ymd(week15Thu);
-    const week15Range = fmtRange(THU_WEEK_RANGES[14]).replace(" to ", "–") + " lb";
+    const endWeek = Array.isArray(THU_WEEK_RANGES) ? THU_WEEK_RANGES.length : 0;
     const w15El = document.getElementById("coachWeek15");
-    if(w15El){
+    if(w15El && endWeek && start instanceof Date && !isNaN(start)){
+      const endThu = addDays(start, (endWeek-1)*7 + 3);
+      const endDs = ymd(endThu);
+      const endRange = fmtRange(THU_WEEK_RANGES[endWeek-1]).replace(" to ", "–") + " lb";
       w15El.innerHTML =
-        "<div class=\"coach-date\">" + fmtUSDate(week15Ds) + "</div>" +
-        "<div class=\"coach-metric\"><strong>" + week15Range + "</strong></div>";
+        "<div class=\"coach-date\">" + fmtUSDate(endDs) + "</div>" +
+        "<div class=\"coach-metric\"><strong>" + endRange + "</strong></div>";
+    } else if(w15El){
+      w15El.textContent = "-";
     }
 
     const w0 = Number(state.settings.startWeight);
@@ -4586,6 +4635,7 @@ function latestWeighCompare(){
   }
   function renderAll(){
     enforceDnaProfile();
+    rebuildThuWeekRanges();
     buildTabs();
     renderActiveMonth();
     renderKpis();
