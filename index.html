@@ -2560,6 +2560,17 @@ Attempts remaining before lockout: ${remaining}`);
 
         const calVal = (rec.calories===null || rec.calories===undefined || rec.calories==="") ? null : Number(rec.calories);
         const calForCalc = (calVal===null && isFastDay(ds)) ? 0 : calVal;
+
+        // Primary driver: expected vs actual weight (expected shown as daily midpoint; full range in modal)
+        const expWAll = safeExpectedRange(ds);
+        const expMid = expWAll ? ((Number(expWAll.low) + Number(expWAll.high)) / 2).toFixed(1) : "-";
+        const actWRaw = (rec.weight===null || rec.weight===undefined || rec.weight==="") ? null : Number(rec.weight);
+        const actW = (actWRaw===null || !isFinite(actWRaw)) ? null : actWRaw.toFixed(1);
+
+        const wLine = document.createElement("div");
+        wLine.className = "line" + (expMid==="-" ? " muted" : "");
+        wLine.innerHTML = `Exp Wt: <b>${expMid}</b> <span class="mono">/</span> Actual: ${actW===null ? `<span class="muted mono">____</span>` : `<b>${actW}</b>`}`;
+        cell.appendChild(wLine);
         const calLine=document.createElement("div");
         calLine.className="line" + ((calForCalc===null || !isFinite(calForCalc)) ? " muted" : "");
         calLine.innerHTML = `Calories: <b>${(calForCalc===null || !isFinite(calForCalc)) ? "-" : Math.round(calForCalc)}</b> <span class="mono">/ ${Math.round(tgt)}</span>`;
@@ -2606,13 +2617,6 @@ Attempts remaining before lockout: ${remaining}`);
             bfLine.className="line";
             bfLine.innerHTML = `BF%: <b>${Number(rec.bf).toFixed(1)}%</b>`;
             cell.appendChild(bfLine);
-          }
-          const expW = safeExpectedRange(ds);
-          if(expW){
-            const expLine=document.createElement("div");
-            expLine.className="line";
-            expLine.innerHTML = `Exp Wt: <b>${fmtRange(expW)} lb</b>`;
-            cell.appendChild(expLine);
           }
         }
 
