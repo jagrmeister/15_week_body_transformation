@@ -3893,6 +3893,7 @@ const d7 = compute7Day();
       let onTarget=0;
       let sleepSum=0, sleepDays=0;
 
+      let wtSum=0, wtDays=0;
       let lastWt=null, lastWtDs=null;
 
       for(const ds of days){
@@ -3928,17 +3929,25 @@ const d7 = compute7Day();
         if(sh!==null && isFinite(sh)){ sleepSum += sh; sleepDays++; }
 
         const wt = (rec.weight!==null && rec.weight!==undefined && rec.weight!=="") ? Number(rec.weight) : null;
-        if(wt!==null && isFinite(wt)){ lastWt = wt; lastWtDs = ds; }
+        if(wt!==null && isFinite(wt)){
+          wtSum += wt; wtDays++;
+          lastWt = wt; lastWtDs = ds;
+        }
       }
 
       const burnAvg = burnDays ? (burnSum/burnDays) : null;
       const defAvg  = defDays ? (defSum/defDays) : null;
       const slAvg   = sleepDays ? (sleepSum/sleepDays) : null;
+      const wtAvg   = wtDays ? (wtSum/wtDays) : null;
 
       // Expected weight at week end (midpoint of expected band)
       const endDs = ymd(we);
       const rng = safeExpectedRange(endDs);
       const expWt = _validRange(rng) ? ((Number(rng.low)+Number(rng.high))/2) : null;
+      // Actual weight on week end (Sunday), if logged
+      const sunRec = state.days[endDs];
+      const sunWt = (sunRec && sunRec.weight!==null && sunRec.weight!==undefined && sunRec.weight!=="") ? Number(sunRec.weight) : null;
+
 
       rows.push({
         wk,
@@ -3948,6 +3957,9 @@ const d7 = compute7Day();
         burnAvg, burnDays,
         defAvg, defSum, defDays, onTarget,
         expWt, rng,
+        wtAvg, wtDays,
+        expSun: expWt,
+        sunWt,
         lastWt, lastWtDs,
         slAvg, sleepDays
       });
@@ -3997,9 +4009,8 @@ const d7 = compute7Day();
         defSub = `on-target ${r.onTarget}/${r.defDays} • total ${fmtInt(r.defSum)}`;
       }
 
-      const expRangeTxt = (_validRange(r.rng)) ? `${Number(r.rng.low).toFixed(1)}–${Number(r.rng.high).toFixed(1)}` : "-";
-      const wtMain = `${fmt1(r.expWt)} / ${fmt1(r.lastWt)}`;
-      const wtSub  = (_validRange(r.rng) ? `exp band ${expRangeTxt}` : `exp band -`) + (r.lastWtDs ? ` • act ${fmtMD(r.lastWtDs)}` : "");
+      const wtMain = `${fmt1(r.wtAvg)}`;
+      const wtSub  = `Exp (Sun): ${fmt1(r.expSun)}` + (r.sunWt!==null && isFinite(r.sunWt) ? ` • Sun act ${fmt1(r.sunWt)}` : ``) + (r.wtDays ? ` • avg of ${r.wtDays}/7` : ``);
 
       const slMain = r.sleepDays ? `${fmt1(r.slAvg)}h` : "-";
       const slSub  = r.sleepDays ? `avg • logged ${r.sleepDays}/7` : `no sleep logged`;
@@ -4022,7 +4033,7 @@ const d7 = compute7Day();
 
     if(meta) meta.textContent = `${rows.length} completed week${rows.length===1 ? "" : "s"}`;
     if(note){
-      note.textContent = `Rows appear after a full 7-day week finishes. Calories show expected total vs logged total (fast days count as 0). Net deficit is target minus (intake minus burn).`;
+      note.textContent = `Rows appear after a full 7-day week finishes. Calories show expected total vs logged total (fast days count as 0). Net deficit is target minus (intake minus burn). Weight shows the week’s average logged weight, and the expected weight as of Sunday morning.`;
     }
   }
 
