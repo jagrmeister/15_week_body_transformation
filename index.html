@@ -133,9 +133,8 @@
 
 
   
-.trendGrid{display:grid; grid-template-columns: repeat(3, 1fr); gap:12px; padding:16px;}
-@media(max-width:1100px){ .trendGrid{grid-template-columns: repeat(2,1fr);} }
-@media(max-width:620px){ .trendGrid{grid-template-columns: 1fr;} }
+.trendGrid{display:grid; grid-template-columns: 1.15fr .85fr; gap:12px; padding:16px;}
+@media(max-width:1100px){ .trendGrid{grid-template-columns: 1fr;} }
 
 .kpi{
     border:1px solid var(--line);
@@ -146,6 +145,45 @@
   .kpi .k{font-size:12px; color:var(--muted);}
   .kpi .v{margin-top:6px; font-size:20px; font-weight:950;}
   .kpi .s{margin-top:6px; font-size:12px; color:var(--muted);}
+
+  /* Weekly matrix table */
+  .matrixWrap{
+    margin-top:10px;
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:10px;
+    background:linear-gradient(180deg, rgba(148,163,184,.06), rgba(148,163,184,.02));
+    overflow:auto;
+  }
+  .weekTable{
+    width:100%;
+    border-collapse:separate;
+    border-spacing:0;
+    min-width:720px;
+  }
+  .weekTable th{
+    text-align:left;
+    font-size:11px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--muted);
+    padding:10px 10px;
+    border-bottom:1px solid var(--line);
+    background:transparent;
+    position:sticky;
+    top:0;
+    backdrop-filter: blur(8px);
+  }
+  .weekTable td{
+    padding:10px 10px;
+    border-bottom:1px solid var(--line);
+    vertical-align:top;
+  }
+  .weekTable tr:hover td{ background:rgba(148,163,184,.05); }
+  .cellMain{ font-weight:950; font-size:13px; }
+  .cellSub{ margin-top:4px; font-size:11px; color:var(--muted); line-height:1.25; }
+  .weekMini{ font-variant-numeric: tabular-nums; }
+
 
   .controls{display:grid; grid-template-columns: repeat(4,1fr); gap:10px; padding:12px 16px 16px;}
   @media(max-width:1100px){ .controls{grid-template-columns: repeat(2,1fr);} }
@@ -1093,15 +1131,14 @@
       <div class="spark" id="sparkWeight" style="min-height:140px;">-</div>
       <div class="s" id="sparkWeightNote">-</div>
     </div>
-    <div class="kpi">
-      <div class="k">Body composition (latest)</div>
-      <div class="spark" id="sparkBodyComp" style="min-height:140px;">-</div>
-      <div class="s" id="sparkBodyCompNote">-</div>
-    </div>
-    <div class="kpi">
-      <div class="k">Sleep (7 days)</div>
-      <div class="spark" id="sparkSleepWeek" style="min-height:140px;">-</div>
-      <div class="s" id="sparkSleepWeekNote">-</div>
+
+    <div class="kpi weeklyMatrix">
+      <div class="k" style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+        <span>Weekly matrix (completed weeks)</span>
+        <span class="tiny muted" id="weeklyMatrixMeta">-</span>
+      </div>
+      <div class="matrixWrap" id="weeklyMatrixWrap" style="min-height:140px;">-</div>
+      <div class="s" id="weeklyMatrixNote">-</div>
     </div>
   </div>
 </section>
@@ -3821,25 +3858,192 @@ const d7 = compute7Day();
     `;
   }
 
+  function renderWeeklyMatrix(todayDs){
+    const wrap = safeEl("weeklyMatrixWrap");
+    const note = safeEl("weeklyMatrixNote");
+    const meta = safeEl("weeklyMatrixMeta");
+    if(!wrap) return;
+
+    const start = parseYMD(state.settings.startDate);
+    if(!(start instanceof Date) || isNaN(start)){
+      wrap.innerHTML = `<div class="tiny muted" style="padding:10px;">Set a valid start date in Advanced Settings.</div>`;
+      if(note) note.textContent = "-";
+      if(meta) meta.textContent = "-";
+      return;
+    }
+
+    const todayD = parseYMD(todayDs);
+    const planWeeks = Math.max(1, Math.floor(Number(state.settings.planWeeks || 20)));
+    const win = Number(state.settings.adhWindow || 150);
+
+    const rows = [];
+    for(let wk=1; wk<=planWeeks; wk++){
+      const ws = addDays(start, (wk-1)*7);
+      const we = addDays(ws, 6);
+
+      // Only show once the full week is finished (end date is before today)
+      if(we >= todayD) break;
+
+      const days = [];
+      for(let j=0;j<7;j++) days.push(ymd(addDays(ws,j)));
+
+      let expCal=0, actCal=0, actDays=0;
+      let burnSum=0, burnDays=0;
+      let defSum=0, defDays=0;
+      let onTarget=0;
+      let sleepSum=0, sleepDays=0;
+
+      let lastWt=null, lastWtDs=null;
+
+      for(const ds of days){
+        let tgt = null;
+        try{ tgt = targetFor(ds); }
+        catch(e){ tgt = isFastDay(ds) ? 0 : Number(state.settings.targetCal || 0); }
+
+        if(isFinite(tgt)) expCal += Number(tgt);
+
+        const rec = state.days[ds] || {};
+
+        // Calories: count fast days as 0 even if not entered
+        let hasCal = rec.calories!==null && rec.calories!==undefined && rec.calories!=="";
+        let cal = hasCal ? Number(rec.calories) : null;
+        if(!hasCal && isFastDay(ds)){ cal = 0; hasCal = true; }
+        if(hasCal && isFinite(cal)){ actCal += Number(cal); actDays++; }
+
+        const burn = (rec.burned!==null && rec.burned!==undefined && rec.burned!=="") ? Number(rec.burned) : null;
+        if(burn!==null && isFinite(burn)){ burnSum += burn; burnDays++; }
+
+        const burnForCalc = (burn!==null && isFinite(burn)) ? burn : 0;
+
+        // Deficit: target minus (intake minus burn). Positive means deficit.
+        if(hasCal && isFinite(cal) && isFinite(tgt)){
+          const net = Number(cal) - burnForCalc;
+          const dlt = Number(tgt) - net;
+          defSum += dlt;
+          defDays++;
+          if(Math.abs(net - Number(tgt)) <= win) onTarget++;
+        }
+
+        const sh = (rec.sleepHours!==null && rec.sleepHours!==undefined && rec.sleepHours!=="") ? Number(rec.sleepHours) : null;
+        if(sh!==null && isFinite(sh)){ sleepSum += sh; sleepDays++; }
+
+        const wt = (rec.weight!==null && rec.weight!==undefined && rec.weight!=="") ? Number(rec.weight) : null;
+        if(wt!==null && isFinite(wt)){ lastWt = wt; lastWtDs = ds; }
+      }
+
+      const burnAvg = burnDays ? (burnSum/burnDays) : null;
+      const defAvg  = defDays ? (defSum/defDays) : null;
+      const slAvg   = sleepDays ? (sleepSum/sleepDays) : null;
+
+      // Expected weight at week end (midpoint of expected band)
+      const endDs = ymd(we);
+      const rng = safeExpectedRange(endDs);
+      const expWt = _validRange(rng) ? ((Number(rng.low)+Number(rng.high))/2) : null;
+
+      rows.push({
+        wk,
+        start: ymd(ws),
+        end: endDs,
+        expCal, actCal, actDays,
+        burnAvg, burnDays,
+        defAvg, defSum, defDays, onTarget,
+        expWt, rng,
+        lastWt, lastWtDs,
+        slAvg, sleepDays
+      });
+    }
+
+    if(!rows.length){
+      wrap.innerHTML = `<div class="tiny muted" style="padding:10px;">No completed weeks yet. A row appears once a full 7-day week has finished.</div>`;
+      if(note) note.textContent = "-";
+      if(meta) meta.textContent = "-";
+      return;
+    }
+
+    const fmtInt = n => (n===null || n===undefined || !isFinite(n)) ? "-" : String(Math.round(n));
+    const fmt1 = n => (n===null || n===undefined || !isFinite(n)) ? "-" : Number(n).toFixed(1);
+
+    let out = `
+      <table class="weekTable">
+        <thead>
+          <tr>
+            <th style="width:64px;">Week</th>
+            <th style="width:120px;">Dates</th>
+            <th style="width:170px;">Calories</th>
+            <th style="width:130px;">Burned</th>
+            <th style="width:160px;">Net deficit</th>
+            <th style="width:150px;">Weight</th>
+            <th style="width:120px;">Sleep</th>
+          </tr>
+        </thead>
+        <tbody>
+    `.trim();
+
+    for(const r of rows){
+      const dateTxt = `${fmtMD(r.start)}–${fmtMD(r.end)}`;
+
+      const calMain = `${fmtInt(r.expCal)} / ${r.actDays ? fmtInt(r.actCal) : "-"}`;
+      const calSub  = `exp / act • logged ${r.actDays}/7`;
+
+      const burnMain = r.burnDays ? `${fmtInt(r.burnAvg)}` : "-";
+      const burnSub  = r.burnDays ? `avg • logged ${r.burnDays}/7` : `no burn logged`;
+
+      let defMain = "-";
+      let defSub = "-";
+      if(r.defDays){
+        const avgAbs = Math.round(Math.abs(r.defAvg));
+        const kind = (r.defAvg>=0) ? "def" : "surp";
+        defMain = `${kind} ${avgAbs}/d`;
+        defSub = `on-target ${r.onTarget}/${r.defDays} • total ${fmtInt(r.defSum)}`;
+      }
+
+      const expRangeTxt = (_validRange(r.rng)) ? `${Number(r.rng.low).toFixed(1)}–${Number(r.rng.high).toFixed(1)}` : "-";
+      const wtMain = `${fmt1(r.expWt)} / ${fmt1(r.lastWt)}`;
+      const wtSub  = (_validRange(r.rng) ? `exp band ${expRangeTxt}` : `exp band -`) + (r.lastWtDs ? ` • act ${fmtMD(r.lastWtDs)}` : "");
+
+      const slMain = r.sleepDays ? `${fmt1(r.slAvg)}h` : "-";
+      const slSub  = r.sleepDays ? `avg • logged ${r.sleepDays}/7` : `no sleep logged`;
+
+      out += `
+        <tr>
+          <td class="weekMini"><div class="cellMain">${r.wk}</div></td>
+          <td><div class="cellMain">${dateTxt}</div><div class="cellSub">end: ${fmtMD(r.end)}</div></td>
+          <td><div class="cellMain">${calMain}</div><div class="cellSub">${calSub}</div></td>
+          <td><div class="cellMain">${burnMain}</div><div class="cellSub">${burnSub}</div></td>
+          <td><div class="cellMain">${defMain}</div><div class="cellSub">${defSub}</div></td>
+          <td><div class="cellMain">${wtMain}</div><div class="cellSub">${wtSub}</div></td>
+          <td><div class="cellMain">${slMain}</div><div class="cellSub">${slSub}</div></td>
+        </tr>
+      `;
+    }
+
+    out += `</tbody></table>`;
+    wrap.innerHTML = out;
+
+    if(meta) meta.textContent = `${rows.length} completed week${rows.length===1 ? "" : "s"}`;
+    if(note){
+      note.textContent = `Rows appear after a full 7-day week finishes. Calories show expected total vs logged total (fast days count as 0). Net deficit is target minus (intake minus burn).`;
+    }
+  }
+
   function renderTrends(){
+    const elW = safeEl("sparkWeight");
+    const wNote = safeEl("sparkWeightNote");
+    const mWrap = safeEl("weeklyMatrixWrap");
+    const mNote = safeEl("weeklyMatrixNote");
+    const mMeta = safeEl("weeklyMatrixMeta");
+
     if(!authed){
-      const elW = safeEl("sparkWeight");
-      const elBC = safeEl("sparkBodyComp");
-      const elSW = safeEl("sparkSleepWeek");
       if(elW) elW.innerHTML = `<div class="tiny muted" style="padding:10px;">Sign in to view.</div>`;
-      if(elBC) elBC.innerHTML = `<div class="tiny muted" style="padding:10px;">Sign in to view.</div>`;
-      if(elSW) elSW.innerHTML = `<div class="tiny muted" style="padding:10px;">Sign in to view.</div>`;
-      const n1=safeEl("sparkWeightNote"); if(n1) n1.textContent="-";
-      const n2=safeEl("sparkBodyCompNote"); if(n2) n2.textContent="-";
-      const n3=safeEl("sparkSleepWeekNote"); if(n3) n3.textContent="-";
+      if(wNote) wNote.textContent = "-";
+      if(mWrap) mWrap.innerHTML = `<div class="tiny muted" style="padding:10px;">Sign in to view.</div>`;
+      if(mNote) mNote.textContent = "-";
+      if(mMeta) mMeta.textContent = "-";
       setPill("insightsPill","warn", "<b>Insights:</b> Locked");
       return;
     }
 
-    const elW = safeEl("sparkWeight");
-    const elBC = safeEl("sparkBodyComp");
-    const elSW = safeEl("sparkSleepWeek");
-    if(!elW || !elBC || !elSW) return;
+    if(!elW) return;
 
     const today = ymd(new Date());
     const sleepTarget = Number(state.settings.sleepTarget || 7.0);
@@ -3852,9 +4056,11 @@ const d7 = compute7Day();
       const rec = state.days[ds];
       return rec && rec.weight!==null && rec.weight!==undefined ? Number(rec.weight) : null;
     });
+
     const wValsForScale = wSeries.filter(v=>v!==null && isFinite(v));
     const wYMin = 200;
     const wYMax = wValsForScale.length ? Math.max(220, Math.ceil(Math.max(...wValsForScale))) : 220;
+
     elW.innerHTML = sparkline(wSeries, {
       unit:"lb",
       yLabel:"lb",
@@ -3867,7 +4073,6 @@ const d7 = compute7Day();
       h:140
     });
 
-    const wNote = safeEl("sparkWeightNote");
     if(wNote){
       const vals = wSeries.filter(v=>v!==null && isFinite(v));
       const first = vals.length ? vals[0] : null;
@@ -3886,7 +4091,7 @@ const d7 = compute7Day();
       }
     }
 
-    // Sleep (7 days)
+    // Sleep average (7 days) for Insights pill
     const sDays = lastNDays(today, 7);
     const sSeries = sDays.map(ds=>{
       const rec = state.days[ds];
@@ -3894,130 +4099,35 @@ const d7 = compute7Day();
     });
     const sVals = sSeries.filter(v=>v!==null && isFinite(v));
     const sAvg = sVals.length ? (sVals.reduce((a,b)=>a+b,0)/sVals.length) : null;
-    const sColor = (sAvg===null) ? "var(--accent)" : (sAvg>=sleepTarget ? "var(--good)" : (sAvg>=sleepTarget-0.5 ? "var(--warn)" : "var(--bad)"));
-    elSW.innerHTML = sparkline(sSeries, {
-      unit:"h",
-      yLabel:"hrs",
-      xLabels:[fmtMD(sDays[0]), fmtMD(sDays[Math.floor(sDays.length/2)]), fmtMD(sDays[sDays.length-1])],
-      goal:sleepTarget,
-      goalLabel:`Goal ${sleepTarget.toFixed(1)}h`,
-      color:sColor,
-      h:140
-    });
 
-    const sNote = safeEl("sparkSleepWeekNote");
-    if(sNote){
-      if(sAvg===null){
-        sNote.textContent = "Log sleep hours to populate this chart.";
-      }else{
-        const onTarget = sVals.filter(v=>v>=sleepTarget).length;
-        const pct = sVals.length ? Math.round(100*onTarget/sVals.length) : 0;
-        sNote.textContent = `Avg: ${sAvg.toFixed(1)} h (7 days) • On target: ${pct}%`;
-      }
-    }
+    // Weekly matrix
+    if(mWrap) renderWeeklyMatrix(today);
 
-    // Body composition (latest)
-    const comp = (function(){
-      const items = [];
-      for(const ds in state.days){
-        const rec = state.days[ds];
-        if(!rec) continue;
-
-        const wOk = rec.weight!==null && rec.weight!==undefined && rec.weight!=="" && isFinite(rec.weight);
-        if(!wOk) continue;
-
-        const bfOk = rec.bf!==null && rec.bf!==undefined && rec.bf!=="" && isFinite(rec.bf);
-        const mmOk = rec.muscleMass!==null && rec.muscleMass!==undefined && rec.muscleMass!=="" && isFinite(rec.muscleMass);
-
-        if(!bfOk && !mmOk) continue;
-
-        items.push({
-          ds,
-          d: parseYMD(ds),
-          w: Number(rec.weight),
-          bf: bfOk ? Number(rec.bf) : null,
-          mm: mmOk ? Number(rec.muscleMass) : null
-        });
-      }
-      items.sort((a,b)=>a.d-b.d);
-      return items.length ? items[items.length-1] : null;
-    })();
-
-    const bcNote = safeEl("sparkBodyCompNote");
-
-    if(!comp){
-      elBC.innerHTML = `<div class="tiny muted" style="padding:10px;">Log BF% on Mondays and Thursdays. Log muscle mass (optional) on Mondays to see this chart.</div>`;
-      if(bcNote) bcNote.textContent = "-";
-    }else{
-      const clamp = (x, lo, hi) => Math.max(lo, Math.min(hi, x));
-
-      let fatPct = (comp.bf===null) ? null : clamp(comp.bf, 0, 100);
-
-      let musclePct = null;
-      let muscleLabel = "Muscle";
-      let muscleInfo = "";
-
-      if(comp.mm!==null && isFinite(comp.mm) && comp.w > 0){
-        musclePct = clamp((comp.mm / comp.w) * 100, 0, 100);
-        muscleInfo = ` • Muscle: ${comp.mm.toFixed(1)} lb`;
-      }else if(fatPct!==null){
-        musclePct = clamp(100 - fatPct, 0, 100);
-        muscleLabel = "Lean (est.)";
-      }
-
-      // If both exist, normalize when they exceed 100
-      let otherPct = 0;
-      if(fatPct!==null && musclePct!==null){
-        if(fatPct + musclePct > 100){
-          const scale = 100 / (fatPct + musclePct);
-          fatPct *= scale;
-          musclePct *= scale;
-        }
-        otherPct = Math.max(0, 100 - (fatPct + musclePct));
-      }else if(fatPct!==null){
-        otherPct = Math.max(0, 100 - fatPct);
-      }else if(musclePct!==null){
-        otherPct = Math.max(0, 100 - musclePct);
-      }
-
-      const segments = [];
-      if(fatPct!==null) segments.push({label:"Body fat", pct:fatPct, color:"var(--bad)"});
-      if(musclePct!==null) segments.push({label:muscleLabel, pct:musclePct, color:"var(--good)"});
-      if(otherPct > 0.01) segments.push({label:"Other", pct:otherPct, color:"rgba(148,163,184,.35)"});
-
-      elBC.innerHTML = donutSpark(segments, {w:320, h:140, title:"Latest", center:`${comp.w.toFixed(1)} lb`});
-
-      if(bcNote){
-        const bfTxt = (comp.bf===null) ? "" : `BF: ${comp.bf.toFixed(1)}%`;
-        bcNote.textContent = `Date: ${fmtMD(comp.ds)} • ${bfTxt}${muscleInfo}`.trim();
-      }
-    }
+    // Latest BF% (if logged) for Insights pill
+    const bfi = getBfIns();
+    const latestBF = (bfi && bfi.length && isFinite(bfi[bfi.length-1].bf)) ? Number(bfi[bfi.length-1].bf) : null;
 
     // Insights pill: compact headline summary
-    const insPill = safeEl("insightsPill");
-    if(insPill){
-      const vals = wSeries.filter(v=>v!==null && isFinite(v));
-      const first = vals.length ? vals[0] : null;
-      const last  = vals.length ? vals[vals.length-1] : null;
-      const delta = (first!==null && last!==null) ? (last-first) : null;
-      const dTxt = (delta===null) ? "" : `Wt ${delta<=0 ? "" : "+"}${delta.toFixed(1)} lb`;
+    const vals = wSeries.filter(v=>v!==null && isFinite(v));
+    const first = vals.length ? vals[0] : null;
+    const last  = vals.length ? vals[vals.length-1] : null;
+    const delta = (first!==null && last!==null) ? (last-first) : null;
 
-      const bfTxt = (comp && comp.bf!==null && isFinite(comp.bf)) ? `BF ${comp.bf.toFixed(1)}%` : "";
-      const slTxt = (sAvg!==null) ? `Sleep ${sAvg.toFixed(1)}h` : "";
+    const dTxt = (delta===null) ? "" : `Wt ${delta<=0 ? "" : "+"}${delta.toFixed(1)} lb`;
+    const bfTxt = (latestBF!==null) ? `BF ${latestBF.toFixed(1)}%` : "";
+    const slTxt = (sAvg!==null) ? `Sleep ${sAvg.toFixed(1)}h` : "";
 
-      const parts = [dTxt, bfTxt, slTxt].filter(Boolean);
-      const msg = parts.length ? parts.join(" • ") : "Log more data";
+    const parts = [dTxt, bfTxt, slTxt].filter(Boolean);
+    const msg = parts.length ? parts.join(" • ") : "Log more data";
 
-      // Simple status
-      let cls = "warn";
-      const weightGood = (delta!==null) ? (delta <= 0) : false;
-      const sleepGood = (sAvg!==null) ? (sAvg >= sleepTarget) : false;
-      if(weightGood && sleepGood) cls = "good";
-      else if(weightGood || sleepGood) cls = "warn";
-      else if(delta!==null || sAvg!==null) cls = "bad";
+    let cls = "warn";
+    const weightGood = (delta!==null) ? (delta <= 0) : false;
+    const sleepGood = (sAvg!==null) ? (sAvg >= sleepTarget) : false;
+    if(weightGood && sleepGood) cls = "good";
+    else if(weightGood || sleepGood) cls = "warn";
+    else if(delta!==null || sAvg!==null) cls = "bad";
 
-      setPill("insightsPill", cls, `<b>Insights:</b> ${msg}`);
-    }
+    setPill("insightsPill", cls, `<b>Insights:</b> ${msg}`);
   }
 
   const QUOTES_60
