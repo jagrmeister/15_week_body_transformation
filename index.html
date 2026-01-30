@@ -3994,8 +3994,9 @@ const d7 = compute7Day();
     for(const r of rows){
       const dateTxt = `${fmtMD(r.start)}–${fmtMD(r.end)}`;
 
-      const calMain = `${fmtInt(r.expCal)} / ${r.actDays ? fmtInt(r.actCal) : "-"}`;
-      const calSub  = `exp / act • logged ${r.actDays}/7`;
+      const calAvg = r.actDays ? (r.actCal / (r.actDays===7 ? 7 : r.actDays)) : null;
+      const calMain = (calAvg!==null && isFinite(calAvg)) ? `${fmtInt(calAvg)}` : "-";
+      const calSub  = `exp/act ${fmtInt(r.expCal)} / ${r.actDays ? fmtInt(r.actCal) : "-"} • logged ${r.actDays}/7`;
 
       const burnMain = r.burnDays ? `${fmtInt(r.burnAvg)}` : "-";
       const burnSub  = r.burnDays ? `avg • logged ${r.burnDays}/7` : `no burn logged`;
