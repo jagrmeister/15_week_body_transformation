@@ -185,6 +185,75 @@
   .weekMini{ font-variant-numeric: tabular-nums; }
 
 
+/* Weekly scorecard */
+.scoreGrid{display:grid; grid-template-columns: 1.35fr .65fr; gap:16px; padding:16px;}
+@media(max-width:1100px){ .scoreGrid{grid-template-columns:1fr;} }
+.scoreTop{display:flex; gap:12px; flex-wrap:wrap; align-items:stretch; margin-bottom:12px;}
+.gradeBox{
+  width:130px; min-width:130px;
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:12px;
+  background: linear-gradient(180deg, rgba(245,158,11,.10), rgba(148,163,184,.04));
+  box-shadow: var(--shadow2);
+  display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;
+}
+.gradeLetter{font-size:46px; font-weight:1000; line-height:1; font-variant-numeric: tabular-nums;}
+.gradeScore{margin-top:6px; font-size:12px; color:var(--muted);}
+.gradeSub{margin-top:8px; font-size:11px; color:var(--muted); line-height:1.25;}
+.scoreKpis{display:grid; grid-template-columns: 1fr 1fr; gap:12px; flex:1; min-width:320px;}
+@media(max-width:620px){
+  .scoreKpis{grid-template-columns:1fr;}
+  .gradeBox{width:100%; min-width:0;}
+}
+.scoreKpi{
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:14px;
+  background: linear-gradient(180deg, rgba(148,163,184,.08), transparent 75%);
+  box-shadow: var(--shadow2);
+}
+.scoreKpi .k{font-size:12px; color:var(--muted);}
+.scoreKpi .v{margin-top:6px; font-size:20px; font-weight:950; font-variant-numeric: tabular-nums;}
+.scoreKpi .s{margin-top:6px; font-size:12px; color:var(--muted); line-height:1.25;}
+.scoreCallout{
+  margin:12px 0 0;
+  padding:12px 14px;
+  border-radius:16px;
+  border:1px solid var(--line);
+  background: rgba(148,163,184,.08);
+  color:var(--ink);
+  font-size:13px;
+  line-height:1.35;
+}
+.bars{display:flex; flex-direction:column; gap:12px; margin-top:10px;}
+.barRow{display:flex; gap:10px; align-items:center;}
+.barLab{width:96px; min-width:96px; font-size:12px; color:var(--muted);}
+.barTrack{flex:1; height:10px; border-radius:999px; background:rgba(148,163,184,.14); border:1px solid var(--line); overflow:hidden;}
+.barFill{height:100%; border-radius:999px;}
+.barVal{width:58px; min-width:58px; font-size:12px; color:var(--muted); text-align:right; font-variant-numeric: tabular-nums;}
+.barFill.good{background:var(--good);}
+.barFill.warn{background:var(--warn);}
+.barFill.bad{background:var(--bad);}
+.tok{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:6px 10px;
+  border-radius:999px;
+  border:1px solid var(--line);
+  background: rgba(148,163,184,.10);
+  font-size:12px;
+  color:var(--muted);
+  font-variant-numeric: tabular-nums;
+  white-space:nowrap;
+}
+.tok.good{border-color:rgba(34,197,94,.35); background:rgba(34,197,94,.10); color:rgba(34,197,94,.95);}
+.tok.warn{border-color:rgba(245,158,11,.35); background:rgba(245,158,11,.10); color:rgba(245,158,11,.95);}
+.tok.bad{border-color:rgba(239,68,68,.35); background:rgba(239,68,68,.10); color:rgba(239,68,68,.95);}
+
+
+
   .controls{display:grid; grid-template-columns: repeat(4,1fr); gap:10px; padding:12px 16px 16px;}
   @media(max-width:1100px){ .controls{grid-template-columns: repeat(2,1fr);} }
   @media(max-width:620px){ .controls{grid-template-columns: 1fr;} }
@@ -981,44 +1050,69 @@
   </section>
 
 
-  <section class="card coach-card" style="margin-bottom:18px;">
+<section class="card" id="weeklyScorecardCard" style="margin-bottom:18px;">
   <div class="head">
-    <div class="t">Daily Coach</div>
-    <div class="pill dot" id="coachPill"><b>Guidance:</b> -</div>
+    <div class="t">Weekly Scorecard</div>
+    <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+      <div class="pill dot" id="scoreGradePill"><b>Grade:</b> -</div>
+      <div class="pill dot" id="scoreLeverPill"><b>Big lever:</b> -</div>
+    </div>
   </div>
 
-  <div class="coachGrid">
-    <div class="coachMain">
-      <div class="coachPanel">
-        <div class="coachTop">
-          <div>
-            <div class="coachLabel">Today’s focus</div>
-            <div class="coachTitle" id="coachFocusTitle">-</div>
-          </div>
-          <div class="coachMini" id="coachMini">-</div>
+  <div class="scoreGrid">
+    <div class="scoreMain">
+      <div class="scoreTop">
+        <div class="gradeBox" aria-label="Weekly execution grade">
+          <div class="gradeLetter" id="weekGradeLetter">-</div>
+          <div class="gradeScore" id="weekGradeScore">-</div>
+          <div class="gradeSub" id="weekGradeSub">-</div>
         </div>
 
-        <div class="coachRecap" id="coachRecap">
-          <div class="recapRow">
-            <div class="recapTag">Latest</div>
-            <div class="recapItems" id="coachLatestItems"></div>
+        <div class="scoreKpis">
+          <div class="scoreKpi">
+            <div class="k">Pace from last 7</div>
+            <div class="v" id="weekPace">-</div>
+            <div class="s" id="weekPaceSub">-</div>
           </div>
-          <div class="recapRow">
-            <div class="recapTag">Last 7 days</div>
-            <div class="recapItems" id="coachWeekItems"></div>
+
+          <div class="scoreKpi">
+            <div class="k">4-week projection</div>
+            <div class="v" id="weekProjWeight">-</div>
+            <div class="s" id="weekProjSub">-</div>
           </div>
         </div>
+      </div>
 
-        <div class="coachChips" id="coachChips"></div>
+      <div class="scoreCallout" id="weekCallout">-</div>
 
-        <div class="coachSubhead">Action steps</div>
-        <ul class="coachSteps" id="coachSteps"></ul>
+      <div class="matrixWrap" aria-label="Last 7 day scorecard table">
+        <table class="weekTable" id="weekScoreTable">
+          <thead>
+            <tr>
+              <th>Day</th>
+              <th>Net vs Target</th>
+              <th>Calories</th>
+              <th>Burn</th>
+              <th>Protein</th>
+              <th>Sleep</th>
+              <th>Weight</th>
+            </tr>
+          </thead>
+          <tbody id="weekScoreBody"></tbody>
+        </table>
+      </div>
+    </div>
 
-        <div class="coachWhy" id="coachWhyText"></div>
+    <div class="scoreSide">
+      <div class="kpi" style="height:100%;">
+        <div class="k">Score breakdown</div>
+        <div class="bars" id="scoreBars"></div>
+        <div class="s" id="scoreBarsNote" style="margin-top:10px;">-</div>
       </div>
     </div>
   </div>
 </section>
+
 
   
   <section class="card" style="margin-bottom:18px;">
@@ -3334,6 +3428,7 @@ let tgt;
 
   function setPill(id, cls, html){
     const el = document.getElementById(id);
+    if(!el) return;
     el.classList.remove("good","warn","bad");
     if(cls) el.classList.add(cls);
     el.innerHTML = html;
@@ -4759,12 +4854,294 @@ function latestWeighCompare(){
     setPill("coachPill", cls, "<b>Guidance:</b> " + pill);
     setPill("onTrackPill", cls, "<b>On track:</b> " + focus);
   }
+
+// ===== Weekly scorecard (uses only metrics you already track) =====
+function clamp01(x){
+  const n = Number(x);
+  if(!isFinite(n)) return 0;
+  return Math.max(0, Math.min(1, n));
+}
+function letterGrade(score){
+  const s = Number(score);
+  if(!isFinite(s)) return "-";
+  if(s >= 90) return "A";
+  if(s >= 80) return "B";
+  if(s >= 70) return "C";
+  if(s >= 60) return "D";
+  return "F";
+}
+function trendScore(trendLbPerWk, weeklyLossTarget){
+  // weeklyLossTarget is positive (ex: 1.0). Desired trend is negative (losing).
+  if(trendLbPerWk === null || trendLbPerWk === undefined) return 0.5;
+  const tr = Number(trendLbPerWk);
+  if(!isFinite(tr)) return 0.5;
+  const desired = -Math.abs(Number(weeklyLossTarget || 1.0));
+  const diff = Math.abs(tr - desired);
+  if(diff <= 0.25) return 1.0;
+  if(diff <= 0.50) return 0.80;
+  if(diff <= 0.90) return 0.60;
+  if(diff <= 1.30) return 0.40;
+  return 0.20;
+}
+function scoreCls(x){
+  const v = Number(x);
+  if(!isFinite(v)) return "warn";
+  if(v >= 0.85) return "good";
+  if(v >= 0.70) return "warn";
+  return "bad";
+}
+function tok(text, cls){
+  const c = cls || "warn";
+  return `<span class="tok ${c}">${text}</span>`;
+}
+function makeBarRow(label, frac, tip){
+  const row = document.createElement("div");
+  row.className = "barRow";
+
+  const lab = document.createElement("div");
+  lab.className = "barLab";
+  lab.textContent = label;
+
+  const track = document.createElement("div");
+  track.className = "barTrack";
+  if(tip){
+    track.title = tip;
+    track.setAttribute("aria-label", tip);
+  }
+
+  const fill = document.createElement("div");
+  const f = clamp01(frac);
+  fill.className = "barFill " + scoreCls(f);
+  fill.style.width = Math.round(f * 100) + "%";
+  track.appendChild(fill);
+
+  const val = document.createElement("div");
+  val.className = "barVal";
+  val.textContent = Math.round(f * 100) + "%";
+
+  row.appendChild(lab);
+  row.appendChild(track);
+  row.appendChild(val);
+  return row;
+}
+
+function pickLever(parts){
+  // parts: {sLog,sDiet,sProtein,sSleep,sTrend,...}
+  const items = [
+    {key:"Logging", v:parts.sLog, label:"Logging", detail:"More data gives you more leverage.", next:"Log today (even rough). Then backfill the last missing day so the week math is real."},
+    {key:"Diet", v:parts.sDiet, label:"Diet window", detail:"Your net calories are drifting outside the window.", next:"Aim for 5 of 7 days within your net window. Pre-log dinner and keep it boring."},
+    {key:"Protein", v:parts.sProtein, label:"Protein", detail:"Protein is the easiest muscle-protection lever.", next:"Add one protein anchor today (40 to 60g) and keep the rest unchanged."},
+    {key:"Sleep", v:parts.sSleep, label:"Sleep", detail:"Low sleep inflates hunger and water retention.", next:"Tonight: consistent bedtime, no caffeine late, and keep screens out of the last 30 minutes."},
+    {key:"Trend", v:parts.sTrend, label:"Trend", detail:"Your weigh-ins suggest the trend is off-plan.", next:"Do not cut harder yet. First tighten logging and stay in the window for 7 straight days, then reassess."}
+  ];
+  items.sort((a,b)=>(a.v??0)-(b.v??0));
+  const worst = items[0];
+  return worst || {label:"Maintain", detail:"", next:""};
+}
+
+function renderWeeklyScorecard(){
+  const gradePill = document.getElementById("scoreGradePill");
+  const leverPill = document.getElementById("scoreLeverPill");
+  const letterEl = document.getElementById("weekGradeLetter");
+  const scoreEl = document.getElementById("weekGradeScore");
+  const subEl = document.getElementById("weekGradeSub");
+  const paceEl = document.getElementById("weekPace");
+  const paceSubEl = document.getElementById("weekPaceSub");
+  const projEl = document.getElementById("weekProjWeight");
+  const projSubEl = document.getElementById("weekProjSub");
+  const calloutEl = document.getElementById("weekCallout");
+  const bodyEl = document.getElementById("weekScoreBody");
+  const barsEl = document.getElementById("scoreBars");
+  const barsNoteEl = document.getElementById("scoreBarsNote");
+
+  // If the section isn't on this page, fail silently.
+  if(!gradePill || !leverPill || !letterEl || !scoreEl || !subEl || !paceEl || !projEl || !calloutEl || !bodyEl || !barsEl) return;
+
+  if(!authed){
+    setPill("scoreGradePill","warn","<b>Grade:</b> Locked");
+    setPill("scoreLeverPill","warn","<b>Big lever:</b> Sign in");
+    letterEl.textContent = "-";
+    scoreEl.textContent = "Sign in";
+    subEl.textContent = "Unlock weekly scorecard and projection.";
+    paceEl.textContent = "-";
+    if(paceSubEl) paceSubEl.textContent = "-";
+    projEl.textContent = "-";
+    if(projSubEl) projSubEl.textContent = "-";
+    calloutEl.textContent = "Sign in to view your weekly scorecard.";
+    bodyEl.innerHTML = "";
+    barsEl.innerHTML = "";
+    if(barsNoteEl) barsNoteEl.textContent = "-";
+    return;
+  }
+
+  const d7 = compute7Day();
+  const sleepTarget = Number(state.settings.sleepTarget || 7.0);
+  const proteinTarget = Number(state.settings.proteinTarget || 220);
+  const adhWin = Number(d7.window || state.settings.adhWindow || 150);
+  const plannedLoss = Number(state.settings.weeklyLossTarget || 1.0);
+
+  const sLog = clamp01((Number(d7.loggedDays||0))/7);
+  const sDiet = (Number(d7.loggedDays||0) > 0) ? clamp01((Number(d7.onTargetDays||0))/Number(d7.loggedDays||1)) : 0;
+  const sProtein = (d7.proteinAdh===null || !isFinite(d7.proteinAdh)) ? 0 : clamp01(Number(d7.proteinAdh));
+  const sSleep = (d7.avgSleep===null || !isFinite(d7.avgSleep) || !isFinite(sleepTarget) || sleepTarget<=0) ? 0 : clamp01(Number(d7.avgSleep)/sleepTarget);
+
+  const tr = computeWeightTrend(21);
+  const sTrend = trendScore(tr, plannedLoss);
+
+  const score = Math.round(100*(0.25*sLog + 0.35*sDiet + 0.20*sProtein + 0.10*sSleep + 0.10*sTrend));
+  const grade = letterGrade(score);
+  const gradeCls = (score >= 85) ? "good" : ((score >= 70) ? "warn" : "bad");
+
+  setPill("scoreGradePill", gradeCls, "<b>Grade:</b> " + grade + " (" + score + ")");
+  letterEl.textContent = grade;
+  scoreEl.textContent = score + "/100";
+
+  const lever = pickLever({sLog, sDiet, sProtein, sSleep, sTrend});
+  setPill("scoreLeverPill", gradeCls, "<b>Big lever:</b> " + lever.label);
+  subEl.textContent = lever.detail;
+
+  // Pace and projection
+  const pace = (d7.estNetLossPerWeek!==null && isFinite(d7.estNetLossPerWeek)) ? Number(d7.estNetLossPerWeek)
+             : ((d7.estLossPerWeek!==null && isFinite(d7.estLossPerWeek)) ? Number(d7.estLossPerWeek) : null);
+
+  if(pace !== null){
+    paceEl.textContent = pace.toFixed(2) + " lb/wk";
+    const avgNet = (d7.avgNetDeficit!==null && isFinite(d7.avgNetDeficit)) ? Math.round(d7.avgNetDeficit) : null;
+    if(paceSubEl) paceSubEl.textContent = (avgNet!==null) ? ("Avg net deficit " + avgNet + " kcal/day") : "Based on net calories";
+  } else {
+    paceEl.textContent = "-";
+    if(paceSubEl) paceSubEl.textContent = "Not enough logged days";
+  }
+
+  const ws = getWeighIns();
+  const curW = ws.length ? ws[ws.length-1].w : (Number(state.settings.startWeight || 0) || null);
+  if(pace !== null && curW){
+    const projW = curW - (pace * 4);
+    const dt = addDays(new Date(), 28);
+    projEl.textContent = projW.toFixed(1) + " lbs";
+    if(projSubEl){
+      projSubEl.textContent = "By " + dt.toLocaleDateString("en-US",{month:"short",day:"numeric"}) + " if you repeat this week";
+    }
+  } else {
+    projEl.textContent = "-";
+    if(projSubEl) projSubEl.textContent = "Log weight + calories for a projection";
+  }
+
+  // Callout
+  calloutEl.textContent = lever.next;
+
+  // Bars
+  barsEl.innerHTML = "";
+  const barData = [
+    {k:"Logging", v:sLog, tip:(d7.loggedDays||0) + "/7 days logged"},
+    {k:"Diet window", v:sDiet, tip:"On-target " + (d7.onTargetDays||0) + "/" + (d7.loggedDays||0) + " (±" + adhWin + " net kcal)"},
+    {k:"Protein", v:sProtein, tip:"Days meeting protein target"},
+    {k:"Sleep", v:sSleep, tip:"Avg sleep vs target"},
+    {k:"Trend", v:sTrend, tip:(tr!==null && isFinite(tr)) ? ("Weight trend " + (tr>0?"+":"") + tr.toFixed(2) + " lb/wk") : "Not enough weigh-ins"}
+  ];
+  for(const b of barData){
+    barsEl.appendChild(makeBarRow(b.k, b.v, b.tip));
+  }
+  if(barsNoteEl){
+    const base = "Fastest improvement: log missing days, then keep net inside ±" + adhWin + " kcal.";
+    const hint = (Number(d7.loggedDays||0) < 6) ? " You are under-logged." : ((sDiet < 0.75) ? " Diet drift is the main leak." : "");
+    barsNoteEl.textContent = base + hint;
+  }
+
+  // 7-day table
+  bodyEl.innerHTML = "";
+  const todayDs = ymd(new Date());
+  const days = lastNDays(todayDs, 7);
+
+  for(const ds of days){
+    const rec = state.days[ds] || {};
+    const d = parseYMD(ds);
+
+    const plannedFast = isFastDay(ds);
+    const hasCalories = (rec.calories!==null && rec.calories!==undefined && rec.calories!=="");
+    const cal = hasCalories ? Number(rec.calories) : (plannedFast ? 0 : null);
+
+    const burn = (rec.burned!==null && rec.burned!==undefined && rec.burned!=="") ? Number(rec.burned) : 0;
+    const burnSafe = isFinite(burn) ? burn : 0;
+
+    let tgt;
+    try { tgt = targetFor(ds); }
+    catch(e){ tgt = plannedFast ? 0 : (Number(state?.settings?.targetCal)||0); }
+
+    const net = (cal===null || !isFinite(cal)) ? null : (cal - burnSafe);
+    const delta = (net===null || !isFinite(net) || !isFinite(tgt)) ? null : (net - tgt);
+
+    const diff = (delta===null || !isFinite(delta)) ? null : Math.abs(delta);
+
+    const netCls = (net===null) ? "warn" : (diff <= adhWin ? "good" : (diff <= (adhWin*2) ? "warn" : "bad"));
+
+    const p = (rec.protein!==null && rec.protein!==undefined && rec.protein!=="") ? Number(rec.protein) : null;
+    const pCls = (p===null || !isFinite(p)) ? "warn" : (p >= proteinTarget ? "good" : (p >= proteinTarget-25 ? "warn" : "bad"));
+
+    const sh = (rec.sleepHours!==null && rec.sleepHours!==undefined && rec.sleepHours!=="") ? Number(rec.sleepHours) : null;
+    const shCls = (sh===null || !isFinite(sh)) ? "warn" : (sh >= sleepTarget ? "good" : (sh >= sleepTarget-0.5 ? "warn" : "bad"));
+
+    const w = (rec.weight!==null && rec.weight!==undefined && rec.weight!=="") ? Number(rec.weight) : null;
+    let wTok = "-";
+    let wCls = "warn";
+    if(w!==null && isFinite(w)){
+      wTok = w.toFixed(1);
+      const r = safeExpectedRange(ds);
+      if(r && _validRange(r)){
+        if(w < r.low) wCls = "good";
+        else if(w > r.high) wCls = "warn";
+        else wCls = "good";
+      } else {
+        wCls = "good";
+      }
+    }
+
+    const trEl = document.createElement("tr");
+
+    const dayCell = `<div class="cellMain">${fmtUSDate(ds)}</div><div class="cellSub">${weekdayName(d)}</div>`;
+
+    let netCell = "";
+    if(net===null){
+      const missingTxt = plannedFast ? "Fast (0)" : "Missing";
+      netCell = `<div class="cellMain">${tok(missingTxt, "warn")}</div><div class="cellSub">Target ${Math.round(tgt)}</div>`;
+    } else {
+      const sign = (delta!==null && isFinite(delta) && delta>0) ? "+" : "";
+      netCell = `<div class="cellMain">${tok("Net " + Math.round(net), netCls)} ${tok("Δ " + sign + Math.round(delta), netCls)}</div><div class="cellSub">Target ${Math.round(tgt)}</div>`;
+    }
+
+    const calCell = (cal===null) ? `<div class="cellMain">${tok("—", "warn")}</div><div class="cellSub">${plannedFast ? "Planned fast" : "Not logged"}</div>`
+                                : `<div class="cellMain">${Math.round(cal)}</div><div class="cellSub">Intake</div>`;
+
+    const burnCell = `<div class="cellMain">${Math.round(burnSafe)}</div><div class="cellSub">Active</div>`;
+
+    const pCell = (p===null || !isFinite(p)) ? `<div class="cellMain">${tok("—", "warn")}</div><div class="cellSub">Target ${Math.round(proteinTarget)}g</div>`
+                                             : `<div class="cellMain">${tok(Math.round(p) + "g", pCls)}</div><div class="cellSub">Target ${Math.round(proteinTarget)}g</div>`;
+
+    const sCell = (sh===null || !isFinite(sh)) ? `<div class="cellMain">${tok("—", "warn")}</div><div class="cellSub">Target ${sleepTarget.toFixed(1)}h</div>`
+                                               : `<div class="cellMain">${tok(sh.toFixed(1) + "h", shCls)}</div><div class="cellSub">Target ${sleepTarget.toFixed(1)}h</div>`;
+
+    const wCell = `<div class="cellMain">${tok(wTok, wCls)}</div><div class="cellSub">${w!==null && isFinite(w) ? "AM fasted" : "Not logged"}</div>`;
+
+    trEl.innerHTML = `
+      <td>${dayCell}</td>
+      <td>${netCell}</td>
+      <td>${calCell}</td>
+      <td>${burnCell}</td>
+      <td>${pCell}</td>
+      <td>${sCell}</td>
+      <td>${wCell}</td>
+    `;
+    bodyEl.appendChild(trEl);
+  }
+}
+
   function renderAll(){
     enforceDnaProfile();
     rebuildThuWeekRanges();
     buildTabs();
     renderActiveMonth();
     renderKpis();
+    renderWeeklyScorecard();
     renderCoach();
     try{ renderTrends(); } catch {}
   }
