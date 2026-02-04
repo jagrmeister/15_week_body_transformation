@@ -3286,8 +3286,11 @@ let tgt;
     const days = lastNDays(anchor, 7);
     const win = Number(state.settings.adhWindow || 150);
 
+    // Diet cap logic:
+    // Cap = target + window. You are only "off" when you go ABOVE the cap.
+    // Being under target does not count against you.
     let calSum=0, calCount=0, on=0, logged=0;
-    let absDiffSum=0;
+    let overSum=0; // sum of (net - (target+window)) when net exceeds the cap
     let deficitSum=0, deficitCount=0;
 
     let burnSum=0;
@@ -3297,7 +3300,13 @@ let tgt;
     const sleepTarget = Number(state.settings.sleepTarget || 7.0);
 
     let pSum=0,pCount=0, cSum=0,cCount=0, fSum=0,fCount=0;
-    const pTarget = Number(state.settings.proteinTarget || 200);
+
+    const pHigh = Number(state.settings.proteinTarget || 220);
+    const pLowRaw = (state.settings.proteinLow !== undefined && state.settings.proteinLow !== null && state.settings.proteinLow !== "")
+      ? Number(state.settings.proteinLow)
+      : (pHigh - 40);
+    const pLow = Math.max(0, isFinite(pLowRaw) ? pLowRaw : (pHigh - 40));
+
     let pMeet=0, pLogged=0;
 
     for(const ds of days){
@@ -3313,26 +3322,31 @@ let tgt;
       }
       if(hasCalories && isFinite(cal)){
         calSum += cal; calCount++;
+
         let tgt;
-      try { tgt = targetFor(ds); }
-      catch(e){ tgt = isFastDay(ds) ? 0 : (Number(state?.settings?.targetCal)||0); }
+        try { tgt = targetFor(ds); }
+        catch(e){ tgt = isFastDay(ds) ? 0 : (Number(state?.settings?.targetCal)||0); }
 
         const burn = (rec.burned!==null && rec.burned!==undefined && rec.burned!=="") ? Number(rec.burned) : 0;
         const burnSafe = (isFinite(burn) ? burn : 0);
         burnSum += burnSafe;
 
         const net = cal - burnSafe;
-        const diff = Math.abs(net - tgt);
+        const cap = (isFinite(tgt) && isFinite(win)) ? (tgt + win) : null;
+
         logged++;
-        if(diff <= win) on++;
-        absDiffSum += diff;
+
+        if(cap !== null && isFinite(net)){
+          const over = net - cap;
+          if(over <= 0) on++;
+          overSum += Math.max(0, over);
+        }
 
         deficitSum += (tgt - cal);
         deficitCount++;
 
         netDefSum += (tgt - net);
         netDefCount++;
-
       }
 
       if(rec.sleepHours!==null && rec.sleepHours!==undefined && rec.sleepHours!==""){
@@ -3348,7 +3362,8 @@ let tgt;
         if(isFinite(pv)){
           pSum += pv; pCount++;
           pLogged++;
-          if(isFinite(pTarget) && pv >= pTarget) pMeet++;
+          // Protein is "good" when it is within the target range [pLow, pHigh]
+          if(isFinite(pLow) && isFinite(pHigh) && pv >= pLow && pv <= pHigh) pMeet++;
         }
       }
       if(rec.carbs!==null && rec.carbs!==undefined && rec.carbs!==""){
@@ -3370,11 +3385,17 @@ let tgt;
 
     return {
       avgCal: calCount ? (calSum/calCount) : null,
+
+      // "adh" and "onTargetDays" now mean: days at or below the diet cap (target + window)
       adh: logged ? (on/logged) : null,
       loggedDays: logged,
       onTargetDays: on,
+      overCapDays: logged ? Math.max(0, logged - on) : 0,
       window: win,
-      avgAbsOffTarget: logged ? (absDiffSum/logged) : null,
+
+      // Re-used field name for compatibility:
+      // avgAbsOffTarget is now "avgOverCap" (avg calories above cap across logged days)
+      avgAbsOffTarget: logged ? (overSum/logged) : null,
 
       avgDeficit: avgDeficit,
       estLossPerWeek: estLossPerWeek,
@@ -3389,6 +3410,8 @@ let tgt;
 
       avgProtein: pCount ? (pSum/pCount) : null,
       proteinAdh: pLogged ? (pMeet/pLogged) : null,
+      proteinLow: (isFinite(pLow) ? pLow : null),
+      proteinHigh: (isFinite(pHigh) ? pHigh : null),
 
       avgCarbs: cCount ? (cSum/cCount) : null,
       avgFat: fCount ? (fSum/fCount) : null,
@@ -4325,7 +4348,11 @@ const d7 = compute7Day();
 
     const win = Number(d7.window || state.settings.adhWindow || 150);
     const sleepTarget = Number(state.settings.sleepTarget || 7.0);
-    const pTarget = Number(state.settings.proteinTarget || 220);
+    const pTarget = Number(state.settings.proteinTarget || 220); // upper bound
+    const pLowRaw = (state.settings.proteinLow !== undefined && state.settings.proteinLow !== null && state.settings.proteinLow !== "")
+      ? Number(state.settings.proteinLow)
+      : (pTarget - 40);
+    const pLow = Math.max(0, isFinite(pLowRaw) ? pLowRaw : (pTarget - 40));
 
     const logged = Number(d7.loggedDays || 0);
     const on = Number(d7.onTargetDays || 0);
@@ -4389,7 +4416,7 @@ const d7 = compute7Day();
         // Week row
         if(rowId === "coachWeekItems"){
           if(tok.startsWith("Logged ")) return "How many of the last 7 days have calories logged (planned fast days count as 0 if left blank).";
-          if(tok.startsWith("On-target ")) return "Count of logged days where net calories fell within the target window (±" + win + " kcal).";
+          if(tok.startsWith("On-target ")) return "Count of logged days where net calories were at or below the cap (target + window). Window is +" + win + " net kcal.";
           if(tok.includes("Avg net")) return "Average net deficit/surplus: (target - net). Net is intake minus burn. Positive means deficit.";
           if(tok.startsWith("Trend ")) return "Estimated weight change rate from your weigh-ins (about the last 3 weeks). Negative is losing.";
         }
@@ -4497,7 +4524,8 @@ function latestWeighCompare(){
 
       const net = (hasCalories && isFinite(cal)) ? (cal - burnSafe) : null;
       const delta = (net!==null && isFinite(tgt)) ? (net - tgt) : null;
-      const diff = (delta!==null && isFinite(delta)) ? Math.abs(delta) : null;
+      const cap = (net!==null && isFinite(net) && isFinite(tgt) && isFinite(win)) ? (tgt + win) : null;
+      const diff = (cap!==null) ? Math.max(0, (net - cap)) : null;
 
       const sleep = (rec.sleepHours!==null && rec.sleepHours!==undefined && rec.sleepHours!=="") ? Number(rec.sleepHours) : null;
       const sleepOk = (sleep!==null && isFinite(sleep)) ? sleep : null;
@@ -4512,14 +4540,14 @@ function latestWeighCompare(){
 
     const last3 = lastNDays(todayDs, 3);
     const last3Stats = last3.map(getDayStats).filter(x => x.net!==null && isFinite(x.net) && x.tgt!==null && isFinite(x.tgt));
-    const out3 = last3Stats.filter(x => x.diff!==null && isFinite(x.diff) && x.diff > win);
+    const out3 = last3Stats.filter(x => x.diff!==null && isFinite(x.diff) && x.diff > 0);
 
     const triggers = [];
     if(!t.hasCalories && !t.plannedFast) triggers.push("Missing calories today");
-    if(t.diff!==null && isFinite(t.diff) && t.diff > win) triggers.push("Today off-target by " + Math.round(t.diff) + " kcal");
-    if(t.protein!==null && isFinite(t.protein) && (pTarget - t.protein) > 25) triggers.push("Protein -" + Math.round(pTarget - t.protein) + "g");
+    if(t.diff!==null && isFinite(t.diff) && t.diff > 0) triggers.push("Today over cap by " + Math.round(t.diff) + " kcal");
+    if(t.protein!==null && isFinite(t.protein) && (t.protein < pLow)) triggers.push("Protein -" + Math.round(pLow - t.protein) + "g");
     if(t.sleep!==null && isFinite(t.sleep) && (sleepTarget - t.sleep) > 0.7) triggers.push("Sleep low (" + t.sleep.toFixed(1) + "h)");
-    if(out3.length >= 2) triggers.push("2 of last 3 days off-target");
+    if(out3.length >= 2) triggers.push("2 of last 3 days over cap");
 
     function kcalToMinutes(kcal){
       // Rough mapping: 6-10 kcal/min depending on pace; use 8 kcal/min midpoint.
@@ -4536,7 +4564,7 @@ function latestWeighCompare(){
     const seed = parseInt(todayDs.replace(/-/g, ""), 10) || 0;
     const phraseDiet = [
       "Bring net calories within the target window",
-      "Keep today inside the window",
+      "Keep today at or below the cap.",
       "Stay within the net target range"
     ];
     const phraseLog = [
@@ -4568,7 +4596,7 @@ function latestWeighCompare(){
       steps = [
         "Log calories for today now (even if rough).",
         "If you burned calories, log that too so net is accurate.",
-        "Then aim to land within ±" + win + " kcal of target."
+        "Then aim to land at or below target +" + win + " kcal."
       ];
       why = "Why: without today logged, coaching cannot respond to what you are actually doing.";
       cls = "warn";
@@ -4596,7 +4624,7 @@ function latestWeighCompare(){
         ];
       }
 
-      why = "Why: today is outside your ±" + win + " kcal window, which drives week-to-week progress.";
+      why = "Why: today is over your cap (target +" + win + " kcal), which drives week-to-week progress.";
       cls = "warn";
       pill = "Diet";
     }
@@ -4639,11 +4667,11 @@ function latestWeighCompare(){
     else if(out3.length >= 2){
       focus = pick(phraseReset, seed);
       steps = [
-        "Next 3 days: keep net within ±" + win + " kcal. No hero days.",
+        "Next 3 days: keep net at or below target +" + win + " kcal. No hero days.",
         "Pre-log tomorrow's meals so the plan is automatic.",
         "Protein stays at " + pTarget + "g. Sleep stays at " + sleepTarget.toFixed(1) + "h."
       ];
-      why = "Why: recent consistency slipped (2 of last 3 days off-target). A short reset fixes it faster than big changes.";
+      why = "Why: recent consistency slipped (2 of last 3 days over cap). A short reset fixes it faster than big changes.";
       cls = "warn";
       pill = "Reset";
     }
@@ -4662,19 +4690,19 @@ function latestWeighCompare(){
     } else if(onPct < 0.75){
       focus = pick(phraseDiet, seed);
       steps = [
-        "Pre-log tomorrow so the day lands within ±" + win + " kcal of target.",
+        "Pre-log tomorrow so the day lands at or below target +" + win + " kcal.",
         "Change one lever only: cut 150 to 250 kcal, or add 25 to 40 min zone 2.",
-        "Keep protein at " + pTarget + "g and training steady."
+        "Keep protein between " + Math.round(pLow) + "-" + Math.round(pTarget) + "g and training steady."
       ];
       const off = (d7.avgAbsOffTarget!==null && isFinite(d7.avgAbsOffTarget)) ? Math.round(d7.avgAbsOffTarget) : null;
-      why = "Why: diet is on-target " + on + "/" + logged + " days" + (off!==null ? (" (avg off-target " + off + " kcal/day).") : ".");
+      why = "Why: diet cap is met " + on + "/" + logged + " days" + (off!==null ? (" (avg over-cap " + off + " kcal/day).") : ".");
       cls = (onPct < 0.50) ? "bad" : "warn";
       pill = "Diet";
     } else if(wc && wc.status === "above range"){
       focus = "Small adjustment: add movement before cutting food";
       steps = [
         "Add 2 zone-2 walks this week (30 to 45 min).",
-        "Hold calories steady and stay within ±" + win + " kcal.",
+        "Hold calories steady and stay at or below target +" + win + " kcal.",
         "Re-check at the next Mon or Thu weigh-in."
       ];
       why = "Why: latest weigh-in is above the expected range for that date, despite decent adherence.";
@@ -4683,11 +4711,11 @@ function latestWeighCompare(){
     } else {
       focus = "Stay the course";
       steps = [
-        "Keep net calories within ±" + win + " kcal (aim 5 of 7 days on-target).",
+        "Keep net calories at or below target +" + win + " kcal (aim 5 of 7 days not over cap).",
         "Maintain protein ≥" + pTarget + "g and sleep ≥" + sleepTarget.toFixed(1) + "h.",
         "Re-check on Mon or Thu weigh-in."
       ];
-      why = "Why: recent days are inside the window and trends look normal.";
+      why = "Why: recent days are at or below your cap and trends look normal.";
       cls = "good";
       pill = "On track";
     }
@@ -4744,7 +4772,7 @@ function latestWeighCompare(){
 
     if(logged){
       weekTokens.push("Logged " + logged + "/7");
-      weekTokens.push("On-target " + on + "/" + logged + " (±" + win + ")");
+      weekTokens.push("Diet cap " + on + "/" + logged + " (target +" + win + ")");
     }
     if(avgNetDef!==null && isFinite(avgNetDef)){
       const sign = avgNetDef >= 0 ? "deficit" : "surplus";
@@ -4767,12 +4795,12 @@ function latestWeighCompare(){
     const chips = [];
     if(logged){
       const dietCls = (onPct >= 0.75) ? "good" : (onPct >= 0.50 ? "warn" : "bad");
-      chips.push({text:"Diet: " + on + "/" + logged + " within ±" + win, cls:dietCls, tip:"Days in the last 7 with net calories inside the window (net = intake minus burn)."});
+      chips.push({text:"Diet cap: " + on + "/" + logged + " at or below +" + win, cls:dietCls, tip:"Days in the last 7 where net calories were at or below (target + window). Being under target does not count against you; only going over does."});
     }
     if(d7.avgAbsOffTarget!==null && isFinite(d7.avgAbsOffTarget)){
       const off = Math.round(d7.avgAbsOffTarget);
       const offCls = (off <= win) ? "good" : (off <= win*2 ? "warn" : "bad");
-      chips.push({text:"Avg off-target: " + off + " kcal/day", cls:offCls, tip:"Average absolute distance from target (|net - target|) across logged days."});
+      chips.push({text:"Avg over-cap: " + off + " kcal/day", cls:offCls, tip:"Average amount over your cap across logged days: max(0, net - (target + window))."});
     }
     if(avgNetDef!==null && isFinite(avgNetDef)){
       const sign = avgNetDef >= 0 ? "deficit" : "surplus";
@@ -4787,8 +4815,9 @@ function latestWeighCompare(){
       chips.push({text:"Sleep: " + d7.avgSleep.toFixed(1) + "h", cls:scls, tip:"Average sleep hours across days with sleep logged. Target: " + sleepTarget.toFixed(1) + "h."});
     }
     if(d7.avgProtein!==null && isFinite(d7.avgProtein)){
-      const pcl = (d7.avgProtein >= pTarget) ? "good" : "warn";
-      chips.push({text:"Protein: " + Math.round(d7.avgProtein) + "g", cls:pcl, tip:"Average protein across days with protein logged. Target: " + pTarget + "g."});
+      const avgP = Number(d7.avgProtein);
+      const pcl = (avgP >= pLow && avgP <= pTarget) ? "good" : (avgP >= (pLow - 15) ? "warn" : "bad");
+      chips.push({text:"Protein: " + Math.round(avgP) + "g", cls:pcl, tip:"Average protein across days with protein logged. Target range: " + Math.round(pLow) + "-" + Math.round(pTarget) + "g."});
     }
     if(trend!==null && isFinite(trend)){
       const tcls = (trend <= -0.5) ? "good" : (trend < 0 ? "warn" : "bad");
@@ -4929,7 +4958,7 @@ function pickLever(parts){
   // parts: {sLog,sDiet,sProtein,sSleep,sTrend,...}
   const items = [
     {key:"Logging", v:parts.sLog, label:"Logging", detail:"More data gives you more leverage.", next:"Log today (even rough). Then backfill the last missing day so the week math is real."},
-    {key:"Diet", v:parts.sDiet, label:"Diet window", detail:"Your net calories are drifting outside the window.", next:"Aim for 5 of 7 days within your net window. Pre-log dinner and keep it boring."},
+    {key:"Diet", v:parts.sDiet, label:"Diet cap", detail:"You are going over your cap too often.", next:"Aim for 5 of 7 days with net at or below target + window. Pre-log dinner and keep it boring."},
     {key:"Protein", v:parts.sProtein, label:"Protein", detail:"Protein is the easiest muscle-protection lever.", next:"Add one protein anchor today (40 to 60g) and keep the rest unchanged."},
     {key:"Sleep", v:parts.sSleep, label:"Sleep", detail:"Low sleep inflates hunger and water retention.", next:"Tonight: consistent bedtime, no caffeine late, and keep screens out of the last 30 minutes."},
     {key:"Trend", v:parts.sTrend, label:"Trend", detail:"Your weigh-ins suggest the trend is off-plan.", next:"Do not cut harder yet. First tighten logging and stay in the window for 7 straight days, then reassess."}
@@ -4976,7 +5005,11 @@ function renderWeeklyScorecard(){
 
   const d7 = compute7Day();
   const sleepTarget = Number(state.settings.sleepTarget || 7.0);
-  const proteinTarget = Number(state.settings.proteinTarget || 220);
+  const proteinTarget = Number(state.settings.proteinTarget || 220); // upper bound
+  const proteinLowRaw = (state.settings.proteinLow !== undefined && state.settings.proteinLow !== null && state.settings.proteinLow !== "")
+    ? Number(state.settings.proteinLow)
+    : (proteinTarget - 40);
+  const proteinLow = Math.max(0, isFinite(proteinLowRaw) ? proteinLowRaw : (proteinTarget - 40));
   const adhWin = Number(d7.window || state.settings.adhWindow || 150);
   const plannedLoss = Number(state.settings.weeklyLossTarget || 1.0);
 
@@ -5034,8 +5067,8 @@ function renderWeeklyScorecard(){
   barsEl.innerHTML = "";
   const barData = [
     {k:"Logging", v:sLog, tip:(d7.loggedDays||0) + "/7 days logged"},
-    {k:"Diet window", v:sDiet, tip:"On-target " + (d7.onTargetDays||0) + "/" + (d7.loggedDays||0) + " (±" + adhWin + " net kcal)"},
-    {k:"Protein", v:sProtein, tip:"Days meeting protein target"},
+    {k:"Diet cap", v:sDiet, tip:"At/below cap " + (d7.onTargetDays||0) + "/" + (d7.loggedDays||0) + " (cap = target +" + adhWin + " net kcal)"},
+    {k:"Protein", v:sProtein, tip:"Days within " + Math.round(proteinLow) + "-" + Math.round(proteinTarget) + "g"},
     {k:"Sleep", v:sSleep, tip:"Avg sleep vs target"},
     {k:"Trend", v:sTrend, tip:(tr!==null && isFinite(tr)) ? ("Weight trend " + (tr>0?"+":"") + tr.toFixed(2) + " lb/wk") : "Not enough weigh-ins"}
   ];
@@ -5043,7 +5076,7 @@ function renderWeeklyScorecard(){
     barsEl.appendChild(makeBarRow(b.k, b.v, b.tip));
   }
   if(barsNoteEl){
-    const base = "Fastest improvement: log missing days, then keep net inside ±" + adhWin + " kcal.";
+    const base = "Fastest improvement: log missing days, then keep net at or below target +" + adhWin + " kcal.";
     const hint = (Number(d7.loggedDays||0) < 6) ? " You are under-logged." : ((sDiet < 0.75) ? " Diet drift is the main leak." : "");
     barsNoteEl.textContent = base + hint;
   }
@@ -5071,12 +5104,14 @@ function renderWeeklyScorecard(){
     const net = (cal===null || !isFinite(cal)) ? null : (cal - burnSafe);
     const delta = (net===null || !isFinite(net) || !isFinite(tgt)) ? null : (net - tgt);
 
-    const diff = (delta===null || !isFinite(delta)) ? null : Math.abs(delta);
-
-    const netCls = (net===null) ? "warn" : (diff <= adhWin ? "good" : (diff <= (adhWin*2) ? "warn" : "bad"));
+    const cap = (!isFinite(tgt) || !isFinite(adhWin)) ? null : (tgt + adhWin);
+    const over = (net===null || cap===null || !isFinite(net) || !isFinite(cap)) ? null : (net - cap);
+    const netCls = (net===null) ? "warn" : ((over===null) ? "warn" : (over <= 0 ? "good" : (over <= adhWin ? "warn" : "bad")));
 
     const p = (rec.protein!==null && rec.protein!==undefined && rec.protein!=="") ? Number(rec.protein) : null;
-    const pCls = (p===null || !isFinite(p)) ? "warn" : (p >= proteinTarget ? "good" : (p >= proteinTarget-25 ? "warn" : "bad"));
+    const pCls = (p===null || !isFinite(p)) ? "warn"
+      : ((p >= proteinLow && p <= proteinTarget) ? "good"
+         : (p > proteinTarget ? "warn" : (p >= (proteinLow - 15) ? "warn" : "bad")));
 
     const sh = (rec.sleepHours!==null && rec.sleepHours!==undefined && rec.sleepHours!=="") ? Number(rec.sleepHours) : null;
     const shCls = (sh===null || !isFinite(sh)) ? "warn" : (sh >= sleepTarget ? "good" : (sh >= sleepTarget-0.5 ? "warn" : "bad"));
@@ -5114,8 +5149,8 @@ function renderWeeklyScorecard(){
 
     const burnCell = `<div class="cellMain">${Math.round(burnSafe)}</div><div class="cellSub">Active</div>`;
 
-    const pCell = (p===null || !isFinite(p)) ? `<div class="cellMain">${tok("—", "warn")}</div><div class="cellSub">Target ${Math.round(proteinTarget)}g</div>`
-                                             : `<div class="cellMain">${tok(Math.round(p) + "g", pCls)}</div><div class="cellSub">Target ${Math.round(proteinTarget)}g</div>`;
+    const pCell = (p===null || !isFinite(p)) ? `<div class="cellMain">${tok("—", "warn")}</div><div class="cellSub">Target ${Math.round(proteinLow)}-${Math.round(proteinTarget)}g</div>`
+                                             : `<div class="cellMain">${tok(Math.round(p) + "g", pCls)}</div><div class="cellSub">Target ${Math.round(proteinLow)}-${Math.round(proteinTarget)}g</div>`;
 
     const sCell = (sh===null || !isFinite(sh)) ? `<div class="cellMain">${tok("—", "warn")}</div><div class="cellSub">Target ${sleepTarget.toFixed(1)}h</div>`
                                                : `<div class="cellMain">${tok(sh.toFixed(1) + "h", shCls)}</div><div class="cellSub">Target ${sleepTarget.toFixed(1)}h</div>`;
