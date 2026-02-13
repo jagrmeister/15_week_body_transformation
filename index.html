@@ -1738,9 +1738,13 @@
   }
   initTheme();
 
-  // Fast window: Jan 2 to Jan 3 only (Jan 4 is normal)
-  const FAST_START = "2026-01-02";
-  const FAST_END   = "2026-01-03";
+  // Planned fasting days (36h fasts on Mondays in April)
+  const FAST_DAYS = new Set([
+    "2026-04-06",
+    "2026-04-13",
+    "2026-04-20",
+    "2026-04-27"
+  ]);
 
   // Reverse diet window: last 2 weeks of April + first 2 weeks of May
   const REVERSE_START = "2026-04-20";
@@ -1753,7 +1757,7 @@
   var THU_WEEK_RANGES = []; // computed from settings (weekly loss target + plan weeks + band)
 
 
-  function isFastDay(ds){ return ds>=FAST_START && ds<=FAST_END; }
+  function isFastDay(ds){ return FAST_DAYS.has(ds); }
   function inReverseWindow(ds){ return ds>=REVERSE_START && ds<=REVERSE_END; }
 
   // Supabase
@@ -2459,6 +2463,9 @@ Attempts remaining before lockout: ${remaining}`);
 
   function isHighCarbDay(ds){
     const d = parseYMD(ds);
+    // Always treat Sundays as the high-carb day (per plan)
+    if(d.getDay() === 0) return true;
+
     const wi = weekIndexForDate(ds);
     if(!wi) return false;
 
@@ -2467,6 +2474,20 @@ Attempts remaining before lockout: ${remaining}`);
     const secondaryActive = wi >= Number(s.secondHighStartWeek) && d.getDay() === Number(s.secondHighDow);
 
     return primaryActive || secondaryActive;
+  }
+
+  function macroTargetsFor(ds){
+    const d = parseYMD(ds);
+
+    // Sunday high-carb macro target (fixed)
+    if(d.getDay() === 0){
+      return {p:200, c:250, f:50, label:"200P / 250C / 50F"};
+    }
+
+    const p = Number(state.settings.proteinTarget || 220);
+    const c = Number(state.settings.carbTarget || 100);
+    const f = Number(state.settings.fatTarget || 90);
+    return {p, c, f, label:`${Math.round(p)}P / ${Math.round(c)}C / ${Math.round(f)}F`};
   }
 
   function reverseTarget(ds){
@@ -2495,6 +2516,8 @@ Attempts remaining before lockout: ${remaining}`);
   }
 
   function targetFor(ds){
+    // Fast always overrides reverse/cut targets
+    if(isFastDay(ds)) return 0;
     if(inReverseWindow(ds)) return reverseTarget(ds);
     return targetForCutOnly(ds);
   }
@@ -3287,7 +3310,7 @@ let tgt;
   }
 
   function compute7Day(){
-    const anchor = ymd(new Date());
+    const anchor = ymd(addDays(new Date(), -1));
     const days = lastNDays(anchor, 7);
     const win = Number(state.settings.adhWindow || 150);
 
@@ -3306,11 +3329,11 @@ let tgt;
 
     let pSum=0,pCount=0, cSum=0,cCount=0, fSum=0,fCount=0;
 
-    const pHigh = Number(state.settings.proteinTarget || 220);
-    const pLowRaw = (state.settings.proteinLow !== undefined && state.settings.proteinLow !== null && state.settings.proteinLow !== "")
+    const basePHigh = Number(state.settings.proteinTarget || 220);
+    const basePLowRaw = (state.settings.proteinLow !== undefined && state.settings.proteinLow !== null && state.settings.proteinLow !== "")
       ? Number(state.settings.proteinLow)
-      : (pHigh - 40);
-    const pLow = Math.max(0, isFinite(pLowRaw) ? pLowRaw : (pHigh - 40));
+      : (basePHigh - 40);
+    const basePLow = Math.max(0, isFinite(basePLowRaw) ? basePLowRaw : (basePHigh - 40));
 
     let pMeet=0, pLogged=0;
 
@@ -3367,8 +3390,11 @@ let tgt;
         if(isFinite(pv)){
           pSum += pv; pCount++;
           pLogged++;
-          // Protein is "good" when it is within the target range [pLow, pHigh]
-          if(isFinite(pLow) && isFinite(pHigh) && pv >= pLow && pv <= pHigh) pMeet++;
+          const isSun = (parseYMD(ds).getDay() === 0);
+          const dayPHigh = isSun ? 200 : basePHigh;
+          const dayPLow  = isSun ? 160 : basePLow;
+          // Protein is "good" when it is within the day's target range
+          if(isFinite(dayPLow) && isFinite(dayPHigh) && pv >= dayPLow && pv <= dayPHigh) pMeet++;
         }
       }
       if(rec.carbs!==null && rec.carbs!==undefined && rec.carbs!==""){
@@ -3415,8 +3441,8 @@ let tgt;
 
       avgProtein: pCount ? (pSum/pCount) : null,
       proteinAdh: pLogged ? (pMeet/pLogged) : null,
-      proteinLow: (isFinite(pLow) ? pLow : null),
-      proteinHigh: (isFinite(pHigh) ? pHigh : null),
+      proteinLow: (isFinite(basePLow) ? basePLow : null),
+      proteinHigh: (isFinite(basePHigh) ? basePHigh : null),
 
       avgCarbs: cCount ? (cSum/cCount) : null,
       avgFat: fCount ? (fSum/fCount) : null,
@@ -5073,7 +5099,7 @@ function renderWeeklyScorecard(){
   const barData = [
     {k:"Logging", v:sLog, tip:(d7.loggedDays||0) + "/7 days logged"},
     {k:"Diet cap", v:sDiet, tip:"At/below cap " + (d7.onTargetDays||0) + "/" + (d7.loggedDays||0) + " (cap = target +" + adhWin + " net kcal)"},
-    {k:"Protein", v:sProtein, tip:"Days within " + Math.round(proteinLow) + "-" + Math.round(proteinTarget) + "g"},
+    {k:"Protein", v:sProtein, tip:"Days within protein target range (Sun uses 200P / 250C / 50F)"},
     {k:"Sleep", v:sSleep, tip:"Avg sleep vs target"},
     {k:"Trend", v:sTrend, tip:(tr!==null && isFinite(tr)) ? ("Weight trend " + (tr>0?"+":"") + tr.toFixed(2) + " lb/wk") : "Not enough weigh-ins"}
   ];
@@ -5088,8 +5114,8 @@ function renderWeeklyScorecard(){
 
   // 7-day table
   bodyEl.innerHTML = "";
-  const todayDs = ymd(new Date());
-  const days = lastNDays(todayDs, 7);
+  const anchorDs = ymd(addDays(new Date(), -1));
+  const days = lastNDays(anchorDs, 7);
 
   for(const ds of days){
     const rec = state.days[ds] || {};
@@ -5113,10 +5139,15 @@ function renderWeeklyScorecard(){
     const over = (net===null || cap===null || !isFinite(net) || !isFinite(cap)) ? null : (net - cap);
     const netCls = (net===null) ? "warn" : ((over===null) ? "warn" : (over <= 0 ? "good" : (over <= adhWin ? "warn" : "bad")));
 
+    const mt = macroTargetsFor(ds);
+    const isSun = (d.getDay() === 0);
+    const pHighDay = isSun ? 200 : proteinTarget;
+    const pLowDay  = isSun ? 160 : proteinLow;
+
     const p = (rec.protein!==null && rec.protein!==undefined && rec.protein!=="") ? Number(rec.protein) : null;
     const pCls = (p===null || !isFinite(p)) ? "warn"
-      : ((p >= proteinLow && p <= proteinTarget) ? "good"
-         : (p > proteinTarget ? "warn" : (p >= (proteinLow - 15) ? "warn" : "bad")));
+      : ((p >= pLowDay && p <= pHighDay) ? "good"
+         : (p > pHighDay ? "warn" : (p >= (pLowDay - 15) ? "warn" : "bad")));
 
     const sh = (rec.sleepHours!==null && rec.sleepHours!==undefined && rec.sleepHours!=="") ? Number(rec.sleepHours) : null;
     const shCls = (sh===null || !isFinite(sh)) ? "warn" : (sh >= sleepTarget ? "good" : (sh >= sleepTarget-0.5 ? "warn" : "bad"));
@@ -5154,8 +5185,8 @@ function renderWeeklyScorecard(){
 
     const burnCell = `<div class="cellMain">${Math.round(burnSafe)}</div><div class="cellSub">Active</div>`;
 
-    const pCell = (p===null || !isFinite(p)) ? `<div class="cellMain">${tok("—", "warn")}</div><div class="cellSub">Target ${Math.round(proteinLow)}-${Math.round(proteinTarget)}g</div>`
-                                             : `<div class="cellMain">${tok(Math.round(p) + "g", pCls)}</div><div class="cellSub">Target ${Math.round(proteinLow)}-${Math.round(proteinTarget)}g</div>`;
+    const pCell = (p===null || !isFinite(p)) ? `<div class="cellMain">${tok("—", "warn")}</div><div class="cellSub">Target ${Math.round(pLowDay)}-${Math.round(pHighDay)}g${isSun ? " • " + mt.label : ""}</div>`
+                                             : `<div class="cellMain">${tok(Math.round(p) + "g", pCls)}</div><div class="cellSub">Target ${Math.round(pLowDay)}-${Math.round(pHighDay)}g${isSun ? " • " + mt.label : ""}</div>`;
 
     const sCell = (sh===null || !isFinite(sh)) ? `<div class="cellMain">${tok("—", "warn")}</div><div class="cellSub">Target ${sleepTarget.toFixed(1)}h</div>`
                                                : `<div class="cellMain">${tok(sh.toFixed(1) + "h", shCls)}</div><div class="cellSub">Target ${sleepTarget.toFixed(1)}h</div>`;
